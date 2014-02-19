@@ -1,0 +1,8 @@
+# Package Managers
+/node_modules/
+
+# Logs
+/npm-debug.log
+
+# Build files/folders
+/dist/

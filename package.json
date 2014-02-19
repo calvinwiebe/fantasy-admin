@@ -1,0 +1,16 @@
+{
+  "name": "fantasy-admin",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "3.4.0",
+    "jade": "*",
+    "coffee-script": "^1.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "*"
+  }
+}
