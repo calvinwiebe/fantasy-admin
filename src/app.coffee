@@ -6,6 +6,7 @@ routes      = require './routes'
 http        = require 'http'
 path        = require 'path'
 app         = express()
+sessions    = require 'client-sessions'
 
 projectRoot = path.resolve __dirname, '..'
 
@@ -19,6 +20,13 @@ app.use express.bodyParser()
 app.use express.methodOverride()
 app.use app.router
 app.use express.static(path.join(__dirname, 'public'))
+
+# sessions middleware
+app.use sessions
+    cookieName: 'session'
+    secret: 'khelloClammers9000'
+    duration: 60 * 20 * 1000 # 20 minute sessions
+    secure: false
 
 # development only
 app.use express.errorHandler()  if 'development' is app.get('env')
