@@ -1,11 +1,15 @@
 extends layout
 
 block content
+    if locals.error
+        p(style='color:red')
+            | #{error}
     h1= 'Khello Fantasy Admin'
-    form
+    form(action='/login', method="POST")
         label(for='user')
             | Username
         input(type='text', name='user')
         label(for='password')
             | Password
         input(type='password', name='password')
+        button(type='submit')

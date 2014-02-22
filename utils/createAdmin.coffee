@@ -23,10 +23,16 @@ hashPass = (pass) ->
     console.log 'Created password ' + hashed
     hashed
 
+getExisting = (r, conn, name, done) ->
+    r.table('users').filter(name: name).run conn,
+        (err, results) ->
+            results.toArray (err, [user]) ->
+                done null, user
+
 # setup the db and tables if they haven't been created yet.
 # Then add the user to the db.
 #
-createAdmin = (user, password, done) ->
+createAdmin = (name, password, done) ->
     r.connect host: dbConfig.address, port: dbConfig.port,
         (err, conn) ->
             if err?
@@ -41,17 +47,23 @@ createAdmin = (user, password, done) ->
                         (err) ->
                             hashed = hashPass password
 
-                            doc =
-                                id: uuid.v4()
-                                name: user
-                                password: hashed
-                                permission: 'admin'
+                            getExisting r, conn, name, (err, user) ->
+                                if user?
+                                    user.password = hashed
+                                    query = r.table('users').replace(user)
+                                else
+                                    doc =
+                                        id: uuid.v4()
+                                        name: name
+                                        password: hashed
+                                        permission: 'admin'
+                                    query = r.table('users').insert(doc)
 
-                            r.table('users').insert(doc).run conn, (err, res) ->
-                                if err?
-                                    console.log "Received an error creating user #{err}"
-                                    process.exit -1
-                                done()
+                                query.run conn, (err, res) ->
+                                    if err?
+                                        console.log "Received an error creating user #{err}"
+                                        process.exit -1
+                                    return done()
 
 if commander.args.length < 2
     console.log 'Arguments must be of length 2: <user> <password>'
