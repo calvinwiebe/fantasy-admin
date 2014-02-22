@@ -7,6 +7,7 @@ fs = require 'fs'
 {spawn} = require 'child_process'
 
 coffeeCmd = './node_modules/.bin/coffee'
+browserifyCmd = './node_modules/.bin/browserify'
 
 getSpawn = (cmd, args) ->
     if process.platform is 'win32'
@@ -17,25 +18,36 @@ getSpawn = (cmd, args) ->
 
     spawned_cmd
 
-build = (callback) ->
-    coffees = getSpawn coffeeCmd, ['-c', '-b', '-o', 'dist/', 'src/']
+addListeners = (child) ->
+    child.stderr.on 'data', (data) ->
+        process.stderr.write data.toString()
+    child.stdout.on 'data', (data) ->
+        print data.toString()
+    child.on 'exit', (code) ->
+        callback?() if code is 0
+    child.on 'close', (code) ->
+        console.log "Finished with code #{code}"
 
-    [coffees].forEach (spawnInstance) ->
-        spawnInstance.stderr.on 'data', (data) ->
-            process.stderr.write data.toString()
-        spawnInstance.stdout.on 'data', (data) ->
-            print data.toString()
-        spawnInstance.on 'exit', (code) ->
-            callback?() if code is 0
+build = (callback) ->
+    # build all the server src files
+    coffees = getSpawn coffeeCmd, ['-c', '-b', '-o', 'dist/', 'src/']
+    # build all the client browserify bundles
+    transforms = ['coffeeify']
+    args = [
+        '-t'
+        transforms.join ' '
+        'client/bundles/landing/landing.coffee'
+        '-o'
+        'public/javascripts/landing.js'
+    ]
+    browserify = getSpawn browserifyCmd, args
+
+    [coffees, browserify].forEach addListeners
 
 watch = ->
     coffees = getSpawn coffeeCmd, ['-w', '-c', '-b', '-o', 'dist/', 'src/']
 
-    [coffees].forEach (spawnInstance) ->
-        spawnInstance.stderr.on 'data', (data) ->
-          process.stderr.write data.toString()
-        spawnInstance.stdout.on 'data', (data) ->
-          print data.toString()
+    [coffees].forEach addListeners
 
 run = (debug=false) ->
     executable = if process.env.NODE_ENV is 'production' then 'node' else 'nodemon'
@@ -46,12 +58,7 @@ run = (debug=false) ->
         args.push 'dist'
     args.push 'dist/app.js'
     node = getSpawn executable, args
-    node.stderr.on 'data', (data) ->
-      process.stderr.write data.toString()
-    node.stdout.on 'data', (data) ->
-      print data.toString()
-    node.on 'exit', (code) ->
-        process.exit code
+    addListeners node
 
 task 'build', 'Build dist from src', ->
     build()
