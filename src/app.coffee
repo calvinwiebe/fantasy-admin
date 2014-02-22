@@ -23,7 +23,8 @@ MIDDLEWARE
 
 app.use express.favicon()
 app.use express.logger 'dev'
-app.use express.bodyParser()
+app.use express.json()
+app.use express.urlencoded()
 app.use express.methodOverride()
 # sessions middleware
 app.use sessions
@@ -56,9 +57,9 @@ app.get '/pools/:id', requireUser, ->
 ###
 STATIC
 ###
-
-app.use express.static(path.join(__dirname, 'public'))
+app.use express.static(path.join(__dirname, '..', 'public'))
 app.use app.router
+
 # development only
 app.use express.errorHandler() if 'development' is app.get('env')
 

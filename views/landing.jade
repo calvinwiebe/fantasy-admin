@@ -1,5 +1,8 @@
 extends layout
 
+block append javascripts
+    script(src='/javascripts/landing.js')
+
 block content
     if locals.error
         p(style='color:red')

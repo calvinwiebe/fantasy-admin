@@ -1,1 +1,4 @@
-window.hello = -> 'Hello world'
+$ = require '../../lib/jquery'
+
+$ ->
+    console.log 'Fantasy Login!'
