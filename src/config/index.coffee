@@ -9,6 +9,7 @@ module.exports =
             name: 'admin'
             tables: [
                 'users'
+                'pools'
             ]
         fantasyDb:
             name: 'fantasy'

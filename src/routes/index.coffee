@@ -4,3 +4,4 @@ exports.index = (req, res, next) ->
 
 exports.auth = require './auth'
 exports.dashboard = require './dashboard'
+exports.resources = require './resources'

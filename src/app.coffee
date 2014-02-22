@@ -9,6 +9,8 @@ app         = express()
 sessions    = require 'client-sessions'
 dbService   = require './services/db'
 middleware  = require './middleware'
+{makeResourceful} = require './lib'
+makeResourceful app
 
 projectRoot = path.resolve __dirname, '..'
 
@@ -50,9 +52,8 @@ app.get '/logout', routes.auth.logout(rootUrl)
 requireUser = middleware.requireUser(rootUrl)
 app.get '/dashboard', requireUser, routes.dashboard.index
 
-# Some API calls
-app.get '/pools', requireUser, ->
-app.get '/pools/:id', requireUser, ->
+# Some API calls, using `express-resource`
+app.resource 'pools', routes.resources.pools
 
 ###
 STATIC
