@@ -1,4 +1,4 @@
-template = require './dashboardTemplate.jade'
+template = require './poolList.jade'
 {GenericView} = require 'views'
 Backbone = require 'backbone'
 Backbone.$ = window.$
