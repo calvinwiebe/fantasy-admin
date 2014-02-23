@@ -1,5 +1,7 @@
-$ = require 'jquery-custom'
+template = require './landingTemplate.jade'
+{GenericView} = require 'views'
 
 $ ->
-    console.log 'Fantasy Login!'
-    console.log $('body').html()
+    view = new GenericView { template }
+    $('.content').append view.render().el
+

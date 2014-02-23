@@ -1,18 +1,8 @@
 extends layout
 
 block append javascripts
+    script(src='/javascripts/jquery.js')
     script(src='/javascripts/landing.js')
 
 block content
-    if locals.error
-        p(style='color:red')
-            | #{error}
-    h1= 'Khello Fantasy Admin'
-    form(action='/login', method="POST")
-        label(for='user')
-            | Username
-        input(type='text', name='user')
-        label(for='password')
-            | Password
-        input(type='password', name='password')
-        button(type='submit')
+    .content

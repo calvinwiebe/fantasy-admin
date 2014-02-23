@@ -1,11 +1,10 @@
+template = require './dashboardTemplate.jade'
+{GenericView} = require 'views'
 Backbone = require 'backbone'
-$ = require 'jquery'
-Backbone.$ = $
-
-{DashboardView} = require './dashboardView.coffee'
+Backbone.$ = window.$
 
 init = (model) ->
-    view = new DashboardView { model }
+    view = new GenericView { template, model }
     $('.content').append view.render().el
 
 $ ->

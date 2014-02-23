@@ -35,12 +35,25 @@ addListeners = (child) ->
 # build all the browserify bundles
 #
 browserifyBundles = (isDev=false) ->
+    r =
+        views: [ __dirname + '/client/lib/views.coffee', 'views' ]
+
     configs = [
             name: 'landing'
-            transforms: ['coffeeify']
+            transforms: ['coffeeify', 'browserify-jade']
+            requires: [
+                r.views
+            ]
         ,
             name: 'dashboard'
             transforms: ['coffeeify', 'browserify-jade']
+            requires: [
+                r.views
+            ]
+        ,
+            name: 'jquery'
+            transforms: ['coffeeify']
+            requires: []
     ]
 
     ld.forEach configs, (config) ->
@@ -49,7 +62,7 @@ browserifyBundles = (isDev=false) ->
         if isDev
             b.on 'update', ->
                 browserifyBundles()
-        b.require __dirname + '/client/lib/jquery-custom', expose: 'jquery-custom'
+        b.require(r[0], expose: r[1]) for r in config.requires
         b.transform(t) for t in config.transforms
         bundle = b.bundle(debug: true)
         src = ""
@@ -106,3 +119,15 @@ task 'run', 'Build and run the project', ->
     process.env.NODE_ENV = 'production'
     build()
     run()
+
+process.on 'exit', (code) ->
+    console.log 'Process exiting'
+    console.log code
+
+process.on 'uncaughtException', (err) ->
+    console.log "uncaughtException #{err}"
+    process.exit -1
+
+process.on 'SIGINT', ->
+    console.log "Got interrupted. Probably by CTRL-C"
+    process.exit 0
