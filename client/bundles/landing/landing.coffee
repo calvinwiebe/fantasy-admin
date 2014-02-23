@@ -1,4 +1,4 @@
-$ = require '../../lib/jquery'
+$ = require 'jquery-custom'
 
 $ ->
     console.log 'Fantasy Login!'

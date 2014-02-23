@@ -8,6 +8,7 @@
   "dependencies": {
     "express": "3.4.0",
     "jade": "*",
+    "lodash": "^2.4.1",
     "coffee-script": "^1.7.0",
     "rethinkdb": "^1.11.0",
     "client-sessions": "*",
@@ -15,7 +16,11 @@
     "node-uuid": "*",
     "browserify": "^3.30.2",
     "coffeeify": "0.6.0",
-    "moniker": "*"
+    "browserify-jade": "^0.1.1",
+    "moniker": "*",
+    "backbone": "^1.1.2",
+    "jquery": "^2.1.0",
+    "underscore": "*"
   },
   "devDependencies": {
     "nodemon": "*",

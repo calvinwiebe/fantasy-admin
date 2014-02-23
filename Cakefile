@@ -2,12 +2,15 @@
 # Compiles coffee files in /src into /dist
 
 fs = require 'fs'
+path = require 'path'
 
 {print} = require 'sys'
 {spawn} = require 'child_process'
 
 coffeeCmd = './node_modules/.bin/coffee'
 browserifyCmd = './node_modules/.bin/browserify'
+ld = require 'lodash'
+browserify = require 'browserify'
 
 getSpawn = (cmd, args) ->
     if process.platform is 'win32'
@@ -28,21 +31,35 @@ addListeners = (child) ->
     child.on 'close', (code) ->
         console.log "Finished with code #{code}"
 
+# build all the browserify bundles
+#
+browserifyBundles = ->
+    configs = [
+            name: 'landing'
+            transforms: ['coffeeify']
+        ,
+            name: 'dashboard'
+            transforms: ['coffeeify', 'browserify-jade']
+    ]
+
+    ld.forEach configs, (config) ->
+        b = browserify __dirname + "/client/bundles/#{config.name}/#{config.name}.coffee"
+        b.require __dirname + '/client/lib/jquery-custom', expose: 'jquery-custom'
+        b.transform(t) for t in config.transforms
+        bundle = b.bundle(debug: true)
+        src = ""
+        bundle.on 'data', (data) -> src += data
+        bundle.on 'error', (err) ->
+            console.log err
+            process.exit -9
+        bundle.on 'end', ->
+            fs.writeFileSync path.join(__dirname, "public/javascripts/#{config.name}.js"), src
+
 build = (callback) ->
     # build all the server src files
     coffees = getSpawn coffeeCmd, ['-c', '-b', '-o', 'dist/', 'src/']
-    # build all the client browserify bundles
-    transforms = ['coffeeify']
-    args = [
-        '-t'
-        transforms.join ' '
-        'client/bundles/landing/landing.coffee'
-        '-o'
-        'public/javascripts/landing.js'
-    ]
-    browserify = getSpawn browserifyCmd, args
-
-    [coffees, browserify].forEach addListeners
+    addListeners coffees
+    browserifyBundles()
 
 watch = ->
     coffees = getSpawn coffeeCmd, ['-w', '-c', '-b', '-o', 'dist/', 'src/']
