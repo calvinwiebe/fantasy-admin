@@ -11,6 +11,7 @@ coffeeCmd = './node_modules/.bin/coffee'
 browserifyCmd = './node_modules/.bin/browserify'
 ld = require 'lodash'
 browserify = require 'browserify'
+watchify = require 'watchify'
 
 getSpawn = (cmd, args) ->
     if process.platform is 'win32'
@@ -33,7 +34,7 @@ addListeners = (child) ->
 
 # build all the browserify bundles
 #
-browserifyBundles = ->
+browserifyBundles = (isDev=false) ->
     configs = [
             name: 'landing'
             transforms: ['coffeeify']
@@ -43,7 +44,11 @@ browserifyBundles = ->
     ]
 
     ld.forEach configs, (config) ->
-        b = browserify __dirname + "/client/bundles/#{config.name}/#{config.name}.coffee"
+        console.log "BROWSERIFY: #{config.name}.coffee"
+        b = watchify __dirname + "/client/bundles/#{config.name}/#{config.name}.coffee"
+        if isDev
+            b.on 'update', ->
+                browserifyBundles()
         b.require __dirname + '/client/lib/jquery-custom', expose: 'jquery-custom'
         b.transform(t) for t in config.transforms
         bundle = b.bundle(debug: true)
@@ -55,11 +60,11 @@ browserifyBundles = ->
         bundle.on 'end', ->
             fs.writeFileSync path.join(__dirname, "public/javascripts/#{config.name}.js"), src
 
-build = (callback) ->
+build = (isDev=false) ->
     # build all the server src files
     coffees = getSpawn coffeeCmd, ['-c', '-b', '-o', 'dist/', 'src/']
     addListeners coffees
-    browserifyBundles()
+    browserifyBundles(isDev)
 
 watch = ->
     coffees = getSpawn coffeeCmd, ['-w', '-c', '-b', '-o', 'dist/', 'src/']
@@ -85,6 +90,7 @@ task 'watch', 'Watch src for changes', ->
 
 task 'dev', 'Watch src for changes and run node', ->
     process.env.NODE_ENV = 'development'
+    build(true)
     watch()
     run()
 

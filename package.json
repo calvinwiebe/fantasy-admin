@@ -15,6 +15,7 @@
     "async": "*",
     "node-uuid": "*",
     "browserify": "^3.30.2",
+    "watchify": "*",
     "coffeeify": "0.6.0",
     "browserify-jade": "^0.1.1",
     "moniker": "*",
