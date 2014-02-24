@@ -45,5 +45,3 @@ exports.initialize = (done) ->
                         dbConfig.adminDb.tables, createTable.bind(null, conn), (err) ->
                             return throw err if err?
                             done()
-
-

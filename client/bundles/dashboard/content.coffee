@@ -92,7 +92,9 @@ CreatePoolFormView = Backbone.View.extend
     submit: (e) ->
         e.preventDefault()
         poolName = @$('#pool-name').val()
-        console.log "submitting #{poolName}"
+        $.post('/pools/', {
+            name: poolName
+            })
         false
 
     render: ->

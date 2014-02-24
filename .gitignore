@@ -7,3 +7,6 @@
 # Build files/folders
 /dist/
 /public/javascripts/
+
+# Config file
+/src/config/custom.coffee

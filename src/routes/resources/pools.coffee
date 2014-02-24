@@ -22,7 +22,23 @@ exports.new = (req, res, next) ->
     r.table('pools').insert(doc).run conn, (err, results) ->
         res.send results
 
-exports.create = ->
-exports.show = ->
+exports.create = (req, res, next)->
+    {conn, r} = req.rethink
+
+    id = uuid.v4()
+
+    doc =
+        id: id
+        name: req.body.name
+
+    r.table('pools').insert(doc).run conn, (err, results) ->
+        res.send id
+
+exports.show = (req, res, next)->
+    {conn, r} = req.rethink
+
+    r.table('pools').filter({id: req.query.id}).run conn, (err, results) ->
+        res.send results
+    
 exports.destroy = ->
 

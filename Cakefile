@@ -7,8 +7,8 @@ path = require 'path'
 {print} = require 'sys'
 {spawn} = require 'child_process'
 
-coffeeCmd = './node_modules/.bin/coffee'
-browserifyCmd = './node_modules/.bin/browserify'
+coffeeCmd = '.\\node_modules\\.bin\\coffee'
+browserifyCmd = '.\\node_modules\\.bin\\browserify'
 ld = require 'lodash'
 browserify = require 'browserify'
 watchify = require 'watchify'
@@ -58,7 +58,7 @@ browserifyBundles = (isDev=false) ->
 
     ld.forEach configs, (config) ->
         console.log "BROWSERIFY: #{config.name}.coffee"
-        b = watchify __dirname + "/client/bundles/#{config.name}/#{config.name}.coffee"
+        b = watchify __dirname + "\\client\\bundles\\#{config.name}\\#{config.name}.coffee"
         if isDev
             b.on 'update', ->
                 browserifyBundles()
@@ -71,16 +71,16 @@ browserifyBundles = (isDev=false) ->
             console.log err
             process.exit -9
         bundle.on 'end', ->
-            fs.writeFileSync path.join(__dirname, "public/javascripts/#{config.name}.js"), src
+            fs.writeFileSync path.join(__dirname, "public\\javascripts\\#{config.name}.js"), src
 
 build = (isDev=false) ->
     # build all the server src files
-    coffees = getSpawn coffeeCmd, ['-c', '-b', '-o', 'dist/', 'src/']
+    coffees = getSpawn coffeeCmd, ['-c', '-b', '-o', 'dist\\', 'src\\']
     addListeners coffees
     browserifyBundles(isDev)
 
 watch = ->
-    coffees = getSpawn coffeeCmd, ['-w', '-c', '-b', '-o', 'dist/', 'src/']
+    coffees = getSpawn coffeeCmd, ['-w', '-c', '-b', '-o', 'dist\\', 'src\\']
 
     [coffees].forEach addListeners
 
@@ -91,7 +91,7 @@ run = (debug=false) ->
         args.push '--debug' if debug
         args.push '--watch'
         args.push 'dist'
-    args.push 'dist/app.js'
+    args.push 'dist\\app.js'
     node = getSpawn executable, args
     addListeners node
 
