@@ -1,8 +1,13 @@
-h1= "Your Pools"
-ul
+div.div-sidebar
+    b
+        | Your Pools
+ul.nav.nav-sidebar
     for pool in pools
         li
-            .name
-                | #{pool.name}
-
-button= "Create a new pool"
+            a(href='javascript:false')
+                .name
+                    | #{pool.name}
+    li
+        a#new-pool(href='javascript:false')
+            b
+                | Create a pool

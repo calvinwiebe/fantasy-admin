@@ -1,11 +1,13 @@
-template = require './poolList.jade'
-{GenericView} = require 'views'
+{DashboardContentView} = require './content.coffee'
 Backbone = require 'backbone'
 Backbone.$ = window.$
 
+# create a main containing view and insert into it
+# a sidebar view, and a action area view.
+#
 init = (model) ->
-    view = new GenericView { template, model }
-    $('.content').append view.render().el
+    content = new DashboardContentView pools: model
+    $('body').append content.render().el
 
 $ ->
     pools = new Backbone.Model
