@@ -10,3 +10,6 @@
 
 # Config file
 /src/config/custom.coffee
+
+# rethink
+/rethinkdb_data/
