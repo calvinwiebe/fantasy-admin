@@ -41,22 +41,30 @@ addListeners = (child) ->
             console.log 'child died abnormally'
             process.exit code
 
+writeBundleToDisk = (config, src) ->
+    console.log "writing #{config.name} to disk"
+    fs.writeFileSync path.join(__dirname, osify("public/javascripts/#{config.name}.js")), src
+
 browserifyBundle = (fullPath, config, watch, debug=false) ->
     b = watchify fullPath
     b.require(r[0], expose: r[1]) for r in config.requires
     b.transform(t) for t in config.transforms
     bundle = b.bundle { debug }
-    src = ""
-    bundle.on 'data', (data) -> src += data
-    bundle.on 'error', (err) ->
-        console.log err
-        process.exit -9
+    doBundle = (bundle) ->
+        src = ""
+        bundle.on 'data', (data) -> src += data
+        bundle.on 'error', (err) ->
+            console.log err
+            process.exit -9
+        bundle.on 'end', ->
+            writeBundleToDisk config, src
+
     if watch
         b.on 'update', (ids) ->
             console.log "BROWSERIFY: #{config.name}.coffee"
-            b.bundle()
-    bundle.on 'end', ->
-        fs.writeFileSync path.join(__dirname, osify("public/javascripts/#{config.name}.js")), src
+            doBundle b.bundle()
+
+    doBundle bundle
 
 # build all the browserify bundles
 #
