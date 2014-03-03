@@ -5,12 +5,12 @@ Backbone.$ = window.$
 # create a main containing view and insert into it
 # a sidebar view, and a action area view.
 #
-init = (model) ->
-    content = new DashboardContentView pools: model
+init = (collection) ->
+    content = new DashboardContentView { collection }
     $('body').append content.render().el
 
 $ ->
-    pools = new Backbone.Model
+    pools = new Backbone.Collection
     pools.url = '/pools'
     pools.fetch success: init
 

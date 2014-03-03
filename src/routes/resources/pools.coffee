@@ -9,7 +9,7 @@ exports.index = (req, res, next) ->
 
     r.table('pools').run conn, (err, results) ->
         results.toArray (err, pools) ->
-            res.json { pools }
+            res.json pools
 
 # GET - randomly creates a new pool
 exports.new = (req, res, next) ->
@@ -32,13 +32,13 @@ exports.create = (req, res, next)->
         name: req.body.name
 
     r.table('pools').insert(doc).run conn, (err, results) ->
-        res.send id
+        res.send doc
 
 exports.show = (req, res, next)->
     {conn, r} = req.rethink
 
     r.table('pools').filter({id: req.query.id}).run conn, (err, results) ->
         res.send results
-    
+
 exports.destroy = ->
 

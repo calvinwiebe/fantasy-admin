@@ -30,13 +30,12 @@ exports.DashboardContentView = Backbone.View.extend
     id: 'dashboard'
     template: contentTemplate
 
-    initialize: ({@pools}) ->
+    initialize: ->
         # set a default action area
         @eventClasses = viewConfig.actionArea.events
         @actionAreaId = 'dashboard-action-area'
-        @actionAreaView = new views[viewConfig.actionArea.default]
-            model: @pools
-        @sidebarView = new SidebarView pools: @pools
+        @actionAreaView = new views[viewConfig.actionArea.default] { @collection }
+        @sidebarView = new SidebarView { @collection }
         @headerView = new HeaderView
         @listenTo @sidebarView, 'nav', @onNav
 
@@ -59,7 +58,7 @@ exports.DashboardContentView = Backbone.View.extend
 #
 SidebarView = Backbone.View.extend
 
-    initialize: ({@pools}) ->
+    initialize: ->
         @children = []
         @addChildViews()
 
@@ -68,7 +67,7 @@ SidebarView = Backbone.View.extend
     addChildViews: ->
         viewConfig.sidebar.forEach (viewClass) =>
             child = new views[viewClass] {
-                model: @pools
+                @collection
             }
             @children.push child
             @listenTo child, 'nav', (data) -> @trigger 'nav', data
@@ -110,7 +109,7 @@ views.DefaultView = Backbone.View.extend
 
     render: ->
         @$el.empty()
-        @$el.html @template numPools: @model.get('pools').length
+        @$el.html @template numPools: @collection.models.length
         this
 
 # Form for creating a new pool on the server

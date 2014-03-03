@@ -3,7 +3,13 @@ Backbone.$ = window.$
 
 exports.genericRender = genericRender = ->
     @$el.empty()
-    @$el.html @template @model?.toJSON() or {}
+    if @collection?
+        data = models: @collection.toJSON()
+    else if @model?
+        data = @model.toJSON()
+    else
+        data = {}
+    @$el.html @template data
     this
 
 exports.GenericView = Backbone.View.extend
