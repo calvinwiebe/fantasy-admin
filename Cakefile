@@ -17,6 +17,10 @@ ld = require 'lodash'
 browserify = require 'browserify'
 watchify = require 'watchify'
 
+# keep track of children and kill them if the parent
+# dies
+spawns = []
+
 getSpawn = (cmd, args) ->
     if process.platform is 'win32'
         args = cmd + ' ' + args.join ' '
@@ -101,6 +105,7 @@ build = (watch=false, debug=false) ->
     args = if watch then ['-w'] else []
     coffees = getSpawn coffeeCmd, args.concat ['-c', '-b', '-o', dist, src]
     addListeners coffees
+    spawns.push coffees
     browserifyBundles(watch, debug)
 
 run = (dev=false, debug=false) ->
@@ -113,6 +118,7 @@ run = (dev=false, debug=false) ->
     args.push osify 'dist/app.js'
     node = getSpawn executable, args
     addListeners node
+    spawns.push node
 
 task 'build', 'Build dist from src', ->
     build()
@@ -141,6 +147,9 @@ task 'run', 'Build and run the project', ->
 process.on 'exit', (code) ->
     console.log 'Process exiting'
     console.log code
+    if code isnt 0
+        spawns.forEach (s) ->
+            s.kill()
 
 process.on 'uncaughtException', (err) ->
     console.log "uncaughtException #{err}"
