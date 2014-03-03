@@ -1,16 +1,17 @@
 Backbone = require 'backbone'
 Backbone.$ = window.$
 # templates
-# main
-contentTemplate = require './content.jade'
-headerTemplate = require './header.jade'
-poolTemplate = require './poolList.jade'
-defaultActionAreaTemplate = require './actionArea.jade'
-# form view
-createFormTemplate = require './createPoolForm.jade'
+templates = rfolder './templates', extensions: [ '.jade' ]
+{   contentTemplate
+    headerTemplate
+    poolTemplate
+    actionAreaTemplate
+    createFormTemplate } = templates
 # views
 {GenericView, genericRender} = require 'views'
-
+# models
+{PoolModel} = require './models/index.coffee'
+# configurations
 viewConfig = require './viewConfig.coffee'
 views = {}
 
@@ -105,7 +106,7 @@ views.PoolListView = Backbone.View.extend
 # A simple first-login view for dashboard
 #
 views.DefaultView = Backbone.View.extend
-    template: defaultActionAreaTemplate
+    template: actionAreaTemplate
 
     render: ->
         @$el.empty()

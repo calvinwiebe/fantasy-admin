@@ -80,7 +80,7 @@ browserifyBundles = (watch=false, debug=false) ->
             ]
         ,
             name: 'dashboard'
-            transforms: ['coffeeify', 'browserify-jade']
+            transforms: ['coffeeify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.views
             ]
