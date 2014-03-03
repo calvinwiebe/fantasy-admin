@@ -43,7 +43,7 @@ exports.DashboardContentView = Backbone.View.extend
     onNav: (eventData) ->
         actionClass = views[@eventClasses[eventData.type]]
         return false unless actionClass?
-        @actionAreaView = new actionClass
+        @actionAreaView = new actionClass { @collection }
         @render()
 
     render: ->
@@ -99,6 +99,9 @@ views.PoolListView = Backbone.View.extend
     events:
         'click #new-pool': -> @trigger 'nav', type: 'newPool'
 
+    initialize: ->
+        @listenTo @collection, 'add', => @render()
+
     render: genericRender
 
 # --- Action Area Views ---
@@ -121,12 +124,17 @@ views.CreatePoolFormView = Backbone.View.extend
     events:
         'click #submit': 'submit'
 
+    initialize: ->
+        @model = new PoolModel
+
     submit: (e) ->
         e.preventDefault()
-        poolName = @$('#pool-name').val()
-        $.post('/pools/', {
-            name: poolName
-            })
+        @model.set name: @$('#pool-name').val()
+        @model.save {},
+            success: (model) =>
+                @collection.add model
+                @$('#pool-name').val ''
+                @model = new PoolModel
         false
 
     render: genericRender

@@ -4,4 +4,7 @@ Backbone = require 'backbone'
 Backbone.$ = window.$
 
 exports.PoolModel = Backbone.Model.extend
-    url: '/pool'
+    url: '/pools'
+
+exports.PoolCollection = Backbone.Collection.extend
+    url: '/pools'
