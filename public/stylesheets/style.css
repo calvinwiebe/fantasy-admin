@@ -59,3 +59,8 @@ a {
 #dashboard #create-pool-form #create-header {
     margin: 0 auto;
 }
+
+/* generic message view */
+#dashboard #generic-message p {
+    font-size: 18px;
+}

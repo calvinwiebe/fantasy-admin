@@ -6,7 +6,8 @@ templates = rfolder './templates', extensions: [ '.jade' ]
     headerTemplate
     poolTemplate
     actionAreaTemplate
-    createFormTemplate } = templates
+    createFormTemplate
+    genericMsgTemplate } = templates
 # views
 {GenericView, genericRender} = require 'views'
 # models
@@ -33,7 +34,8 @@ exports.DashboardContentView = Backbone.View.extend
 
     initialize: ->
         # set a default action area
-        @eventClasses = viewConfig.actionArea.events
+        @sidebarEventClasses = viewConfig.sidebar.events
+        @messageClasses = viewConfig.actionArea.events
         @actionAreaId = 'dashboard-action-area'
         @actionAreaView = new views[viewConfig.actionArea.default] { @collection }
         @sidebarView = new SidebarView { @collection }
@@ -41,9 +43,17 @@ exports.DashboardContentView = Backbone.View.extend
         @listenTo @sidebarView, 'nav', @onNav
 
     onNav: (eventData) ->
-        actionClass = views[@eventClasses[eventData.type]]
+        console.log 'got nav'
+        actionClass = views[@sidebarEventClasses[eventData.type]]
         return false unless actionClass?
         @actionAreaView = new actionClass { @collection }
+        @listenTo @actionAreaView, 'messageView', @onMessage
+        @render()
+
+    onMessage: (eventData) ->
+        config = @messageClasses[eventData.type]
+        return false unless (viewClass = views[config.view])?
+        @actionAreaView = new viewClass config.msg
         @render()
 
     render: ->
@@ -66,7 +76,7 @@ SidebarView = Backbone.View.extend
     # create a bunch of child views based on what is in the
     # config. Pass to each the `pools` model.
     addChildViews: ->
-        viewConfig.sidebar.forEach (viewClass) =>
+        viewConfig.sidebar.views.forEach (viewClass) =>
             child = new views[viewClass] {
                 @collection
             }
@@ -116,6 +126,21 @@ views.DefaultView = Backbone.View.extend
         @$el.html @template numPools: @collection.models.length
         this
 
+# A generic message view to indicate something to the user
+#
+views.MessageView = Backbone.View.extend
+    template: genericMsgTemplate
+    id: 'generic-message'
+
+    initialize: ({title, msg}) ->
+        @model = new Backbone.Model {
+            title
+            msg
+        }
+        this
+
+    render: genericRender
+
 # Form for creating a new pool on the server
 #
 views.CreatePoolFormView = Backbone.View.extend
@@ -134,8 +159,9 @@ views.CreatePoolFormView = Backbone.View.extend
         @model.save {},
             success: (model) =>
                 @collection.add model
-                @$('#pool-name').val ''
-                @model = new PoolModel
+                @trigger 'messageView', type: 'successPoolCreate'
+            error: ->
+                # TODO show err msg
         false
 
     render: genericRender
