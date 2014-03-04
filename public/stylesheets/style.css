@@ -34,6 +34,7 @@ a {
 #dashboard #action-area-content {
     padding-right: 40px;
     padding-left: 40px;
+    padding-top: 30px;
 }
 
 #dashboard a {
@@ -44,4 +45,17 @@ a {
     position: relative;
     display: block;
     padding: 10px 15px;
+}
+
+/* create pool form */
+#dashboard #create-pool-form input, #submit {
+    font-size: 18px;
+}
+
+#dashboard #create-pool-form #submit {
+    width: 100%;
+}
+
+#dashboard #create-pool-form #create-header {
+    margin: 0 auto;
 }

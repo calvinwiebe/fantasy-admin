@@ -120,6 +120,7 @@ views.DefaultView = Backbone.View.extend
 #
 views.CreatePoolFormView = Backbone.View.extend
     template: createFormTemplate
+    id: 'create-pool-form'
 
     events:
         'click #submit': 'submit'

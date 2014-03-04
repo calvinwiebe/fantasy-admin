@@ -1,9 +1,16 @@
 .container-fluid
-    h1
-        | Create Pool
-    form(role='form')
-        .form-group
-            label(for='pool-name')
-            input#pool-name.form-control(placeholder='Enter a unique pool name')
-        input#submit(class='btn btn-default', type='submit')= "Create"
+    .row
+        #create-header.col-md-6
+            h1
+                | Let's set up a new pool.
+    .row
+        .col-md-12
+            form(role='form')
+                .form-group
+                    label(for='pool-name')
+                    input#pool-name.form-control(placeholder='Enter a unique pool name')
+    .row
+        .col-md-12
+            button#submit(class='btn btn-success', type='submit')
+                | Create Pool
 
