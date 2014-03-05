@@ -6,8 +6,7 @@ try
     {customDB} = require './custom'
 catch
     customDB = {}
-
-defaults = 
+defaults =
     db:
         address: 'localhost'
         port: 28015
@@ -16,6 +15,9 @@ defaults =
             tables: [
                 'users'
                 'pools'
+                'rounds'
+                'series'
+                'categories'
             ]
         fantasyDb:
             name: 'fantasy'

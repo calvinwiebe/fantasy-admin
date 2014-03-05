@@ -7,11 +7,11 @@ moniker = require 'moniker'
 exports.index = (req, res, next) ->
     {conn, r} = req.rethink
 
-    r.table('pools').run conn, (err, results) ->
-        results.toArray (err, pools) ->
-            res.json pools
+    r.table('rounds').run conn, (err, results) ->
+        results.toArray (err, rounds) ->
+            res.json rounds
 
-# GET - randomly creates a new pool
+# GET - randomly creates a new round
 exports.new = (req, res, next) ->
     {conn, r} = req.rethink
 
@@ -20,7 +20,7 @@ exports.new = (req, res, next) ->
         name: moniker.choose()
         rounds: []
 
-    r.table('pools').insert(doc).run conn, (err, results) ->
+    r.table('rounds').insert(doc).run conn, (err, results) ->
         res.send results
 
 exports.create = (req, res, next)->
@@ -33,24 +33,24 @@ exports.create = (req, res, next)->
         name: req.body.name
         rounds: []
 
-    r.table('pools').insert(doc).run conn, (err, results) ->
+    r.table('rounds').insert(doc).run conn, (err, results) ->
         res.send doc
 
 exports.show = (req, res, next)->
     {conn, r} = req.rethink
 
-    r.table('pools').get(req.param('id')).run conn, (err, results) ->
+    r.table('rounds').get(req.param('id')).run conn, (err, results) ->
         res.send results
 
 exports.update = (req, res, next)->
     {conn, r} = req.rethink
 
-    r.table('pools').get(req.param('id')).update(req.body).run conn, (err, results) ->
+    r.table('rounds').get(req.param('id')).update(req.body).run conn, (err, results) ->
         res.send results
 
 exports.destroy = (req, res, next)->
     {conn, r} = req.rethink
 
-    r.table('pools').get(req.param('id')).delete().run conn, (err, results) ->
+    r.table('rounds').get(req.param('id')).delete().run conn, (err, results) ->
         res.send results
 

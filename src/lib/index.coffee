@@ -7,4 +7,5 @@ exports.makeResourceful = (app) ->
         app.get "/#{resource}/new", resourceModule.new
         app.post "/#{resource}", resourceModule.create
         app.get "/#{resource}/:id", resourceModule.show
+        app.put "/#{resource}/:id", resourceModule.update
         app.del "/#{resource}/:id", resourceModule.destroy
