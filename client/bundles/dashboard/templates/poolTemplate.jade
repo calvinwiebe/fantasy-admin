@@ -1,12 +1,7 @@
 div.div-sidebar
     b
         | Your Pools
-ul.nav.nav-sidebar
-    for pool in models
-        li
-            a(href='javascript:false')
-                .name
-                    | #{pool.name}
+ul#pools.nav.nav-sidebar
     li
         a#new-pool(href='javascript:false')
             b

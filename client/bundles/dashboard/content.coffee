@@ -5,8 +5,10 @@ templates = rfolder './templates', extensions: [ '.jade' ]
 {   contentTemplate
     headerTemplate
     poolTemplate
+    poolListItem
     actionAreaTemplate
     createFormTemplate
+    editFormTemplate
     genericMsgTemplate } = templates
 # views
 {GenericView, genericRender} = require 'views'
@@ -118,8 +120,50 @@ views.PoolListView = Backbone.View.extend
 
     initialize: ->
         @listenTo @collection, 'add', => @render()
+        @childViews = []
+
+    # TODO - this stuff will probably become pretty common.
+    # Leave for now to keep track of what is going on, but eventually
+    # generalize, or use a library.
+    cleanUp: ->
+        @childViews.forEach (child) =>
+            @stopListening child
+            child.remove()
+        @childViews.length = 0
+
+    remove: ->
+        @cleanUp()
+
+    notifyPoolSelected: (model) ->
+        @trigger 'nav', {
+            type: 'editPool'
+            model
+        }
+
+    render: ->
+        genericRender.call this
+        @cleanUp()
+        @collection.forEach (model) =>
+            child = new PoolListItemView { model }
+            @childViews.push child
+            @$('#pools').prepend child.render().el
+            @listenTo child, 'click', @notifyPoolSelected
+        this
+
+
+# Pool List Item
+# Contains a view of a pool with its own pool model
+#
+PoolListItemView = Backbone.View.extend
+    template: poolListItem
+    tagName: 'li'
+    class: 'pool-item'
+
+    events:
+        'click': -> @trigger 'click', @model
 
     render: genericRender
+
 
 # --- Action Area Views ---
 
@@ -170,6 +214,14 @@ views.CreatePoolFormView = Backbone.View.extend
             error: ->
                 # TODO show err msg
         false
+
+    render: genericRender
+
+# Form for editing an existing pool
+#
+views.EditPoolFormView = Backbone.View.extend
+    template: editFormTemplate
+    id: 'edit-pool-form'
 
     render: genericRender
 
