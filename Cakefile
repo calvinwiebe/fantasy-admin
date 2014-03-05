@@ -9,9 +9,8 @@ path = require 'path'
 
 osify = (cmd) ->
     if process.platform is 'win32'
-        cmd = cmd.replace '/', '\\'
+        cmd = cmd.replace /\//g, '\\'
     cmd
-
 coffeeCmd = osify './node_modules/.bin/coffee'
 ld = require 'lodash'
 browserify = require 'browserify'
@@ -50,7 +49,10 @@ writeBundleToDisk = (config, src) ->
     fs.writeFileSync path.join(__dirname, osify("public/javascripts/#{config.name}.js")), src
 
 browserifyBundle = (fullPath, config, watch, debug=false) ->
-    b = watchify fullPath
+    if watch
+        b = watchify fullPath
+    else
+        b = browserify fullPath
     b.require(r[0], expose: r[1]) for r in config.requires
     b.transform(t) for t in config.transforms
     bundle = b.bundle { debug }
