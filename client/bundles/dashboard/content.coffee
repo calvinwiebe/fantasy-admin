@@ -42,19 +42,22 @@ exports.DashboardContentView = Backbone.View.extend
         @headerView = new HeaderView
         @listenTo @sidebarView, 'nav', @onNav
 
-    onNav: (eventData) ->
-        console.log 'got nav'
-        actionClass = views[@sidebarEventClasses[eventData.type]]
-        return false unless actionClass?
-        @actionAreaView = new actionClass { @collection }
+    replaceActionArea: (viewClass, options) ->
+        @stopListening @actionAreaView
+        @actionAreaView.remove()
+        @actionAreaView = new viewClass options
         @listenTo @actionAreaView, 'messageView', @onMessage
         @render()
+
+    onNav: (eventData) ->
+        actionClass = views[@sidebarEventClasses[eventData.type]]
+        return false unless actionClass?
+        @replaceActionArea actionClass, { @collection }
 
     onMessage: (eventData) ->
         config = @messageClasses[eventData.type]
         return false unless (viewClass = views[config.view])?
-        @actionAreaView = new viewClass config.msg
-        @render()
+        @replaceActionArea viewClass, config.msg
 
     render: ->
         @$el.empty()

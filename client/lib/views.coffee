@@ -2,6 +2,7 @@ Backbone = require 'backbone'
 Backbone.$ = window.$
 
 exports.genericRender = genericRender = ->
+    @undelegateEvents()
     @$el.empty()
     if @collection?
         data = models: @collection.toJSON()
@@ -10,6 +11,7 @@ exports.genericRender = genericRender = ->
     else
         data = {}
     @$el.html @template data
+    @delegateEvents()
     this
 
 exports.GenericView = Backbone.View.extend
