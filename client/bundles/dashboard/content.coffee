@@ -55,7 +55,9 @@ exports.DashboardContentView = Backbone.View.extend
     onNav: (eventData) ->
         actionClass = views[@sidebarEventClasses[eventData.type]]
         return false unless actionClass?
-        @replaceActionArea actionClass, { @collection }
+        model = eventData.model
+        collection = if model? then null else @collection
+        @replaceActionArea actionClass, { collection, model }
 
     onMessage: (eventData) ->
         config = @messageClasses[eventData.type]
@@ -134,7 +136,7 @@ views.PoolListView = Backbone.View.extend
     remove: ->
         @cleanUp()
 
-    notifyPoolSelected: (model) ->
+    poolSelected: ({model, event}) ->
         @trigger 'nav', {
             type: 'editPool'
             model
@@ -147,7 +149,7 @@ views.PoolListView = Backbone.View.extend
             child = new PoolListItemView { model }
             @childViews.push child
             @$('#pools').prepend child.render().el
-            @listenTo child, 'click', @notifyPoolSelected
+            @listenTo child, 'click', @poolSelected
         this
 
 
@@ -160,7 +162,7 @@ PoolListItemView = Backbone.View.extend
     class: 'pool-item'
 
     events:
-        'click': -> @trigger 'click', @model
+        'click': (event) -> @trigger 'click', { @model, event }
 
     render: genericRender
 

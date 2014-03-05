@@ -1,1 +1,16 @@
-h1 This is an edit form
+.container-fluid
+    .row
+        #edit-pool-header.col-md-12
+            h1
+                | #{name}
+    .row
+        .col-md-12
+            p
+                | Here you can edit your pool. You can add participants,
+                | create new rounds, and add series to those rounds.
+                | Everything is auto saved.
+    .row
+        .col-md-8
+            form(role='form')
+                #participants.form-group
+                #round.form-group

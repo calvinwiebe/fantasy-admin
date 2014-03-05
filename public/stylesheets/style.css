@@ -35,6 +35,11 @@ a {
     margin-bottom: 20px;
 }
 
+#dashboard .nav-sidebar > .active > a {
+    color: #fff;
+    background-color: #428bca;
+}
+
 #dashboard #action-area-content {
     padding-right: 40px;
     padding-left: 40px;
