@@ -1,5 +1,5 @@
-Backbone = require 'backbone'
-Backbone.$ = window.$
+Backbone    = require 'backbone'
+Backbone.$  = window.$
 # templates
 templates = rfolder './templates', extensions: [ '.jade' ]
 {   contentTemplate
@@ -9,11 +9,12 @@ templates = rfolder './templates', extensions: [ '.jade' ]
     actionAreaTemplate
     createFormTemplate
     editFormTemplate
+    participants_
     genericMsgTemplate } = templates
 # views
 {GenericView, genericRender} = require 'views'
 # models
-{PoolModel} = require './models/index.coffee'
+{PoolModel, UserCollection} = require './models/index.coffee'
 # configurations
 viewConfig = require './viewConfig.coffee'
 views = {}
@@ -23,6 +24,9 @@ views = {}
 # contains an arbitrary amount of child views. The dashboard also
 # contains an action area view. It will be dynamically changed depending
 # on what is selected in the sidebar.
+
+# TODO: Be smarter about rendering. Only re-render what is necessary for the event
+# that occurs.
 
 # Main Dashboard View.
 # It contains:
@@ -225,5 +229,45 @@ views.EditPoolFormView = Backbone.View.extend
     template: editFormTemplate
     id: 'edit-pool-form'
 
-    render: genericRender
+    initialize: ->
+        @childViews = []
+        @participantsView = new ParticipantsView @model.get('users')
+        @childViews.push @participantsView
+
+    cleanUp: ->
+        @childViews.forEach (child) =>
+            @stopListening child
+            child.remove()
+        @childViews.length = 0
+
+    remove: ->
+        @cleanUp()
+
+    render: ->
+        genericRender.call this
+        @cleanUp()
+        @$('#participants').append @participantsView.render().el
+        this
+
+ParticipantsView = Backbone.View.extend
+    template: participants_
+
+    events:
+        'blur textarea': 'setUsers'
+
+    initialize: (users=[]) ->
+        @collection = new UserCollection users
+
+    setUsers: ->
+        users = @$('textarea').val().split ','
+        users = users.map (u) -> new Backbone.Model email: u
+        @collection.set users
+        console.log @collection
+
+    render: ->
+        @undelegateEvents()
+        @$el.empty()
+        @$el.html @template @collection.map((u) -> u.get('name')).join(',')
+        @delegateEvents()
+        this
 

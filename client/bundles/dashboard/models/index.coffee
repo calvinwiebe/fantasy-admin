@@ -8,3 +8,11 @@ exports.PoolModel = Backbone.Model.extend
 
 exports.PoolCollection = Backbone.Collection.extend
     url: '/pools'
+
+exports.UserCollection = Backbone.Collection.extend
+    url: '/users'
+
+    initialize: (@poolId) ->
+
+    sync: (method, collection, options) ->
+        Backbone.sync.call this, data: id: @poolId
