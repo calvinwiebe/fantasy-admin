@@ -17,8 +17,9 @@ exports.new = (req, res, next) ->
 
     doc =
         id: uuid.v4()
+        date: new Date(2014, 4, 2, 17)
         name: moniker.choose()
-        rounds: []
+        series: []
 
     r.table('rounds').insert(doc).run conn, (err, results) ->
         res.send results
@@ -30,8 +31,9 @@ exports.create = (req, res, next)->
 
     doc =
         id: id
+        date: new Date(2014, 4, 2, 17)
         name: req.body.name
-        rounds: []
+        series: []
 
     r.table('rounds').insert(doc).run conn, (err, results) ->
         res.send doc

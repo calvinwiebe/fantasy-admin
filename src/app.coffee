@@ -54,6 +54,7 @@ app.get '/dashboard', requireUser, routes.dashboard.index
 
 # Some API calls, using `express-resource`
 app.resource 'pools', routes.resources.pools
+app.resource 'rounds', routes.resources.rounds
 
 ###
 STATIC
