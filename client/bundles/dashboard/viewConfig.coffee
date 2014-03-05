@@ -15,9 +15,10 @@ module.exports =
             'PoolListView'
         ]
         events:
-            'newPool': 'CreatePoolFormView'
-            'viewPool': 'ViewPoolView'
-            'editPool': 'EditPoolFormView'
+            'newPool'   : 'CreatePoolFormView'
+            'viewPool'  : 'ViewPoolView'
+            'editPool'  : 'EditPoolFormView'
+            'default'   : 'DefaultView'
 
     actionArea:
         default: 'DefaultView'

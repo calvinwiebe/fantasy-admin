@@ -41,6 +41,7 @@ exports.DashboardContentView = Backbone.View.extend
         @sidebarView = new SidebarView { @collection }
         @headerView = new HeaderView
         @listenTo @sidebarView, 'nav', @onNav
+        @listenTo @headerView, 'nav', @onNav
 
     replaceActionArea: (viewClass, options) ->
         @stopListening @actionAreaView
@@ -98,6 +99,9 @@ HeaderView = Backbone.View.extend
     template: headerTemplate
     id: 'dashboard-header'
     className: 'navbar navbar-inverse navbar-fixed-top'
+
+    events:
+        'click .navbar-brand': -> @trigger 'nav', type: 'default'
 
     render: genericRender
 

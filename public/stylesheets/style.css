@@ -8,6 +8,10 @@ a {
 }
 
 /* Dashboard */
+#dashboard .navbar-brand {
+    cursor: pointer;
+}
+
 #dashboard #sidebar-content {
     position: fixed;
     top: 51px;
