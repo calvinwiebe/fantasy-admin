@@ -77,6 +77,7 @@ browserifyBundle = (fullPath, config, watch, debug=false) ->
 browserifyBundles = (watch=false, debug=false) ->
     r =
         views: [ __dirname + osify('/client/lib/views.coffee'), 'views' ]
+        asink: [ __dirname + osify('/client/lib/asink.coffee'), 'asink' ]
 
     configs = [
             name: 'landing'
@@ -89,6 +90,7 @@ browserifyBundles = (watch=false, debug=false) ->
             transforms: ['coffeeify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.views
+                r.asink
             ]
         ,
             name: 'jquery'

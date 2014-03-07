@@ -1,5 +1,8 @@
 Backbone    = require 'backbone'
 Backbone.$  = window.$
+asink       = require 'asink'
+
+window.asink = asink
 # templates
 templates = rfolder './templates', extensions: [ '.jade' ]
 {   contentTemplate
@@ -27,6 +30,9 @@ views = {}
 
 # TODO: Be smarter about rendering. Only re-render what is necessary for the event
 # that occurs.
+
+# TODO: don't mix ids of views in jade and in the backbone views. We should put
+# all the ids/classes/tagNames of an `entity` into the views, for consistency.
 
 # Main Dashboard View.
 # It contains:
@@ -229,6 +235,9 @@ views.EditPoolFormView = Backbone.View.extend
     template: editFormTemplate
     id: 'edit-pool-form'
 
+    events:
+        'click save'    : 'save'
+
     initialize: ->
         @childViews = []
         @participantsView = new ParticipantsView @model.get('users')
@@ -243,6 +252,19 @@ views.EditPoolFormView = Backbone.View.extend
     remove: ->
         @cleanUp()
 
+    # retrieve all of our sub collection/models from
+    # our childViews, and persist them to the server.
+    #
+    # participants: if a participant model does not have an id, it is new.
+    # In this case we sent it to the server to be created. We should also then
+    # resync the pool, as it will have a new user attached to it.
+    #
+    save: ->
+        shouldSyncPool = false
+        participants = @participantsView.getData()
+
+
+
     render: ->
         genericRender.call this
         @cleanUp()
@@ -253,7 +275,7 @@ ParticipantsView = Backbone.View.extend
     template: participants_
 
     events:
-        'blur textarea': 'setUsers'
+        'blur textarea' : 'setUsers'
 
     initialize: (users=[]) ->
         @collection = new UserCollection users
@@ -262,7 +284,9 @@ ParticipantsView = Backbone.View.extend
         users = @$('textarea').val().split ','
         users = users.map (u) -> new Backbone.Model email: u
         @collection.set users
-        console.log @collection
+
+    getData: ->
+        return @collection
 
     render: ->
         @undelegateEvents()

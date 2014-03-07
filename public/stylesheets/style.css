@@ -73,3 +73,9 @@ a {
 #dashboard #generic-message p {
     font-size: 18px;
 }
+
+/* edit pool form view */
+#dashboard #participants textarea {
+    width: 100%;
+    height: 100px;
+}
