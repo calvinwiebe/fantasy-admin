@@ -75,7 +75,26 @@ a {
 }
 
 /* edit pool form view */
-#dashboard #participants textarea {
-    width: 100%;
-    height: 100px;
+#dashboard .glyph {
+    cursor: pointer;
 }
+
+#dashboard .glyph:hover {
+    color: green;
+}
+
+#dashboard #save {
+    width: 100%;
+    font-size: 16px;
+}
+
+#dashboard #participants #users-list {
+    width: 100%;
+    font-size: 16px;
+}
+
+#dashboard #participants .user-input {
+    width: 100%;
+    font-size: 16px;
+}
+

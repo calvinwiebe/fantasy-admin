@@ -1,4 +1,8 @@
-label(for='particpants')
-    | Enter a comma separated list of emails for those you
-    | would like to invite and include
-textarea(name='participants')
+p
+    | These are the users currently in this pool. Click to edit.
+#users-list
+    if models.length > 0
+        for user in models
+            div #{user.email}
+    else
+        | No users.
