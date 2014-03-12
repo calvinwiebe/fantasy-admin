@@ -2,6 +2,54 @@
 # resources
 uuid = require 'node-uuid'
 moniker = require 'moniker'
+_       = require 'lodash'
+
+# get users by email
+#
+getExisting = (email, conn, r, done) ->
+    filter = (user) ->
+        user('email').eq(email).and user('permission').eq('pool')
+
+    r.table('users').filter(filter).run conn, (err, results) ->
+        results.toArray (err, users) ->
+            done err, users
+
+### CRUD ###
+
+# Create
+# POST to create a user. They will also be attached to a pool.
+exports.create = (req, res, next) ->
+    {conn, r} = req.rethink
+
+    email = req.body.email
+    pool = req.body.pool
+
+    getExisting email, conn, r, (err, users) ->
+        if users.length is 1
+            res.send users[0]
+        else if users.length > 1
+            # this should not happen, yikes
+            res.status 500
+            res.send msg: 'Double email encountered.'
+        else
+            doc =
+                id: uuid.v4()
+                email: email
+                name: 'anon'
+                permission: 'pool'
+                password: ''
+
+            r.table('users').insert(doc).run conn, (err, result) ->
+                r.table('users').get(doc.id).run conn, (err, user) ->
+                    res.send user
+
+# GET - randomly creates a new pool
+exports.new = (req, res, next) ->
+
+### READ ###
+
+exports.show = (req, res, next) ->
+    {conn, r} = req.rethink
 
 # GET. can be filtered by pool id.
 exports.index = (req, res, next) ->
@@ -22,34 +70,9 @@ exports.index = (req, res, next) ->
     else
         getUser filter
 
-
-# GET - randomly creates a new pool
-exports.new = (req, res, next) ->
-
-# POST to create a user. They will also be attached to a pool.
-# TODO - check if user already exists.
-exports.create = (req, res, next) ->
-    {conn, r} = req.rethink
-
-    email = req.body.email
-    pool = req.body.pool
-
-    doc =
-        id: uuid.v4()
-        email: email
-        name: 'anon'
-        permission: 'pool'
-        password: ''
-
-    r.table('users').insert(doc).run conn, (err, result) ->
-        r.table('users').get(doc.id).run conn, (err, user) ->
-            res.send user
-
-exports.show = (req, res, next) ->
-    {conn, r} = req.rethink
+### UPDATE ###
 
 # PUT
-# TODO - check if user already exists.
 exports.update = (req, res, next) ->
     {conn, r} = req.rethink
 
@@ -59,6 +82,7 @@ exports.update = (req, res, next) ->
         r.table('users').get(id).run conn, (err, user) ->
             res.send user
 
+### DELETE ###
+
 exports.destroy = (req, res, next) ->
     {conn, r} = req.rethink
-

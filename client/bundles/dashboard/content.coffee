@@ -237,12 +237,13 @@ views.EditPoolFormView = Backbone.View.extend
         savePool = =>
             ids = participants.map (p) -> p.get('id')
             @model.set users: ids
-            @model.save({}, -> alert('pool saved.'))
+            @model.save({}, success: -> alert('pool saved.'))
         asink.each participants.models,
             (user, cb) =>
                 user.set pool: @model.get('id') if user.isNew()
                 user.save({}, success: -> cb())
             , (err) -> savePool()
+
         false
 
     render: ->
