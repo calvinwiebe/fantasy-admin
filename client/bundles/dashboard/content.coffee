@@ -215,12 +215,12 @@ views.EditPoolFormView = Backbone.View.extend
     id: 'edit-pool-form'
 
     events:
-        'click save'    : 'save'
+        'click #save'    : 'save'
 
     initialize: ->
         _.extend this, Cleanup.mixin
         @childViews = []
-        @participantsView = new ParticipantsView @model.get('users')
+        @participantsView = new ParticipantsView { @model }
         @childViews.push @participantsView
 
     # retrieve all of our sub collection/models from
@@ -230,9 +230,20 @@ views.EditPoolFormView = Backbone.View.extend
     # In this case we sent it to the server to be created. We should also then
     # resync the pool, as it will have a new user attached to it.
     #
-    save: ->
+    save: (e) ->
+        e.preventDefault()
         shouldSyncPool = false
         participants = @participantsView.getData()
+        savePool = =>
+            ids = participants.map (p) -> p.get('id')
+            @model.set users: ids
+            @model.save({}, -> alert('pool saved.'))
+        asink.each participants.models,
+            (user, cb) =>
+                user.set pool: @model.get('id') if user.isNew()
+                user.save({}, success: -> cb())
+            , (err) -> savePool()
+        false
 
     render: ->
         genericRender.call this
@@ -244,13 +255,13 @@ ParticipantsView = Backbone.View.extend
 
     events:
         'click #users-list'     : 'showEditUsers'
-        'click .glyph'   : 'showUserList'
+        'click .glyph'          : 'showUserList'
 
     initialize: (users=[]) ->
         @isEditing = false
         _.extend this, Cleanup.mixin
-        @collection = new UserCollection users
-        @collection.reset() if _.isEmpty users
+        @collection = new UserCollection pool: @model.get('id')
+        @collection.fetch success: => @render()
         @childViews = []
 
     getData: ->
@@ -261,11 +272,15 @@ ParticipantsView = Backbone.View.extend
         @render()
 
     showUserList: ->
+        users = _.chain(@childViews)
+            .map((c) -> c.model)
+            .filter((m) -> m?.get('email'))
+            .value()
+        @collection.set users
         @isEditing = false
         @render()
 
     newUser: (user) ->
-        @collection.add user
         @render()
 
     renderCurrentView: ->
@@ -275,6 +290,8 @@ ParticipantsView = Backbone.View.extend
             if @collection.length
                 @childViews = @collection.map (user) =>
                     new ParticipantView model: user
+            else
+                @collection.reset()
             empty = new ParticipantView model: new UserModel {email:''}
             @childViews.push empty
             @childViews.push new GenericView template: templates.glyphOk
@@ -282,9 +299,7 @@ ParticipantsView = Backbone.View.extend
             @listenTo v, 'new', @newUser
             @$el.append v.render().el
         if empty?
-            console.log empty.$el.find('input')
             empty.$el.find('input').focus()
-
 
     render: ->
         @undelegateEvents()
@@ -303,6 +318,11 @@ ParticipantView = Backbone.View.extend
 
     events:
         'keypress .user-input'  : 'keyPress'
+        'blur .user-input'      : 'blur'
+
+    blur: (e) ->
+        email = @$('input').val()
+        @model.set { email }
 
     keyPress: (e) ->
         email = @$('input').val()
