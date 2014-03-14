@@ -57,6 +57,7 @@ createAdmin = (name, password, done) ->
                                         name: name
                                         password: hashed
                                         permission: 'admin'
+                                        email: 'fantasy-admin@nowhere.com'
                                     query = r.table('users').insert(doc)
 
                                 query.run conn, (err, res) ->

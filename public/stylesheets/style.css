@@ -73,3 +73,28 @@ a {
 #dashboard #generic-message p {
     font-size: 18px;
 }
+
+/* edit pool form view */
+#dashboard .glyph {
+    cursor: pointer;
+}
+
+#dashboard .glyph:hover {
+    color: green;
+}
+
+#dashboard #save {
+    width: 100%;
+    font-size: 16px;
+}
+
+#dashboard #participants #users-list {
+    width: 100%;
+    font-size: 16px;
+}
+
+#dashboard #participants .user-input {
+    width: 100%;
+    font-size: 16px;
+}
+

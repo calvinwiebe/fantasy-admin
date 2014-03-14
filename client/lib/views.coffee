@@ -1,5 +1,6 @@
-Backbone = require 'backbone'
-Backbone.$ = window.$
+Backbone    = require 'backbone'
+Backbone.$  = window.$
+_           = require 'lodash'
 
 exports.genericRender = genericRender = ->
     @undelegateEvents()
@@ -18,4 +19,15 @@ exports.GenericView = Backbone.View.extend
     initialize: ({@template}) ->
     render: genericRender
 
+Cleanup = {}
+Cleanup.mixin =
+    cleanUp: ->
+        @childViews.forEach (child) =>
+            @stopListening child
+            child.remove()
+        @childViews.length = 0
 
+    remove: ->
+        @cleanUp()
+
+exports.Cleanup = Cleanup
