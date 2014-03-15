@@ -7,8 +7,9 @@
         .col-md-12
             form(role='form')
                 .form-group
-                    label(for='pool-name')
                     input#pool-name.form-control(placeholder='Enter a unique pool name')
+                .form-group
+                    select#pool-type.form-control(placeholder='Choose a type')
     .row
         .col-md-12
             button#submit(class='btn btn-success', type='submit')

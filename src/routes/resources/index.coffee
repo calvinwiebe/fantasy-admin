@@ -1,3 +1,1 @@
-exports.pools = require './pools'
-exports.rounds = require './rounds'
-exports.users = require './users'
+module.exports = require('../../lib').requireAll "#{__dirname}"

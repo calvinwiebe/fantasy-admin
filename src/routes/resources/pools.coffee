@@ -19,6 +19,7 @@ exports.new = (req, res, next) ->
     doc =
         id: uuid.v4()
         name: moniker.choose()
+        type: 'n/a'
         users: []
         rounds: []
 
@@ -33,6 +34,7 @@ exports.create = (req, res, next) ->
     doc =
         id: id
         name: req.body.name
+        type: req.body.type
         users: _.uniq(req.body.users) or []
         rounds: []
 

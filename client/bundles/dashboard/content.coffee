@@ -6,6 +6,8 @@ asink       = require 'asink'
 templates = rfolder './templates', extensions: [ '.jade' ]
 # views
 {GenericView, genericRender, Cleanup} = require 'views'
+# utils
+utils = require 'utils'
 # models
 {PoolModel, UserCollection, UserModel} = require './models/index.coffee'
 # configurations
@@ -194,10 +196,16 @@ views.CreatePoolFormView = Backbone.View.extend
 
     initialize: ->
         @model = new PoolModel
+        @needsData = true
+        utils.get resource: 'poolTypes', (types) =>
+            @needsData = false
+            @types = types
+            @render()
 
     submit: (e) ->
         e.preventDefault()
         @model.set name: @$('#pool-name').val()
+        @model.set type: @$('#pool-type').val()
         @model.save {},
             success: (model) =>
                 @collection.add model
@@ -206,7 +214,16 @@ views.CreatePoolFormView = Backbone.View.extend
                 # TODO show err msg
         false
 
-    render: genericRender
+    renderSelect: ->
+        select = @$('#pool-type')
+        @types.forEach (type) ->
+            select.append($('<option>').val(type.id).html(type.name))
+
+    render: ->
+        return this if @needsData
+        genericRender.call this
+        @renderSelect()
+        this
 
 # Form for editing an existing pool
 #

@@ -53,9 +53,8 @@ requireUser = middleware.requireUser(rootUrl)
 app.get '/dashboard', requireUser, routes.dashboard.index
 
 # Some API calls, using `express-resource`
-app.resource 'pools', routes.resources.pools
-app.resource 'rounds', routes.resources.rounds
-app.resource 'users', routes.resources.users
+for name, resource of routes.resources
+    app.resource name, resource
 
 ###
 STATIC

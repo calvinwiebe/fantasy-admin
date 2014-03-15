@@ -4,17 +4,23 @@ Backbone    = require 'backbone'
 Backbone.$  = window.$
 _           = require 'lodash'
 
-exports.PoolModel = PoolModel = Backbone.Model.extend
+Model = Backbone.Model.extend.bind Backbone.Model
+Collection = Backbone.Collection.extend.bind Backbone.Collection
+
+exports.GenericModel = GenericModel = Model
+    url: '/generic'
+
+exports.PoolModel = PoolModel = Model
     urlRoot: '/pools'
 
-exports.PoolCollection = Backbone.Collection.extend
+exports.PoolCollection = Collection
     url: '/pools'
     model: PoolModel
 
-exports.UserModel = UserModel = Backbone.Model.extend
+exports.UserModel = UserModel = Model
     urlRoot: '/users'
 
-exports.UserCollection = Backbone.Collection.extend
+exports.UserCollection = Collection
     url: '/users'
     model: UserModel
 
