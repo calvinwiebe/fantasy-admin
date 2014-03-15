@@ -9,7 +9,7 @@ exports.teams = [
 				ptsReg: 90
 				gwgReg: 8
 				gpReg: 82
-			,	
+			,
 				name: 'James van Riemsdyk'
 				position: 'F'
 				ptsReg: 65
@@ -39,7 +39,7 @@ exports.teams = [
 				ptsReg: 70
 				gwgReg: 6
 				gpReg: 82
-			,	
+			,
 				name: 'Jarome Iginla'
 				position: 'F'
 				ptsReg: 68
