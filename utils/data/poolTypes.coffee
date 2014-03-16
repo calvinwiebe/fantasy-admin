@@ -1,4 +1,4 @@
-exports.poolDefinitions = [
+exports.poolTypes = [
 		name: 'NHL Playoffs'
 		rounds: [
 				name: 'Conference Quarterfinals'

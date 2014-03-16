@@ -2,7 +2,7 @@
 #
 
 _  = require 'lodash'
-try 
+try
     {customDB} = require './custom'
 catch
     customDB = {}
@@ -14,10 +14,12 @@ defaults =
             name: 'admin'
             tables: [
                 'users'
+                'poolTypes'
                 'pools'
                 'rounds'
                 'series'
                 'categories'
+                'teams'
             ]
         fantasyDb:
             name: 'fantasy'
