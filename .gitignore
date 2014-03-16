@@ -6,7 +6,9 @@
 
 # Build files/folders
 /dist/
-/public/javascripts/
+/public/javascripts/dashboard.js
+/public/javascripts/landing.js
+/public/javascripts/jquery.js
 
 # Config file
 /src/config/custom.coffee
