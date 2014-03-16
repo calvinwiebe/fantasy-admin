@@ -18,6 +18,7 @@ defaults =
                 'pools'
                 'rounds'
                 'series'
+                'games'
                 'categories'
                 'teams'
             ]
