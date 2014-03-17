@@ -64,7 +64,7 @@ ParticipantsView = View
 
     events:
         'click #users-list'     : 'showEditUsers'
-        'click .glyph'          : 'showUserList'
+        'click .check-button'   : 'showUserList'
 
     initialize: (users=[]) ->
         @isEditing = false
@@ -77,7 +77,8 @@ ParticipantsView = View
         @isEditing = true
         @render()
 
-    showUserList: ->
+    showUserList: (e) ->
+        e.preventDefault()
         users = _.chain(@childViews)
             .map((c) -> c.model)
             .filter((m) -> m?.get('email'))
@@ -85,8 +86,10 @@ ParticipantsView = View
         @collection.set users
         @isEditing = false
         @render()
+        false
 
     newUser: (user) ->
+        @collection.add user
         @render()
 
     renderCurrentView: ->
@@ -195,6 +198,7 @@ CategoryView = View
 
 CategorySelectionView = View
     template: templates.categorySelectionSelect
+    id: 'category-select'
 
     events:
         'change select' : 'selectChange'
@@ -225,6 +229,7 @@ CategorySelectionView = View
 
 CategoryItemView = View
     template: templates.categoryItem
+    className: 'label label-default'
 
     render: genericRender
 

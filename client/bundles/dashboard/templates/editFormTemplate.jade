@@ -1,19 +1,20 @@
 .container-fluid
     .row
-        #edit-pool-header.col-md-12
-            h1
-                | #{name}
+        #edit-pool-header.col-sm-12.col-md-12.col-lg-12.page-header
+            h1 #{name}
+                small
+                    | is open for business. You can add participants,
+                    | categories, set your pick deadlines, and input your results.
     .row
-        .col-md-12
-            p
-                | Here you can edit your pool. You can add participants,
-                | create new rounds, and add series to those rounds.
-                | Everything is auto saved.
-    .row
-        .col-md-8
+        .col-md-8.col-lg-8
             form(role='form')
-                #participants.form-group
-                #categories.form-group
+                #participants.form-group.well
+                    .form-group-header
+                        h4 Users
+                            small
+                                | Click to edit.
+                #categories.form-group.well
+                    h4 Categories
                 #round.form-group
                 button#save.btn.btn-success
-                    | Save
+                    | SAVE

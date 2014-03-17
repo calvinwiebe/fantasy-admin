@@ -79,18 +79,37 @@ a {
     cursor: pointer;
 }
 
-#dashboard .glyph:hover {
-    color: green;
+#dashboard .form-group-header small {
+    margin-left: 5px;
+}
+
+#dashboard .input-group, .form-control {
+    margin-bottom: 15px;
+}
+
+#dashboard .right-span {
+    margin-left: 5px;
 }
 
 #dashboard #save {
-    width: 100%;
     font-size: 16px;
 }
 
 #dashboard #participants #users-list {
     width: 100%;
     font-size: 16px;
+}
+
+#dashboard #category-select {
+    margin-bottom: 20px;
+}
+
+#dashboard #categories {
+    font-size: 16px;
+}
+
+#dashboard #categories .label {
+    margin-right: 4px;
 }
 
 #dashboard #participants .user-input {

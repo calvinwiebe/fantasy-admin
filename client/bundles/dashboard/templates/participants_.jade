@@ -1,8 +1,7 @@
-p
-    | These are the users currently in this pool. Click to edit.
 #users-list
     if models.length > 0
         for user in models
-            div #{user.email}
+            .label.label-default
+                | #{user.email}
     else
         | No users.
