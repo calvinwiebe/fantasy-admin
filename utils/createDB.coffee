@@ -2,13 +2,14 @@
 
 # Tool to create an admin user (admin/admin).
 
-r           = require 'rethinkdb'
-{db}        = require '../src/config'
-dbService   = require '../src/services/db'
-dbConfig    = db
-uuid        = require 'node-uuid'
-{poolTypes} = require './data/poolTypes'
-{teams}     = require './data/teams'
+r               = require 'rethinkdb'
+{db}            = require '../src/config'
+dbService       = require '../src/services/db'
+dbConfig        = db
+uuid            = require 'node-uuid'
+{poolTypes}     = require './data/poolTypes'
+{teams}         = require './data/teams'
+{categories}    = require './data/categories'
 
 setPoolTypes = (conn, done) ->
     r.table('poolTypes').insert(poolTypes).run conn, (err, res) ->
@@ -24,6 +25,13 @@ setTeams = (conn, done) ->
             process.exit -1
         done()
 
+setCategories = (conn, done) ->
+    r.table('categories').insert(categories).run conn, (err, res) ->
+        if err?
+            console.log "Received an error inserting categories #{err}"
+            process.exit -1
+        done()
+
 r.connect host: dbConfig.address, port: dbConfig.port,
     (err, conn) ->
         if err?
@@ -32,10 +40,16 @@ r.connect host: dbConfig.address, port: dbConfig.port,
 
         conn.use dbConfig.adminDb.name
 
-        dbService.initialize ->
-            console.log 'Successfully created tables'
-            setPoolTypes conn, ->
-                console.log "Successfully inserted pool types data"
-                setTeams conn, ->
-                    console.log "Successfully inserted teams data"
-                    process.exit 0
+        r.dbDrop('admin').run conn, (err, res) ->
+            if err?
+                console.log "Received an error dropping the db #{err}"
+
+            dbService.initialize ->
+                console.log 'Successfully created tables'
+                setPoolTypes conn, ->
+                    console.log "Successfully inserted pool types data"
+                    setTeams conn, ->
+                        console.log "Successfully inserted teams data"
+                        setCategories conn, ->
+                            console.log "Successfully inserted categories data"
+                            process.exit 0
