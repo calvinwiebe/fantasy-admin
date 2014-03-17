@@ -218,6 +218,8 @@ CategorySelectionView = View
         @$el.empty()
         @cleanUp()
         genericRender.call this
+        @$('select').val @$('select').val() or @collection.models[0].get('id')
+        @selectChange()
         @delegateEvents()
         this
 
