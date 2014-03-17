@@ -2,11 +2,11 @@ uuid        = require 'node-uuid'
 _           = require 'lodash'
 async       = require 'async'
 
-exports.create = (conn, r, pool, done) ->
+exports.create = (conn, r, pool, cb) ->
     parseRoundDefinitions conn, r, pool, (ids) ->
         pool.rounds = ids
         r.table('pools').insert(pool).run conn, (err, results) ->
-            done()
+            cb err, results.generated_keys[0]
 
 parseRoundDefinitions = (conn, r, pool, cb) ->
     roundIds = []

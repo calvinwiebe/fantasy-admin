@@ -34,8 +34,8 @@ exports.create = (req, res, next) ->
         users: _.uniq(req.body.users) or []
         rounds: []
 
-    poolUtils.create conn, r, pool, (err, results) ->
-        pool.id = results.generated_keys[0]
+    poolUtils.create conn, r, pool, (err, id) ->
+        pool.id = id
         res.send pool
 
 exports.show = (req, res, next) ->
