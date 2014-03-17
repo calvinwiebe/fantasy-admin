@@ -1,6 +1,10 @@
 # Async helper functions
 _ = require 'lodash'
 
+# Walk through a collection and pass each item to
+# the `iterator`. Once all iterators have completed `done`
+# will be called.
+#
 exports.each  = (collection, iterator, done) ->
     if _.isArray collection
         length = collection.length
@@ -20,7 +24,10 @@ exports.each  = (collection, iterator, done) ->
         if iterations is length
             done null
 
-    for index in indices
-        iterator collection[index], cb
+    if indices.length
+        for index in indices
+            iterator collection[index], cb
+    else
+        done null
 
     return
