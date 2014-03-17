@@ -1,0 +1,5 @@
+select#category-select
+    for category in models
+        option(value='#{category.id}') #{category.name}
+button#add.btn.btn-primary
+    | Add category

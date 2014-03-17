@@ -28,3 +28,6 @@ exports.UserCollection = Collection
 
     sync: (method, collection, options) ->
         Backbone.sync.call this, method, collection, _.extend options, data: { @pool }
+
+exports.CategoriesCollection = Collection
+    url: '/categories'
