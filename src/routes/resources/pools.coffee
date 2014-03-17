@@ -35,6 +35,7 @@ exports.create = (req, res, next) ->
         rounds: []
 
     poolUtils.create conn, r, pool, (err, results) ->
+        pool.id = results.generated_keys[0]
         res.send pool
 
 exports.show = (req, res, next) ->
