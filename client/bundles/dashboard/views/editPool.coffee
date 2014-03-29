@@ -35,26 +35,19 @@ exports.EditPoolFormView = View
     # resync the pool, as it will have a new user attached to it.
     #
     save: (e) ->
-        console.log 'got save'
         e.preventDefault()
-        shouldSyncPool = false
         participants = @participantsView.collection
         categories = @categoryView.collection
         rounds = @roundsView.collection
+        adjacentModels = _.union(participants.models, rounds.models)
         savePool = =>
             pids = participants.map (p) -> p.get('id')
             cids = categories.map (c) -> c.get('id')
             @model.set users: pids, categories: cids
             @model.save({}, success: -> alert('pool saved.'))
-        saveRounds =>
-            asink.each rounds.models,
-                (round, cb) =>
-                    round.save({}, success: -> cb())
-                , (err) -> savePool()
-        asink.each participants.models,
-            (user, cb) =>
-                user.set pool: @model.get('id') if user.isNew()
-                user.save({}, success: -> cb())
+        asink.each adjacentModels,
+            (model, cb) =>
+                model.save({}, success: -> cb())
             , (err) -> savePool()
 
         false
@@ -249,13 +242,13 @@ RoundsView = View
         _.extend this, Cleanup.mixin
         @childViews = []
         @needsData = true
-        @roundCollection = new RoundsCollection pool: @model.get('id')
-        @roundCollection.fetch success: =>
+        @collection = new RoundsCollection pool: @model.get('id')
+        @collection.fetch success: =>
             @needsData = false
             @render()
 
     renderRounds: ->
-        @childViews = _.chain(@roundCollection.models)
+        @childViews = _.chain(@collection.models)
             .map((model) =>
                 view = new RoundListItem { model }
                 @listenTo view, 'edit', @editRound
@@ -291,6 +284,7 @@ RoundListItem = View
         false
 
     setDeadline: (e) ->
+        @model.set 'date', e.date.valueOf()
 
     render: ->
         genericRender.call this
@@ -298,4 +292,8 @@ RoundListItem = View
         this
 
     afterRender: ->
-        @$('.input-group.date').datepicker({})
+        @$('.input-group.date')
+            .datepicker({})
+            .datepicker('setValue', @model.date)
+            .on 'changeDate', @setDeadline.bind(this)
+

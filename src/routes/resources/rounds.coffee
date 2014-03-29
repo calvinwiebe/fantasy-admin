@@ -4,6 +4,10 @@ uuid = require 'node-uuid'
 moniker = require 'moniker'
 
 # GET - can be filtered by pool id
+#
+# round dates are saved as js Date objects. Map them to a timestamp
+# for the front end.
+#
 exports.index = (req, res, next) ->
     {conn, r} = req.rethink
 
@@ -13,6 +17,7 @@ exports.index = (req, res, next) ->
     getRounds = (filter) ->
         r.table('rounds').filter(filter).run conn, (err, results) ->
             results.toArray (err, rounds) ->
+                rounds.forEach (round) -> round.date = round.date?.getTime()
                 res.json rounds
 
     if pool?
@@ -29,7 +34,7 @@ exports.new = (req, res, next) ->
 
     doc =
         id: uuid.v4()
-        date: new Date(2014, 4, 2, 17)
+        date: new Date
         name: moniker.choose()
         series: []
 
@@ -43,7 +48,7 @@ exports.create = (req, res, next)->
 
     doc =
         id: id
-        date: new Date(2014, 4, 2, 17)
+        date: new Date
         name: req.body.name
         series: []
 
@@ -54,12 +59,20 @@ exports.show = (req, res, next)->
     {conn, r} = req.rethink
 
     r.table('rounds').get(req.param('id')).run conn, (err, results) ->
+        results.date = results.date.getTime()
         res.send results
 
+# Round dates come in as timestamps; remap them to a js Date on
+# save
+#
 exports.update = (req, res, next)->
     {conn, r} = req.rethink
 
-    r.table('rounds').get(req.param('id')).update(req.body).run conn, (err, results) ->
+    doc = req.body
+    # todo: timezones? probably not necessary right now.
+    doc.date = new Date req.body.date
+
+    r.table('rounds').get(req.param('id')).update(doc).run conn, (err, results) ->
         res.send results
 
 exports.destroy = (req, res, next)->

@@ -10,7 +10,6 @@ exports.create = (conn, r, pool, cb) ->
 
 parseRoundDefinitions = (conn, r, pool, cb) ->
     roundIds = []
-    console.log arguments
     r.table('poolTypes').get(pool.type).run conn, (err, poolType) ->
         async.each(
             poolType.rounds
@@ -18,14 +17,14 @@ parseRoundDefinitions = (conn, r, pool, cb) ->
                 createRound conn, r, round, (id) ->
                     roundIds.push id
                     done()
-            () ->
+            ->
                 cb roundIds
         )
 
 createRound = (conn, r, round, cb) ->
     doc =
         name: round.name
-        date: null
+        date: new Date
         state: 0
         series: []
 
@@ -35,7 +34,7 @@ createRound = (conn, r, round, cb) ->
             createSeries conn, r, round.gamesPerSeries, (id) ->
                 doc.series.push id
                 done()
-        () ->
+        ->
             r.table('rounds').insert(doc).run conn, (err, results) ->
                 cb results.generated_keys[0]
     )
@@ -52,7 +51,7 @@ createSeries = (conn, r, numberOfGames, cb) ->
             r.table('games').insert({}).run conn, (err, results) ->
                 doc.games.push results.generated_keys[0]
                 done()
-        () ->
+        ->
             r.table('series').insert(doc).run conn, (err, results) ->
                 cb results.generated_keys[0]
     )
