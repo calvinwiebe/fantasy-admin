@@ -31,3 +31,11 @@ exports.UserCollection = Collection
 
 exports.CategoriesCollection = Collection
     url: '/categories'
+
+exports.RoundsCollection = Collection
+    url: '/rounds'
+
+    initialize: ({@pool}) ->
+
+    sync: (method, collection, options) ->
+        Backbone.sync.call this, method, collection, _.extend options, data: { @pool }

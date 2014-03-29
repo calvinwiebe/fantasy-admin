@@ -3,8 +3,7 @@
         #edit-pool-header.col-sm-12.col-md-12.col-lg-12.page-header
             h1 #{name}
                 small
-                    | is open for business. You can add participants,
-                    | categories, set your pick deadlines, and input your results.
+                    | is open for business
     .row
         .col-md-8.col-lg-8
             form(role='form')
@@ -14,7 +13,12 @@
                             small
                                 | Click to edit.
                 #categories.form-group.well
-                    h4 Categories
-                #round.form-group
+                    .form-group-header
+                        h4 Categories
+                #rounds.form-group.well
+                    .form-group-header
+                        h4 Rounds
+                            small
+                                | Click a round to edit series
                 button#save.btn.btn-success
                     | SAVE

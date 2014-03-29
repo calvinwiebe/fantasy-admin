@@ -5,7 +5,7 @@ asink       = require 'asink'
 templates   = rfolder '../templates', extensions: [ '.jade' ]
 {GenericView, genericRender, Cleanup} = require 'views'
 utils = require 'utils'
-{PoolModel, UserCollection, UserModel, CategoriesCollection} \
+{PoolModel, UserCollection, UserModel, CategoriesCollection, RoundsCollection} \
 = require '../models/index.coffee'
 View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool
@@ -22,8 +22,10 @@ exports.EditPoolFormView = View
         @childViews = []
         @participantsView = new ParticipantsView { @model }
         @categoryView = new CategoryView { @model }
+        @roundsView = new RoundsView { @model }
         @childViews.push @participantsView
         @childViews.push @categoryView
+        @childViews.push @roundsView
 
     # retrieve all of our sub collection/models from
     # our childViews, and persist them to the server.
@@ -38,11 +40,17 @@ exports.EditPoolFormView = View
         shouldSyncPool = false
         participants = @participantsView.collection
         categories = @categoryView.collection
+        rounds = @roundsView.collection
         savePool = =>
             pids = participants.map (p) -> p.get('id')
             cids = categories.map (c) -> c.get('id')
             @model.set users: pids, categories: cids
             @model.save({}, success: -> alert('pool saved.'))
+        saveRounds =>
+            asink.each rounds.models,
+                (round, cb) =>
+                    round.save({}, success: -> cb())
+                , (err) -> savePool()
         asink.each participants.models,
             (user, cb) =>
                 user.set pool: @model.get('id') if user.isNew()
@@ -57,6 +65,7 @@ exports.EditPoolFormView = View
         @cleanUp()
         @$('#participants').append @participantsView.render().el
         @$('#categories').append @categoryView.render().el
+        @$('#rounds').append @roundsView.render().el
         @delegateEvents()
         this
 
@@ -233,4 +242,60 @@ CategoryItemView = View
 
     render: genericRender
 
+RoundsView = View
+    template: templates.roundsView
 
+    initialize: ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+        @needsData = true
+        @roundCollection = new RoundsCollection pool: @model.get('id')
+        @roundCollection.fetch success: =>
+            @needsData = false
+            @render()
+
+    renderRounds: ->
+        @childViews = _.chain(@roundCollection.models)
+            .map((model) =>
+                view = new RoundListItem { model }
+                @listenTo view, 'edit', @editRound
+                view
+            ).forEach((view) =>
+                @$('#rounds').append view.render().el
+            ).value()
+        this
+
+    editRound: (model) ->
+        console.log 'Go to edit round page'
+
+    render: ->
+        return this if @needsData
+        @undelegateEvents
+        @$el.empty()
+        @$el.append @template @model
+        @cleanUp()
+        @renderRounds()
+        @delegateEvents()
+        this
+
+RoundListItem = View
+    template: templates.roundListItem
+    className: '.round-list-item'
+    tagName: 'div'
+
+    events:
+        'click button' : 'roundSelected'
+
+    roundSelected: (e) ->
+        e.preventDefault()
+        false
+
+    setDeadline: (e) ->
+
+    render: ->
+        genericRender.call this
+        @afterRender()
+        this
+
+    afterRender: ->
+        @$('.input-group.date').datepicker({})

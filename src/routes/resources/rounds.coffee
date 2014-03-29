@@ -3,13 +3,25 @@
 uuid = require 'node-uuid'
 moniker = require 'moniker'
 
-# GET
+# GET - can be filtered by pool id
 exports.index = (req, res, next) ->
     {conn, r} = req.rethink
 
-    r.table('rounds').run conn, (err, results) ->
-        results.toArray (err, rounds) ->
-            res.json rounds
+    pool = req.query.pool
+    filter = -> true
+
+    getRounds = (filter) ->
+        r.table('rounds').filter(filter).run conn, (err, results) ->
+            results.toArray (err, rounds) ->
+                res.json rounds
+
+    if pool?
+        r.table('pools').get(pool)('rounds').run conn, (err, rounds) ->
+            getRounds (round) ->
+                r.expr(rounds).contains(round('id'))
+    else
+        getRounds filter
+
 
 # GET - randomly creates a new round
 exports.new = (req, res, next) ->

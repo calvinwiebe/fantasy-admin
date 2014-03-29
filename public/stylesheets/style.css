@@ -117,3 +117,7 @@ a {
     font-size: 16px;
 }
 
+#dashboard #rounds button.round {
+    width: 100%;
+}
+
