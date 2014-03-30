@@ -2,6 +2,7 @@
 # resources
 uuid = require 'node-uuid'
 moniker = require 'moniker'
+_ = require 'lodash'
 
 # GET - can be filtered by pool id
 #
@@ -17,7 +18,15 @@ exports.index = (req, res, next) ->
     getRounds = (filter) ->
         r.table('rounds').filter(filter).run conn, (err, results) ->
             results.toArray (err, rounds) ->
-                rounds.forEach (round) -> round.date = round.date?.getTime()
+                min = _.chain(rounds)
+                    .filter((r) -> not r.completed)
+                    .pluck('order')
+                    .min()
+                    .value()
+                rounds.forEach (round) ->
+                    round.date = round.date?.getTime()
+                    round.disabled = \
+                        round.completed or round.order isnt min
                 res.json rounds
 
     if pool?

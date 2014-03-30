@@ -26,6 +26,8 @@ createRound = (conn, r, round, cb) ->
         name: round.name
         date: new Date
         state: 0
+        order: round.order
+        completed: false
         series: []
 
     async.times(

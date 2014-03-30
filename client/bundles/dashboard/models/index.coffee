@@ -34,6 +34,7 @@ exports.CategoriesCollection = Collection
 
 exports.RoundsCollection = Collection
     url: '/rounds'
+    comparator: 'order'
 
     initialize: ({@pool}) ->
 
