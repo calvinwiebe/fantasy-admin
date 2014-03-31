@@ -3,13 +3,25 @@
 uuid = require 'node-uuid'
 moniker = require 'moniker'
 
-# GET
+# GET. can be filtered by round id.
+# TODO: make all the filterable routes use something common to do so.
 exports.index = (req, res, next) ->
     {conn, r} = req.rethink
 
-    r.table('series').run conn, (err, results) ->
-        results.toArray (err, series) ->
-            res.json series
+    round = req.query.round
+    filter = -> true
+
+    getSeries = (filter) ->
+        r.table('series').filter(filter).run conn, (err, results) ->
+            results.toArray (err, series) ->
+                res.json series
+
+    if round?
+        r.table('rounds').get(round)('series').run conn, (err, series) ->
+            getSeries (s) ->
+                r.expr(series).contains(s('id'))
+    else
+        getSeries filter
 
 # GET - randomly creates a new round
 exports.new = (req, res, next) ->

@@ -5,7 +5,9 @@ asink       = require 'asink'
 templates   = rfolder '../templates', extensions: [ '.jade' ]
 {GenericView, genericRender, Cleanup} = require 'views'
 utils = require 'utils'
-{PoolModel, UserCollection, UserModel, CategoriesCollection, RoundsCollection} \
+{PoolModel, UserCollection,
+UserModel, CategoriesCollection,
+RoundsCollection, SeriesCollection} \
 = require '../models/index.coffee'
 View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool
@@ -61,6 +63,9 @@ exports.EditPoolFormView = View
         @$('#rounds').append @roundsView.render().el
         @delegateEvents()
         this
+
+# Particpants
+# -----------
 
 ParticipantsView = View
 
@@ -144,6 +149,9 @@ ParticipantView = View
         false
 
     render: genericRender
+
+# Categories
+# ----------
 
 CategoryView = View
 
@@ -235,52 +243,26 @@ CategoryItemView = View
 
     render: genericRender
 
-RoundsView = View
-    template: templates.roundsView
-
-    initialize: ->
-        _.extend this, Cleanup.mixin
-        @childViews = []
-        @needsData = true
-        @collection = new RoundsCollection pool: @model.get('id')
-        @collection.fetch success: =>
-            @needsData = false
-            @render()
-
-    renderRounds: ->
-        @childViews = _.chain(@collection.models)
-            .map((model) =>
-                view = new RoundListItem { model }
-                @listenTo view, 'edit', @editRound
-                view
-            ).forEach((view) =>
-                @$('#rounds').append view.render().el
-            ).value()
-        this
-
-    editRound: (model) ->
-        console.log 'Go to edit round page'
-
-    render: ->
-        return this if @needsData
-        @undelegateEvents
-        @$el.empty()
-        @$el.append @template @model
-        @cleanUp()
-        @renderRounds()
-        @delegateEvents()
-        this
+# Rounds And Series
+# -----------------
 
 RoundListItem = View
     template: templates.roundListItem
-    className: '.round-list-item'
+    className: 'round-list-item'
     tagName: 'div'
 
     events:
-        'click button' : 'roundSelected'
+        'click .round'          : 'emitSelected'
+        'click .round-action'   : 'sendAction'
 
-    roundSelected: (e) ->
+    emitSelected: (e) ->
         e.preventDefault()
+        @trigger 'selected', @model
+        false
+
+    sendAction: (e) ->
+        e.preventDefault()
+        #adminClient.resources.rounds.sendAction()
         false
 
     setDeadline: (e) ->
@@ -305,6 +287,89 @@ RoundListItem = View
             .on 'changeDate', @setDeadline.bind(this)
         @$('.round-action').html if @model.get('state') is 0 then 'START' else 'END'
 
+SeriesListItem = View
+    template: templates.seriesListItem
+    className: 'series-list-item'
+    tagName: 'div'
 
+    events:
+        'click button'  : 'selected'
 
+    selected: (e) ->
+        e.preventDefault()
+        @trigger 'selected', @model
+        false
 
+    render: genericRender
+
+RoundsView = View
+    template: templates.roundsView
+
+    events:
+        'click .clear-series': 'clearSeries'
+
+    initialize: ->
+        _.extend this, Cleanup.mixin
+        @childTypes =
+            'rounds':
+                view: RoundListItem
+                events:[
+                    [ 'selected', @setSelectedRound ]
+                ]
+            'series':
+                view: SeriesListItem
+                events: [
+                    [ 'selected', -> @trigger 'editSeries' ]
+                ]
+        @childViews = []
+        @needsData = true
+        @collection = new RoundsCollection pool: @model.get('id')
+        @collection.fetch success: =>
+            @needsData = false
+            @render()
+
+    renderChildren: (type) ->
+        models = @seriesCollection?.models ? @collection.models
+        @childViews = _.chain(models)
+            .map((model) =>
+                view = new @childTypes[type].view { model }
+                for event in @childTypes[type].events
+                    @listenTo view, event[0], event[1]
+                view
+            ).forEach((view) =>
+                @$('#rounds').append view.render().el
+            ).value()
+        if type is 'series'
+            button = templates.button
+                size: '2'
+                classes: 'btn-warning clear-series'
+                value: 'BACK'
+            @$('#rounds').append $(button)
+        this
+
+    setSelectedRound: (model) ->
+        @selectedRound = model
+        @needsData = true
+        @seriesCollection = new SeriesCollection round: model.get 'id'
+        @seriesCollection.fetch success: =>
+            @needsData = false
+            @render()
+
+    clearSeries: (e) ->
+        e.preventDefault()
+        @seriesCollection = @selectedRound = null
+        @render()
+        false
+
+    render: ->
+        return this if @needsData
+        @undelegateEvents
+        @$el.empty()
+        @$el.append @template @model
+        @cleanUp()
+        if @selectedRound?
+            @renderChildren 'series'
+        else
+            @renderChildren 'rounds'
+        @delegateEvents()
+        this

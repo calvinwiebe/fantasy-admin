@@ -125,3 +125,8 @@ a {
     padding: 6px 6px;
 }
 
+#dashboard #rounds .series-list-item {
+    margin-right: 5px;
+    display: inline;
+}
+
