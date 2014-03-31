@@ -284,6 +284,7 @@ RoundListItem = View
         false
 
     setDeadline: (e) ->
+        return if @model.get('disabled') or not e.date?
         @model.set 'date', e.date.valueOf()
 
     render: ->
@@ -291,9 +292,19 @@ RoundListItem = View
         @afterRender()
         this
 
+    disable: ->
+        @$('.input-group.date input').prop 'disabled', 'true'
+        @$('.round').prop 'disabled', 'true'
+        @$('.round-action').remove()
+
     afterRender: ->
+        return @disable() if @model.get('disabled')
         @$('.input-group.date')
             .datepicker({})
-            .datepicker('setValue', @model.date)
+            .datepicker('setValue', @model.get('date'))
             .on 'changeDate', @setDeadline.bind(this)
+        @$('.round-action').html if @model.get('state') is 0 then 'START' else 'END'
+
+
+
 

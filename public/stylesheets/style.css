@@ -121,3 +121,7 @@ a {
     width: 100%;
 }
 
+#dashboard #rounds button.round-action {
+    padding: 6px 6px;
+}
+
