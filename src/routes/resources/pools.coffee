@@ -56,3 +56,4 @@ exports.destroy = (req, res, next) ->
 
     r.table('pools').get(req.param('id')).delete().run conn, (err, results) ->
         res.send results
+    #TODO: we need to cascade down and delete EVERYTHING, rounds, series, categoryResults

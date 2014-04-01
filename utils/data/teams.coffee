@@ -2,7 +2,7 @@ exports.teams = [
 		name: 'Toronto Maple Leafs'
 		shortName: 'TOR'
 		conference: 0 #east
-		standing: 2
+		seed: 2
 		players: [
 				name: 'Phil Kessel'
 				position: 'F'
@@ -32,7 +32,7 @@ exports.teams = [
 		name: 'Boston Bruins'
 		shortName: 'BOS'
 		conference: 0 #east
-		standing: 1
+		seed: 1
 		players: [
 				name: 'David Krejci'
 				position: 'F'
