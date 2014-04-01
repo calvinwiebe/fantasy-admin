@@ -1,0 +1,13 @@
+select.team1.form-control
+    for team in teams
+        option(value='#{team.id}') #{team.shortName}
+select.team2.form-control
+    for team in teams
+        option(value='#{team.id}') #{team.shortName}
+button.back.btn.btn-warning
+    | BACK
+button.edit.btn.btn-primary
+    span
+        span.glyph
+            span.glyphicon.glyphicon-pencil
+    span.right-span EDIT

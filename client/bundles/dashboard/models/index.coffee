@@ -28,9 +28,7 @@ exports.UserModel = UserModel = Model
 exports.UserCollection = Collection
     url: '/users'
     model: UserModel
-
     initialize: ({@pool}) ->
-
     sync: syncWithId 'pool'
 
 exports.CategoriesCollection = Collection
@@ -39,14 +37,15 @@ exports.CategoriesCollection = Collection
 exports.RoundsCollection = Collection
     url: '/rounds'
     comparator: 'order'
-
     initialize: ({@pool}) ->
-
     sync: syncWithId 'pool'
 
 exports.SeriesCollection = Collection
     url: '/series'
-
     initialize: ({@round}) ->
-
     sync: syncWithId 'round'
+
+exports.TeamsCollection = Collection
+    url: '/teams'
+    initialize: ({@league}) ->
+    sync: syncWithId 'league'

@@ -7,7 +7,8 @@ templates   = rfolder '../templates', extensions: [ '.jade' ]
 utils = require 'utils'
 {PoolModel, UserCollection,
 UserModel, CategoriesCollection,
-RoundsCollection, SeriesCollection} \
+RoundsCollection, SeriesCollection,
+TeamsCollection} \
 = require '../models/index.coffee'
 View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool
@@ -306,6 +307,55 @@ SeriesListItem = View
 
     render: genericRender
 
+SeriesEditItem = View
+    template: templates.seriesEditItem
+    className: 'series-edit-item'
+    tagName: 'div'
+
+    events:
+        'change .team1' : 'team1Change'
+        'change .team2' : 'team2Change'
+        'click .back'   : 'dismiss'
+        'click .edit'   : 'edit'
+
+    initialize: ->
+        @needsData = true
+        # TODO: no smarts right now, this will show the full list
+        # off all teams for every choice. We could be smart and only show
+        # teams that have not been selected yet.
+        @collection = new TeamsCollection league: 'nhl'
+        @collection.fetch success: (model) =>
+            @needsData = false
+            @render()
+
+    team1Change: ->
+
+    team2Change: ->
+
+    dismiss: (e) ->
+        e.preventDefault()
+        @trigger 'clear'
+        false
+
+    getTemplateData: ->
+        series: @model.toJSON()
+        teams: @collection.toJSON()
+
+    render: ->
+        return this if @needsData
+        @undelegateEvents
+        @$el.empty()
+        @$el.append @template @getTemplateData()
+        @afterRender()
+        @delegateEvents()
+        this
+
+    afterRender: ->
+        if @model.get 'team1'
+            @$('.team1').val @model.get 'team1'
+        if @model.get 'team2'
+            @$('.team2').val @model.get 'team2'
+
 RoundsView = View
     template: templates.roundsView
 
@@ -323,7 +373,13 @@ RoundsView = View
             'series':
                 view: SeriesListItem
                 events: [
-                    [ 'selected', -> @trigger 'editSeries' ]
+                    [ 'selected', @setSelectedSeries ]
+                ]
+            'singleSeries':
+                view: SeriesEditItem
+                events: [
+                    [ 'clear', @clearSingleSeries ]
+                    [ 'edit', @editSingleSeries ]
                 ]
         @childViews = []
         @needsData = true
@@ -333,7 +389,10 @@ RoundsView = View
             @render()
 
     renderChildren: (type) ->
-        models = @seriesCollection?.models ? @collection.models
+        models = switch type
+            when 'rounds' then @collection.models
+            when 'series' then @seriesCollection.models
+            when 'singleSeries' then [ @selectedSeries ]
         @childViews = _.chain(models)
             .map((model) =>
                 view = new @childTypes[type].view { model }
@@ -365,13 +424,26 @@ RoundsView = View
         @render()
         false
 
+    setSelectedSeries: (model) ->
+        @selectedSeries = model
+        @render()
+
+    editSingleSeries: (model) ->
+        # emit editing of this here model
+
+    clearSingleSeries: ->
+        @selectedSeries = null
+        @render()
+
     render: ->
         return this if @needsData
         @undelegateEvents
         @$el.empty()
         @$el.append @template @model
         @cleanUp()
-        if @selectedRound?
+        if @selectedSeries?
+            @renderChildren 'singleSeries'
+        else if @selectedRound?
             @renderChildren 'series'
         else
             @renderChildren 'rounds'
