@@ -46,10 +46,14 @@ exports.EditPoolFormView = View
             pids = participants.map (p) -> p.get('id')
             cids = categories.map (c) -> c.get('id')
             @model.set users: pids, categories: cids
-            @model.save({}, success: -> alert('pool saved.'))
+            @model.save {},
+                success: -> alert('pool saved.')
+                error: -> alert('error saving.')
         asink.each adjacentModels,
             (model, cb) =>
-                model.save({}, success: -> cb())
+                model.save {},
+                    success: -> cb()
+                    error: -> alert('error saving.')
             , (err) -> savePool()
 
         false
@@ -337,14 +341,14 @@ RoundsView = View
                     @listenTo view, event[0], event[1]
                 view
             ).forEach((view) =>
-                @$('#rounds').append view.render().el
+                @$('#rounds-container').append view.render().el
             ).value()
         if type is 'series'
             button = templates.button
                 size: '2'
                 classes: 'btn-warning clear-series'
                 value: 'BACK'
-            @$('#rounds').append $(button)
+            @$('#rounds-container').append $(button)
         this
 
     setSelectedRound: (model) ->

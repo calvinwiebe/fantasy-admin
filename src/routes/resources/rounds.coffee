@@ -52,7 +52,7 @@ exports.update = (req, res, next)->
 
     doc = req.body
     # todo: timezones? probably not necessary right now.
-    doc.date = new Date req.body.date
+    doc.date = new Date req.body.date if req.body.date?
 
     r.table('rounds').get(req.param('id')).update(doc).run conn, (err, results) ->
         res.send results

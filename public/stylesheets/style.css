@@ -121,12 +121,24 @@ a {
     width: 100%;
 }
 
+#dashboard #rounds-container {
+    padding-left: 0px;
+}
+
 #dashboard #rounds button.round-action {
     padding: 6px 6px;
 }
 
+#dashboard #rounds .round-col {
+    padding-left: 0px;
+}
+
 #dashboard #rounds .series-list-item {
-    margin-right: 5px;
     display: inline;
+}
+
+#dashboard #rounds .series-list-item button {
+    margin-right: 5px;
+    margin-bottom: 5px;
 }
 
