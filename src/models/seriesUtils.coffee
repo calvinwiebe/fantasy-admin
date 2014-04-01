@@ -3,7 +3,5 @@ exports.create = (conn, r, numberOfGames, cb) ->
         teams: []
         numberOfGames: numberOfGames
 
-    (index, done) ->
-        r.table('series').insert(doc).run conn, (err, results) ->
-            cb results.generated_keys[0]
-            done()
+    r.table('series').insert(doc).run conn, (err, results) ->
+        cb results.generated_keys[0]
