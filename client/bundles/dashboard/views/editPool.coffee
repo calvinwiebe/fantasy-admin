@@ -10,6 +10,7 @@ UserModel, CategoriesCollection,
 RoundsCollection, SeriesCollection,
 TeamsCollection} \
 = require '../models/index.coffee'
+viewConfig = require './viewConfig.coffee'
 View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool
 #
@@ -25,10 +26,10 @@ exports.EditPoolFormView = View
         @childViews = []
         @participantsView = new ParticipantsView { @model }
         @categoryView = new CategoryView { @model }
-        @roundsView = new RoundsView { @model }
+        @roundsSeriesContainerView = new RoundsSeriesContainer { @model }
         @childViews.push @participantsView
         @childViews.push @categoryView
-        @childViews.push @roundsView
+        @childViews.push @roundsSeriesContainerView
 
     # retrieve all of our sub collection/models from
     # our childViews, and persist them to the server.
@@ -41,8 +42,6 @@ exports.EditPoolFormView = View
         e.preventDefault()
         participants = @participantsView.collection
         categories = @categoryView.collection
-        rounds = @roundsView.collection
-        adjacentModels = _.union(participants.models, rounds.models)
         savePool = =>
             pids = participants.map (p) -> p.get('id')
             cids = categories.map (c) -> c.get('id')
@@ -50,7 +49,7 @@ exports.EditPoolFormView = View
             @model.save {},
                 success: -> alert('pool saved.')
                 error: -> alert('error saving.')
-        asink.each adjacentModels,
+        asink.each participants.models,
             (model, cb) =>
                 model.save {},
                     success: -> cb()
@@ -65,7 +64,7 @@ exports.EditPoolFormView = View
         @cleanUp()
         @$('#participants').append @participantsView.render().el
         @$('#categories').append @categoryView.render().el
-        @$('#rounds').append @roundsView.render().el
+        @$('#edit-palette').append @roundsSeriesContainerView.render().el
         @delegateEvents()
         this
 
@@ -251,6 +250,130 @@ CategoryItemView = View
 # Rounds And Series
 # -----------------
 
+views = {}
+
+views.SeriesEditItem = View
+    template: templates.seriesEditItem
+    className: 'series-edit-item'
+    tagName: 'div'
+
+    events:
+        'change .team1' : 'team1Change'
+        'change .team2' : 'team2Change'
+        'click .back'   : 'dismiss'
+        'click .edit'   : 'edit'
+
+    initialize: ({@context}) ->
+        @needsData = true
+        # TODO: no smarts right now, this will show the full list
+        # off all teams for every choice. We could be smart and only show
+        # teams that have not been selected yet.
+        @model = @context.series
+        @collection = new TeamsCollection league: 'nhl'
+        @collection.fetch success: (model) =>
+            @needsData = false
+            @render()
+
+    team1Change: ->
+        @model.set 'team1', @$('.team1').val()
+
+    team2Change: ->
+        @model.set 'team2', @$('.team2').val()
+
+    dismiss: (e) ->
+        e.preventDefault()
+        @trigger 'action', {
+            event: 'clearSingleSeries',
+            context:
+                round: @context.round
+        }
+        false
+
+    getTemplateData: ->
+        series: @model.toJSON()
+        teams: @collection.toJSON()
+
+    render: ->
+        return this if @needsData
+        @undelegateEvents
+        @$el.empty()
+        @$el.append @template @getTemplateData()
+        @afterRender()
+        @delegateEvents()
+        this
+
+    afterRender: ->
+        if @model.get 'team1'
+            @$('.team1').val @model.get 'team1'
+        if @model.get 'team2'
+            @$('.team2').val @model.get 'team2'
+
+SeriesListItem = View
+    template: templates.seriesListItem
+    className: 'series-list-item'
+    tagName: 'div'
+
+    events:
+        'click button'  : 'selected'
+
+    selected: (e) ->
+        e.preventDefault()
+        @trigger 'selected', @model
+        false
+
+    render: genericRender
+
+views.SeriesListView = View
+    template: templates.seriesListView
+    id: 'series-list-view'
+    tagName: 'div'
+
+    events:
+        'click .back': 'dismiss'
+
+    initialize: ({@context}) ->
+        _.extend this, Cleanup.mixin
+        @needsData = true
+        @collection = new SeriesCollection round: @context.round.get 'id'
+        @collection.fetch success: =>
+            @needsData = false
+            @render()
+
+    dismiss: (e) ->
+        e.preventDefault()
+        @trigger 'action', {
+            event: 'clearSeries',
+            context:
+                round: @context.round
+        }
+        false
+
+    renderSeries: ->
+        @childViews = _.chain(@collection.models)
+            .map((model) =>
+                view = new SeriesListItem { model }
+                @listenTo view, 'selected', =>
+                    @trigger 'action', {
+                        event: 'editSingleSeries',
+                        context:
+                            round: @context.round
+                            series: model
+                    }
+                view
+            ).forEach((view) =>
+                @$('#series-container').prepend view.render().el
+            ).value()
+        this
+
+    render: ->
+        return this if @needsData
+        @undelegateEvents
+        @$el.empty()
+        @$el.append @template()
+        @renderSeries()
+        @delegateEvents()
+        this
+
 RoundListItem = View
     template: templates.roundListItem
     className: 'round-list-item'
@@ -292,148 +415,44 @@ RoundListItem = View
             .on 'changeDate', @setDeadline.bind(this)
         @$('.round-action').html if @model.get('state') is 0 then 'START' else 'END'
 
-SeriesListItem = View
-    template: templates.seriesListItem
-    className: 'series-list-item'
-    tagName: 'div'
 
-    events:
-        'click button'  : 'selected'
-
-    selected: (e) ->
-        e.preventDefault()
-        @trigger 'selected', @model
-        false
-
-    render: genericRender
-
-SeriesEditItem = View
-    template: templates.seriesEditItem
-    className: 'series-edit-item'
-    tagName: 'div'
-
-    events:
-        'change .team1' : 'team1Change'
-        'change .team2' : 'team2Change'
-        'click .back'   : 'dismiss'
-        'click .edit'   : 'edit'
-
-    initialize: ->
-        @needsData = true
-        # TODO: no smarts right now, this will show the full list
-        # off all teams for every choice. We could be smart and only show
-        # teams that have not been selected yet.
-        @collection = new TeamsCollection league: 'nhl'
-        @collection.fetch success: (model) =>
-            @needsData = false
-            @render()
-
-    team1Change: ->
-
-    team2Change: ->
-
-    dismiss: (e) ->
-        e.preventDefault()
-        @trigger 'clear'
-        false
-
-    getTemplateData: ->
-        series: @model.toJSON()
-        teams: @collection.toJSON()
-
-    render: ->
-        return this if @needsData
-        @undelegateEvents
-        @$el.empty()
-        @$el.append @template @getTemplateData()
-        @afterRender()
-        @delegateEvents()
-        this
-
-    afterRender: ->
-        if @model.get 'team1'
-            @$('.team1').val @model.get 'team1'
-        if @model.get 'team2'
-            @$('.team2').val @model.get 'team2'
-
-RoundsView = View
+views.RoundsView = View
     template: templates.roundsView
 
-    events:
-        'click .clear-series': 'clearSeries'
-
-    initialize: ->
+    initialize: ({@pool}) ->
         _.extend this, Cleanup.mixin
-        @childTypes =
-            'rounds':
-                view: RoundListItem
-                events:[
-                    [ 'selected', @setSelectedRound ]
-                ]
-            'series':
-                view: SeriesListItem
-                events: [
-                    [ 'selected', @setSelectedSeries ]
-                ]
-            'singleSeries':
-                view: SeriesEditItem
-                events: [
-                    [ 'clear', @clearSingleSeries ]
-                    [ 'edit', @editSingleSeries ]
-                ]
         @childViews = []
         @needsData = true
-        @collection = new RoundsCollection pool: @model.get('id')
+        @collection = new RoundsCollection pool: @pool.get('id')
         @collection.fetch success: =>
             @needsData = false
             @render()
 
-    renderChildren: (type) ->
-        models = switch type
-            when 'rounds' then @collection.models
-            when 'series' then @seriesCollection.models
-            when 'singleSeries' then [ @selectedSeries ]
-        @childViews = _.chain(models)
+    saveRounds: (e) ->
+        e.preventDefault()
+        asink.each @collection.models,
+            (model, cb) =>
+                model.save {},
+                    success: -> cb()
+                    error: -> alert('error saving round.')
+            , (err) -> savePool()
+        false
+
+    renderRounds: ->
+        @childViews = _.chain(@collection.models)
             .map((model) =>
-                view = new @childTypes[type].view { model }
-                for event in @childTypes[type].events
-                    @listenTo view, event[0], event[1]
+                view = new RoundListItem { model }
+                @listenTo view, 'selected', =>
+                    @trigger 'action', {
+                        event: 'editSeries'
+                        context:
+                            round: model
+                    }
                 view
             ).forEach((view) =>
                 @$('#rounds-container').append view.render().el
             ).value()
-        if type is 'series'
-            button = templates.button
-                size: '2'
-                classes: 'btn-warning clear-series'
-                value: 'BACK'
-            @$('#rounds-container').append $(button)
         this
-
-    setSelectedRound: (model) ->
-        @selectedRound = model
-        @needsData = true
-        @seriesCollection = new SeriesCollection round: model.get 'id'
-        @seriesCollection.fetch success: =>
-            @needsData = false
-            @render()
-
-    clearSeries: (e) ->
-        e.preventDefault()
-        @seriesCollection = @selectedRound = null
-        @render()
-        false
-
-    setSelectedSeries: (model) ->
-        @selectedSeries = model
-        @render()
-
-    editSingleSeries: (model) ->
-        # emit editing of this here model
-
-    clearSingleSeries: ->
-        @selectedSeries = null
-        @render()
 
     render: ->
         return this if @needsData
@@ -441,11 +460,38 @@ RoundsView = View
         @$el.empty()
         @$el.append @template @model
         @cleanUp()
-        if @selectedSeries?
-            @renderChildren 'singleSeries'
-        else if @selectedRound?
-            @renderChildren 'series'
-        else
-            @renderChildren 'rounds'
+        @renderRounds()
+        @delegateEvents()
+        this
+
+# This will swap between Rounds, Series and Single Series
+# views.
+#
+RoundsSeriesContainer = View
+
+    initialize: ->
+        _.extend this, Cleanup.mixin
+        @_ = viewConfig
+        @childViews = []
+        @viewClass = @_.default
+
+    renderContent: (context) ->
+        options =
+            pool: @model
+            context: context
+        view = new views[@viewClass] options
+        @childViews.push view
+        @listenTo view, 'action', @handleContentViewAction
+        @$el.append view.render().el
+
+    handleContentViewAction: (data) ->
+        @viewClass = @_.events[data.event]
+        @render data.context
+
+    render: (context) ->
+        @undelegateEvents
+        @cleanUp()
+        @$el.empty()
+        @renderContent context
         @delegateEvents()
         this

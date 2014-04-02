@@ -117,7 +117,13 @@ a {
     font-size: 16px;
 }
 
-#dashboard #rounds button.round {
+#dashboard #save-pool {
+    font-size: 16px;
+    margin-bottom: 20px;
+    margin-left: 19px;
+}
+
+#dashboard #rounds-container button.round {
     width: 100%;
 }
 
@@ -125,19 +131,19 @@ a {
     padding-left: 0px;
 }
 
-#dashboard #rounds button.round-action {
+#dashboard #rounds-container button.round-action {
     padding: 6px 6px;
 }
 
-#dashboard #rounds .round-col {
+#dashboard #rounds-container .round-col {
     padding-left: 0px;
 }
 
-#dashboard #rounds .series-list-item {
+#dashboard #series-container .series-list-item {
     display: inline;
 }
 
-#dashboard #rounds .series-list-item button {
+#dashboard #series-container .series-list-item button {
     margin-right: 5px;
     margin-bottom: 5px;
 }
