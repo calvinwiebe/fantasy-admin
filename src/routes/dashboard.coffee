@@ -1,5 +1,8 @@
 
 # Show the dashboard front page
 #
-exports.index = (req, res, next) ->
+exports.admin = (req, res, next) ->
     res.render 'dashboard'
+
+exports.client = (req, res, next) ->
+    res.send 'Helloooo client!'

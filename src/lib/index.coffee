@@ -3,6 +3,7 @@
 _       = require 'lodash'
 fs      = require 'fs'
 path    = require 'path'
+crypto  = require 'crypto'
 
 # Require all the files in a directory and add them to an
 # object. By default, it will skip anything named `index`.
@@ -27,3 +28,8 @@ exports.makeResourceful = (app) ->
         app.get "/#{resource}/:id", protect(any), resourceModule.show
         app.put "/#{resource}/:id", protect(write), resourceModule.update
         app.del "/#{resource}/:id", protect(write), resourceModule.destroy
+
+exports.hashPassword = (password) ->
+    crypto.createHash('sha256')
+        .update(password)
+        .digest('hex')

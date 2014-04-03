@@ -1,6 +1,6 @@
 # Authentication routes
 #
-crypto = require 'crypto'
+{hashPassword} = require '../lib'
 
 # Login in a user
 #
@@ -10,11 +10,12 @@ exports.login = (req, res, next) ->
 
     {conn, r} = req.rethink
 
-    attemptedHash = crypto.createHash('sha256')
-        .update(password)
-        .digest('hex')
+    attemptedHash = hashPassword password
 
-    r.table('users').filter(name: name).run conn,
+    filter = (user) ->
+        user('name').eq(name).or(user('email').eq(name))
+
+    r.table('users').filter(filter).run conn,
         (err, results) ->
             return next err if err?
             results.toArray (err, [user]) ->

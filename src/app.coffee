@@ -49,7 +49,10 @@ app.get '/logout', routes.auth.logout, routes.auth.redirect
 requireUser = middleware.requireUser
 
 # admin dashboard
-app.get '/admin/dashboard', requireUser('admin', '/'), routes.dashboard.index
+app.get '/admin/dashboard', requireUser('admin', '/'), routes.dashboard.admin
+
+# client dashboard
+app.get '/pool/dashboard', requireUser('pool', '/'), routes.dashboard.client
 
 # Resources: these are used for both the admin and client. The client users
 # are restricted to 'readonly' mode (can only hit GETs).
