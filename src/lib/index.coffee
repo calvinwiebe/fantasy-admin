@@ -20,10 +20,10 @@ exports.requireAll = (rootPath) ->
 # Simple method to create a resource from a module of routes
 #
 exports.makeResourceful = (app) ->
-    app.resource = (resource, resourceModule) ->
-        app.get "/#{resource}", resourceModule.index
-        app.get "/#{resource}/new", resourceModule.new
-        app.post "/#{resource}", resourceModule.create
-        app.get "/#{resource}/:id", resourceModule.show
-        app.put "/#{resource}/:id", resourceModule.update
-        app.del "/#{resource}/:id", resourceModule.destroy
+    app.resource = (resource, resourceModule, {write, any, protect}) ->
+        app.get "/#{resource}", protect(any), resourceModule.index
+        app.get "/#{resource}/new", protect(write), resourceModule.new
+        app.post "/#{resource}", protect(write), resourceModule.create
+        app.get "/#{resource}/:id", protect(any), resourceModule.show
+        app.put "/#{resource}/:id", protect(write), resourceModule.update
+        app.del "/#{resource}/:id", protect(write), resourceModule.destroy

@@ -41,20 +41,23 @@ app.use middleware.rethink()
 ROUTES
 ###
 
-rootUrl = '/'
-successUrl = '/dashboard'
-# Define our display routes
+# Define our login routes
 app.get '/', routes.index
-app.post '/login', routes.auth.login(rootUrl, successUrl)
-app.get '/logout', routes.auth.logout(rootUrl)
+app.post '/login', routes.auth.login, routes.auth.redirect
+app.get '/logout', routes.auth.logout, routes.auth.redirect
 
-# everything else needs a user
-requireUser = middleware.requireUser(rootUrl)
-app.get '/dashboard', requireUser, routes.dashboard.index
+requireUser = middleware.requireUser
 
-# Some API calls, using `express-resource`
+# admin dashboard
+app.get '/admin/dashboard', requireUser('admin', '/'), routes.dashboard.index
+
+# Resources: these are used for both the admin and client. The client users
+# are restricted to 'readonly' mode (can only hit GETs).
 for name, resource of routes.resources
-    app.resource name, resource
+    app.resource name, resource,
+        write: 'admin'
+        any: '*'
+        protect: requireUser
 
 ###
 STATIC

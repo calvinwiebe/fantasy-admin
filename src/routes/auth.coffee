@@ -4,35 +4,42 @@ crypto = require 'crypto'
 
 # Login in a user
 #
-exports.login = (rootUrl, successUrl) ->
-    (req, res, next) ->
-        name = req.body.user
-        password = req.body.password
+exports.login = (req, res, next) ->
+    name = req.body.user
+    password = req.body.password
 
-        {conn, r} = req.rethink
+    {conn, r} = req.rethink
 
-        attemptedHash = crypto.createHash('sha256')
-            .update(password)
-            .digest('hex')
+    attemptedHash = crypto.createHash('sha256')
+        .update(password)
+        .digest('hex')
 
-        r.table('users').filter(name: name).run conn,
-            (err, results) ->
-                return next err if err?
-                results.toArray (err, [user]) ->
-                    if err?
-                        return next err
-                    else if not user or user.password isnt attemptedHash
-                        return res.redirect rootUrl
-                    else
-                        # user successfully logged in
-                        req.session.user = user.name
-                        console.log 'successful log in'
-                        console.log req.session
-                        res.redirect successUrl
+    r.table('users').filter(name: name).run conn,
+        (err, results) ->
+            return next err if err?
+            results.toArray (err, [user]) ->
+                if err?
+                    next err
+                else if not user or user.password isnt attemptedHash
+                    next()
+                else
+                    # user successfully logged in
+                    req.session.user = user
+                    next()
+
+# Depending on the user, send them to the appropriate
+# url
+#
+exports.redirect = (req, res) ->
+    if req.session.user?.permission is 'admin'
+        res.redirect '/admin/dashboard'
+    else if req.session.user?.permission is 'pool'
+        res.redirect '/pool/dashboard'
+    else
+        res.redirect '/'
 
 # Log a user our
 #
-exports.logout = (rootUrl) ->
-    (req, res, next) ->
-        req.session.user = null
-        res.redirect rootUrl
+exports.logout = (req, res, next) ->
+    req.session.user = null
+    next()
