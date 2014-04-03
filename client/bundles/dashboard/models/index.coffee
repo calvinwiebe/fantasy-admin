@@ -53,10 +53,12 @@ exports.SeriesModel = SeriesModel = Model
 exports.SeriesCollection = Collection
     url: '/series'
     model: SeriesModel
+    comparator: 'conference'
     initialize: ({@round}) ->
     sync: syncWithId 'round'
 
 exports.TeamsCollection = Collection
     url: '/teams'
+    comparator: 'seed'
     initialize: ({@league}) ->
     sync: syncWithId 'league'

@@ -1,9 +1,9 @@
 select.team1.form-control
     for team in teams
-        option(value='#{team.id}') #{team.shortName}
+        option(value='#{team.id}') (#{team.seed}) #{team.shortName}
 select.team2.form-control
     for team in teams
-        option(value='#{team.id}') #{team.shortName}
+        option(value='#{team.id}') (#{team.seed}) #{team.shortName}
 button.back.btn.btn-warning
     | BACK
 button.quick-save.btn.btn-success

@@ -127,7 +127,7 @@ exports.teams = [
 	,
 		name: 'Anaheim Ducks'
 		shortName: 'ANA'
-		conference: 1 #east
+		conference: 1 #west
 		seed: 2
 		players: [
 				name: 'Ryan Getzlaf'
@@ -157,37 +157,37 @@ exports.teams = [
 	,
 		name: 'San Jose Sharks'
 		shortName: 'SAN'
-		conference: 0 #east
+		conference: 1 #west
 		seed: 3
 		players: []
 	,
 		name: 'Colorado Avalanche'
 		shortName: 'COL'
-		conference: 0 #east
+		conference: 1 #west
 		seed: 4
 		players: []
 	,
 		name: 'Chicago Blackhawks'
 		shortName: 'CHI'
-		conference: 0 #east
+		conference: 1 #west
 		seed: 5
 		players: []
 	,
 		name: 'Los Angeles Kings'
 		shortName: 'LOS'
-		conference: 0 #east
+		conference: 1 #west
 		seed: 6
 		players: []
 	,
 		name: 'Minnesota Wild'
 		shortName: 'MIN'
-		conference: 0 #east
+		conference: 1 #west
 		seed: 7
 		players: []
 	,
 		name: 'Phoenix Coyotes'
 		shortName: 'PHO'
-		conference: 0 #east
+		conference: 1 #west
 		seed: 8
 		players: []
 ]

@@ -290,8 +290,9 @@ views.SeriesEditItem = View
         false
 
     getTemplateData: ->
+        console.log @model
         series: @model.toJSON()
-        teams: @collection.toJSON()
+        teams: _.map(@collection.where(conference: @model.get 'conference' ), (model) -> model.toJSON())
 
     render: ->
         @undelegateEvents
@@ -354,8 +355,8 @@ views.SeriesListView = View
         @collection.forEach (model) =>
             team1 = @teams.find 'id': model.get 'team1'
             team2 = @teams.find 'id': model.get 'team2'
-            model.set 'team1Name', team1.get('shortName') if team1?
-            model.set 'team2Name', team2.get('shortName') if team2?
+            model.set 'team1Name', '(' + team1.get('seed') + ') ' + team1.get('shortName') if team1?
+            model.set 'team2Name', '(' + team2.get('seed') + ') ' + team2.get('shortName') if team2?
 
     renderSeries: ->
         @childViews = _.chain(@collection.models)
