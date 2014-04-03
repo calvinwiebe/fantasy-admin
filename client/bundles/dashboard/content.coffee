@@ -194,7 +194,8 @@ views.CreatePoolFormView = Backbone.View.extend
     id: 'create-pool-form'
 
     events:
-        'click #submit': 'submit'
+        'click #submit' : 'submit'
+        'submit form'   : 'submit'
 
     initialize: ->
         @model = new PoolModel
