@@ -13,7 +13,8 @@ exports.create = (conn, r, round, cb) ->
     async.times(
         round.numberOfSeries
         (index, done) ->
-            seriesUtils.create conn, r, round.gamesPerSeries, (id) ->
+            conference = if round.numberOfSeries > 1 then index % 2 else -1
+            seriesUtils.create conn, r, round.gamesPerSeries, conference, (id) ->
                 doc.series.push id
                 done()
         ->

@@ -1,34 +1,4 @@
 exports.teams = [
-		name: 'Toronto Maple Leafs'
-		shortName: 'TOR'
-		conference: 0 #east
-		seed: 8
-		players: [
-				name: 'Phil Kessel'
-				position: 'F'
-				ptsReg: 90
-				gwgReg: 8
-				gpReg: 82
-			,
-				name: 'James van Riemsdyk'
-				position: 'F'
-				ptsReg: 65
-				gwgReg: 4
-				gpReg: 80
-			,
-				name: 'Morgan Reilly'
-				position: 'D'
-				ptsReg: 30
-				gwgReg: 1
-				gpReg: 80
-			,
-				name: 'Jake Gardiner'
-				position: 'D'
-				ptsReg: 32
-				gwgReg: 0
-				gpReg: 79
-		]
-	,
 		name: 'Boston Bruins'
 		shortName: 'BOS'
 		conference: 0 #east
@@ -58,6 +28,72 @@ exports.teams = [
 				gwgReg: 4
 				gpReg: 79
 		]
+	,
+		name: 'Pittsburgh Penguins'
+		shortName: 'PIT'
+		conference: 0 #east
+		seed: 2
+		players: []
+	,
+		name: 'Tampa Bay Lightning'
+		shortName: 'TAM'
+		conference: 0 #east
+		seed: 3
+		players: []
+	,
+		name: 'Montreal Canadiens'
+		shortName: 'MON'
+		conference: 0 #east
+		seed: 4
+		players: []
+	,
+		name: 'Philadephia Flyers'
+		shortName: 'PHI'
+		conference: 0 #east
+		seed: 5
+		players: []
+	,
+		name: 'New York Rangers'
+		shortName: 'NYR'
+		conference: 0 #east
+		seed: 6
+		players: []
+	,
+		name: 'Toronto Maple Leafs'
+		shortName: 'TOR'
+		conference: 0 #east
+		seed: 7
+		players: [
+				name: 'Phil Kessel'
+				position: 'F'
+				ptsReg: 90
+				gwgReg: 8
+				gpReg: 82
+			,
+				name: 'James van Riemsdyk'
+				position: 'F'
+				ptsReg: 65
+				gwgReg: 4
+				gpReg: 80
+			,
+				name: 'Morgan Reilly'
+				position: 'D'
+				ptsReg: 30
+				gwgReg: 1
+				gpReg: 80
+			,
+				name: 'Jake Gardiner'
+				position: 'D'
+				ptsReg: 32
+				gwgReg: 0
+				gpReg: 79
+		]
+	,
+		name: 'Detroit Red Wings'
+		shortName: 'DET'
+		conference: 0 #east
+		seed: 8
+		players: []
 	,
 		name: 'St. Louis Blues'
 		shortName: 'STL'
@@ -118,4 +154,40 @@ exports.teams = [
 				gwgReg: 1
 				gpReg: 78
 		]
+	,
+		name: 'San Jose Sharks'
+		shortName: 'SAN'
+		conference: 0 #east
+		seed: 3
+		players: []
+	,
+		name: 'Colorado Avalanche'
+		shortName: 'COL'
+		conference: 0 #east
+		seed: 4
+		players: []
+	,
+		name: 'Chicago Blackhawks'
+		shortName: 'CHI'
+		conference: 0 #east
+		seed: 5
+		players: []
+	,
+		name: 'Los Angeles Kings'
+		shortName: 'LOS'
+		conference: 0 #east
+		seed: 6
+		players: []
+	,
+		name: 'Minnesota Wild'
+		shortName: 'MIN'
+		conference: 0 #east
+		seed: 7
+		players: []
+	,
+		name: 'Phoenix Coyotes'
+		shortName: 'PHO'
+		conference: 0 #east
+		seed: 8
+		players: []
 ]
