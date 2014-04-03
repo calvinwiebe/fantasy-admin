@@ -1,5 +1,5 @@
 button.btn.btn-default
-    if !team1 || !team2
-        | an unconfigured series
+    if team1Name && team2Name
+        | #{team1Name} vs #{team2Name}
     else
-        | #{team1} vs #{team2}
+        | an unconfigured series

@@ -40,8 +40,19 @@ exports.RoundsCollection = Collection
     initialize: ({@pool}) ->
     sync: syncWithId 'pool'
 
+exports.SeriesModel = SeriesModel = Model
+    urlRoot: '/series'
+
+    save: (patch, options) ->
+        attributes = @toJSON()
+        delete attributes.team1Name
+        delete attributes.team2Name
+        attributes = _.extend {}, attributes, patch
+        Backbone.Model::save.call this, attributes, options
+
 exports.SeriesCollection = Collection
     url: '/series'
+    model: SeriesModel
     initialize: ({@round}) ->
     sync: syncWithId 'round'
 

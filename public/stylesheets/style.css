@@ -127,7 +127,7 @@ a {
     width: 100%;
 }
 
-#dashboard #rounds-container {
+#dashboard #rounds-container, #series-container {
     padding-left: 0px;
 }
 

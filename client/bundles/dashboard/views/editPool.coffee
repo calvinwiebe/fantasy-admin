@@ -19,7 +19,7 @@ exports.EditPoolFormView = View
     id: 'edit-pool-form'
 
     events:
-        'click #save'    : 'save'
+        'click #save-pool' : 'save'
 
     initialize: ->
         _.extend this, Cleanup.mixin
@@ -258,27 +258,22 @@ views.SeriesEditItem = View
     tagName: 'div'
 
     events:
-        'change .team1' : 'team1Change'
-        'change .team2' : 'team2Change'
-        'click .back'   : 'dismiss'
-        'click .edit'   : 'edit'
+        'click .back'       : 'dismiss'
+        'click .edit'       : 'edit'
+        'click .quick-save' : 'quickSave'
 
     initialize: ({@context}) ->
-        @needsData = true
-        # TODO: no smarts right now, this will show the full list
-        # off all teams for every choice. We could be smart and only show
-        # teams that have not been selected yet.
+        # TODO: we should only allow the selection of teams that are not assigned
+        # thus far.
         @model = @context.series
-        @collection = new TeamsCollection league: 'nhl'
-        @collection.fetch success: (model) =>
-            @needsData = false
-            @render()
+        @collection = @context.teams
 
-    team1Change: ->
+    quickSave: (e) ->
+        e.preventDefault()
         @model.set 'team1', @$('.team1').val()
-
-    team2Change: ->
         @model.set 'team2', @$('.team2').val()
+        @model.save {}, success: => alert 'series saved'
+        false
 
     dismiss: (e) ->
         e.preventDefault()
@@ -289,12 +284,16 @@ views.SeriesEditItem = View
         }
         false
 
+    edit: (e) ->
+        e.preventDefault()
+        @trigger 'goto', page: 'editSeries'
+        false
+
     getTemplateData: ->
         series: @model.toJSON()
         teams: @collection.toJSON()
 
     render: ->
-        return this if @needsData
         @undelegateEvents
         @$el.empty()
         @$el.append @template @getTemplateData()
@@ -336,8 +335,11 @@ views.SeriesListView = View
         @needsData = true
         @collection = new SeriesCollection round: @context.round.get 'id'
         @collection.fetch success: =>
-            @needsData = false
-            @render()
+            @teams = new TeamsCollection league: 'nhl'
+            @teams.fetch success: =>
+                @needsData = false
+                @mapTeamsOntoSeries()
+                @render()
 
     dismiss: (e) ->
         e.preventDefault()
@@ -347,6 +349,13 @@ views.SeriesListView = View
                 round: @context.round
         }
         false
+
+    mapTeamsOntoSeries: ->
+        @collection.forEach (model) =>
+            team1 = @teams.find 'id': model.get 'team1'
+            team2 = @teams.find 'id': model.get 'team2'
+            model.set 'team1Name', team1.get('shortName') if team1?
+            model.set 'team2Name', team2.get('shortName') if team2?
 
     renderSeries: ->
         @childViews = _.chain(@collection.models)
@@ -358,6 +367,7 @@ views.SeriesListView = View
                         context:
                             round: @context.round
                             series: model
+                            teams: @teams
                     }
                 view
             ).forEach((view) =>
@@ -419,6 +429,9 @@ RoundListItem = View
 views.RoundsView = View
     template: templates.roundsView
 
+    events:
+        'click #save-rounds': 'save'
+
     initialize: ({@pool}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
@@ -428,14 +441,14 @@ views.RoundsView = View
             @needsData = false
             @render()
 
-    saveRounds: (e) ->
+    save: (e) ->
         e.preventDefault()
         asink.each @collection.models,
             (model, cb) =>
                 model.save {},
                     success: -> cb()
                     error: -> alert('error saving round.')
-            , (err) -> savePool()
+            , (err) -> alert 'saved rounds'
         false
 
     renderRounds: ->
