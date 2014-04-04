@@ -482,12 +482,14 @@ views.RoundsView = View
 # views.
 #
 RoundsSeriesContainer = View
+    template: templates.roundsContainer
 
     initialize: ->
         _.extend this, Cleanup.mixin
         @_ = viewConfig
         @childViews = []
-        @viewClass = @_.default
+        @viewClass = @_.defaults.view
+        @title = @_.defaults.title
 
     renderContent: (context) ->
         options =
@@ -500,12 +502,14 @@ RoundsSeriesContainer = View
 
     handleContentViewAction: (data) ->
         @viewClass = @_.events[data.event]
+        @title = @_.titles[@viewClass]
         @render data.context
 
     render: (context) ->
         @undelegateEvents
         @cleanUp()
         @$el.empty()
+        @$el.append @template { @title }
         @renderContent context
         @delegateEvents()
         this
