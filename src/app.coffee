@@ -41,12 +41,12 @@ app.use middleware.rethink()
 ROUTES
 ###
 
-# Define our login routes
-app.get '/', routes.index
-app.post '/login', routes.auth.login, routes.auth.redirect
-app.get '/logout', routes.auth.logout, routes.auth.redirect
-
 requireUser = middleware.requireUser
+
+# Define our login routes
+app.get '/', routes.auth.forward, routes.index
+app.post '/login', routes.auth.login
+app.get '/logout', routes.auth.logout
 
 # admin dashboard
 app.get '/admin/dashboard', requireUser('admin', '/'), routes.dashboard.admin

@@ -89,7 +89,16 @@ browserifyBundles = (watch=false, debug=false) ->
                 r.underscore
             ]
         ,
-            name: 'dashboard'
+            name: 'adminDashboard'
+            transforms: ['coffeeify', 'browserify-jade', 'rfolderify']
+            requires: [
+                r.views
+                r.asink
+                r.underscore
+                r.utils
+            ]
+        ,
+            name: 'userDashboard'
             transforms: ['coffeeify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.views

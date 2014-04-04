@@ -2,7 +2,7 @@
 # Show the dashboard front page
 #
 exports.admin = (req, res, next) ->
-    res.render 'dashboard'
+    res.render 'adminDashboard'
 
 exports.client = (req, res, next) ->
-    res.send 'Helloooo client!'
+    res.render 'userDashboard'

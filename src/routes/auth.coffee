@@ -2,9 +2,10 @@
 #
 {hashPassword} = require '../lib'
 
+#
 # Login in a user
 #
-exports.login = (req, res, next) ->
+login = (req, res, next) ->
     name = req.body.user
     password = req.body.password
 
@@ -28,19 +29,37 @@ exports.login = (req, res, next) ->
                     req.session.user = user
                     next()
 
+# Log a user our
+#
+logout = (req, res, next) ->
+    req.session.user = null
+    next()
+
 # Depending on the user, send them to the appropriate
 # url
 #
-exports.redirect = (req, res) ->
+exports.forward = forward = (req, res, next) ->
     if req.session.user?.permission is 'admin'
         res.redirect '/admin/dashboard'
     else if req.session.user?.permission is 'pool'
         res.redirect '/pool/dashboard'
     else
-        res.redirect '/'
+        next()
 
-# Log a user our
+# Go home
 #
-exports.logout = (req, res, next) ->
-    req.session.user = null
-    next()
+exports.home = home = (req, res) ->
+    res.redirect '/'
+
+exports.login = [
+    login
+    forward
+    home
+]
+
+exports.logout = [
+    logout
+    home
+]
+
+
