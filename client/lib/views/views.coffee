@@ -23,6 +23,9 @@ exports.GenericView = Backbone.View.extend
     initialize: ({@template}) ->
     render: genericRender
 
+# A generic view to show a list item in a list-group
+# If it is clicked, it will trigger an event with its model
+#
 exports.ListItem = Backbone.View.extend
     tagName: 'li'
     className: 'list-group-item'
@@ -38,11 +41,21 @@ exports.ListItem = Backbone.View.extend
 
     render: genericRender
 
+# A generic view to show a bunch of input items, with a model attached
+# to them. When the view is blurred, it will set the value of the single input
+# on the model's `value` attr
+#
 exports.InputListItem = Backbone.View.extend
     className: 'input-group'
     template: inputListItem
 
+    events:
+        'blur': 'onBlur'
+
     initialize: ({@serialize}) ->
+
+    onBlur: ->
+        @model.set 'value', @$('input').val()
 
     render: genericRender
 

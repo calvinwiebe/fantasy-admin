@@ -25,12 +25,22 @@ exports.PicksView = View
         @state = 'list'
         # TODO: get real thing
         @model.set 'roundNeedingPicks', '4575222e-d8a5-42b9-a110-3a1b4d0f30e2'
+        @picks = {}
         @collection = new SeriesCollection round: @model.get 'roundNeedingPicks'
-        @picks = new PicksCollection
         @collection.fetch success: =>
+            @collection.forEach (model) =>
+                @picks[model.id] = new PicksCollection
             @needsData = false
-            @collection.forEach (model) => @picks.add series: model.id
             @render()
+
+    # Send the picks to the server
+    #
+    save: ->
+        e.preventDefault()
+        console.log 'saving all the picks'
+        console.log
+        false
+
 
     seriesSelected: (model) ->
         @selectedSeries = model
@@ -43,14 +53,19 @@ exports.PicksView = View
         @render()
 
     renderContent: ->
+        @stopListening()
         if @state is 'list'
             view = new SeriesList { @collection }
             @listenTo view, 'selected', @seriesSelected
+            @listenTo view, 'save', @save
         else if @state is 'input'
-            pickModel = @picks.find id: @selectedSeries.id
-            view = new PickInputView { pool: @model, model: pickModel, series: @selectedSeries }
+            view = new PickInputView {
+                pool: @model,
+                series: @selectedSeries,
+                picks: @picks[@selectedSeries.id]
+            }
             @listenTo view, 'done', @pickSelectionDone
-        @$el.append view.render().el
+        @$('.picks').append view.render().el
         this
 
     render: ->
@@ -60,28 +75,45 @@ exports.PicksView = View
         @renderContent()
         this
 
+serializePick = (model) ->
+    name: model.get('categoryObject').name
+
 PickInputView = View
     template: templates.input
 
     events:
         'click .done': 'save'
 
-    initialize: ({@pool, @series}) ->
+    initialize: ({@pool, @series, @picks}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
+        @needsData = false
         @categories = ModelStorage.get "categories-#{@pool.id}"
-        unless @categories
+        if !@categories
             @needsData = true
             @categories = new CategoriesCollection pool: @pool.id
             @categories.fetch success: =>
                 ModelStorage.store "categories-#{@pool.id}", @categories
+                @populatePicks()
                 @needsData = false
                 @render()
+        else
+            @populatePicks()
+
+    populatePicks: ->
+        if @picks.isEmpty()
+            @categories.forEach (model) =>
+                @picks.add
+                    series: @series.id
+                    round: @pool.get 'roundNeedingPicks'
+                    category: model.id
+                    categoryObject: model.toJSON()
+                    value: null
 
     renderCategories: ->
-        @childViews = _.chain(@categories.models)
+        @childViews = _.chain(@picks.models)
             .map((model) =>
-                view = new InputListItem { model }
+                view = new InputListItem { serialize: serializePick, model }
             ).forEach((view) =>
                 @$('form').append view.render().el
             ).value()
@@ -93,6 +125,7 @@ PickInputView = View
         false
 
     render: ->
+        return this if @needsData
         @undelegateEvents()
         @$el.empty()
         @cleanUp()
@@ -109,6 +142,11 @@ serializeSeries = (model) ->
 SeriesList = View
     id: 'series-list'
     template: templates.seriesList
+
+    'click .save': 'save'
+
+    save: ->
+        @trigger 'save'
 
     initialize: ->
         _.extend this, Cleanup.mixin

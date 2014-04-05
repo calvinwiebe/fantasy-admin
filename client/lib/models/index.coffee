@@ -70,3 +70,9 @@ exports.TeamsCollection = Collection
 exports.PicksCollection = Collection
     url: '/picks'
 
+    save: (patch, options) ->
+        attributes = @toJSON()
+        delete attributes.categoryObject
+        attributes = _.extend {}, attributes, patch
+        Backbone.Model::save.call this, attributes, options
+
