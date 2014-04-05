@@ -6,9 +6,9 @@
 
 # Build files/folders
 /dist/
-/public/javascripts/dashboard.js
-/public/javascripts/landing.js
-/public/javascripts/jquery.js
+!/public/javascripts/bootstrap.min.js
+!/public/javascripts/bootstrap-datepicker.js
+/public/
 
 # Config file
 /src/config/custom.coffee
