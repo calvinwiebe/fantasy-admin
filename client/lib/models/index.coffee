@@ -35,6 +35,8 @@ exports.UserCollection = Collection
 
 exports.CategoriesCollection = Collection
     url: '/categories'
+    initialize: ({@pool}={}) ->
+    sync: syncWithId 'pool'
 
 exports.RoundsCollection = Collection
     url: '/rounds'
@@ -64,3 +66,7 @@ exports.TeamsCollection = Collection
     comparator: 'seed'
     initialize: ({@league}={}) ->
     sync: syncWithId 'league'
+
+exports.PicksCollection = Collection
+    url: '/picks'
+

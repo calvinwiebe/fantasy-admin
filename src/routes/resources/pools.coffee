@@ -16,9 +16,9 @@ exports.index = (req, res, next) ->
             results.toArray (err, pools) ->
                 res.json pools
 
-    if req.user?.permission isnt 'admin'
+    if req.user? and req.user.permission isnt 'admin'
         getPools (pool) ->
-            pool('users').contains(req.user.id)
+            pool('users').contains(req.user?.id)
     else
         getPools -> true 
 
@@ -42,7 +42,7 @@ exports.create = (req, res, next) ->
         name: req.body.name
         type: req.body.type
         users: _.uniq(req.body.users) or []
-        rounds: [] 
+        rounds: []
         categories: []
 
     poolUtils.create conn, r, pool, (err, id) ->

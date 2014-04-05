@@ -5,11 +5,14 @@ asink       = require 'asink'
 # templates
 templates = rfolder '../templates', extensions: [ '.jade' ]
 # views
-{GenericView, genericRender, Cleanup, ListItem} = require 'views'
+{GenericView, genericRender, Cleanup, ListItem, InputListItem} = require 'views'
 # utils
 utils = require 'utils'
 # models
-{PoolModel, SeriesCollection, ModelStorage} = require 'models'
+{PoolModel, SeriesCollection,
+PicksCollection, ModelStorage,
+CategoriesCollection} \
+= require 'models'
 View = Backbone.View.extend.bind Backbone.View
 
 messageBus = require('events').Bus
@@ -19,18 +22,84 @@ exports.PicksView = View
 
     initialize: ->
         @needsData = true
+        @state = 'list'
         # TODO: get real thing
         @model.set 'roundNeedingPicks', '4575222e-d8a5-42b9-a110-3a1b4d0f30e2'
         @collection = new SeriesCollection round: @model.get 'roundNeedingPicks'
+        @picks = new PicksCollection
         @collection.fetch success: =>
             @needsData = false
+            @collection.forEach (model) => @picks.add series: model.id
             @render()
+
+    seriesSelected: (model) ->
+        @selectedSeries = model
+        @state = 'input'
+        @render()
+
+    pickSelectionDone: ->
+        @selectedSeries = null
+        @state = 'list'
+        @render()
+
+    renderContent: ->
+        if @state is 'list'
+            view = new SeriesList { @collection }
+            @listenTo view, 'selected', @seriesSelected
+        else if @state is 'input'
+            pickModel = @picks.find id: @selectedSeries.id
+            view = new PickInputView { pool: @model, model: pickModel, series: @selectedSeries }
+            @listenTo view, 'done', @pickSelectionDone
+        @$el.append view.render().el
+        this
 
     render: ->
         return this if @needsData
         @$el.empty()
         @$el.append @template()
-        @$el.append new SeriesList({ @collection }).render().el
+        @renderContent()
+        this
+
+PickInputView = View
+    template: templates.input
+
+    events:
+        'click .done': 'save'
+
+    initialize: ({@pool, @series}) ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+        @categories = ModelStorage.get "categories-#{@pool.id}"
+        unless @categories
+            @needsData = true
+            @categories = new CategoriesCollection pool: @pool.id
+            @categories.fetch success: =>
+                ModelStorage.store "categories-#{@pool.id}", @categories
+                @needsData = false
+                @render()
+
+    renderCategories: ->
+        @childViews = _.chain(@categories.models)
+            .map((model) =>
+                view = new InputListItem { model }
+            ).forEach((view) =>
+                @$('form').append view.render().el
+            ).value()
+        this
+
+    save: (e) ->
+        e.preventDefault()
+        @trigger 'done'
+        false
+
+    render: ->
+        @undelegateEvents()
+        @$el.empty()
+        @cleanUp()
+        populatedSeries = ModelStorage.populate @series, ModelStorage.get 'teams'
+        @$el.append @template populatedSeries
+        @renderCategories()
+        @delegateEvents()
         this
 
 serializeSeries = (model) ->
@@ -50,7 +119,7 @@ SeriesList = View
             .map((model) =>
                 view = new ListItem { serialize: serializeSeries, model }
                 @listenTo view, 'selected', (model) =>
-                    @trigger 'seriesSelected', model
+                    @trigger 'selected', model
                 view
             ).forEach((view) =>
                 @$('ul').append view.render().el

@@ -2,17 +2,20 @@ Backbone    = require 'backbone'
 Backbone.$  = window.$
 _           = require 'lodash'
 listItem    = require './listItem.jade'
+inputListItem    = require './inputListItem.jade'
 
 exports.genericRender = genericRender = ->
     @undelegateEvents()
     @$el.empty()
-    if @collection?
-        data = models: @collection.toJSON()
+    if @serialize?
+        data = @template @serialize @model
+    else if @collection?
+        data = @template models: @collection.toJSON()
     else if @model?
-        data = @model.toJSON()
+        data = @template @model.toJSON()
     else
         data = {}
-    @$el.html @template data
+    @$el.html data
     @delegateEvents()
     this
 
@@ -33,20 +36,15 @@ exports.ListItem = Backbone.View.extend
     onClick: ->
         @trigger 'selected', @model
 
-    render: ->
-        @undelegateEvents()
-        @$el.empty()
-        if @serialize?
-            data = @template @serialize @model
-        else if @collection?
-            data = @template models: @collection.toJSON()
-        else if @model?
-            data = @template @model.toJSON()
-        else
-            data = {}
-        @$el.html data
-        @delegateEvents()
-        this
+    render: genericRender
+
+exports.InputListItem = Backbone.View.extend
+    className: 'input-group'
+    template: inputListItem
+
+    initialize: ({@serialize}) ->
+
+    render: genericRender
 
 Cleanup = {}
 Cleanup.mixin =
