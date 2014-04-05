@@ -12,10 +12,8 @@ utils = require 'utils'
 {PoolModel} = require 'models'
 View = Backbone.View.extend.bind Backbone.View
 
-# Shows a list of the pools
-#
-exports.PoolListView = View
-    id: 'pool-list'
-    template: templates.poolList
+exports.SeriesList = View
+    id: 'series-list'
+    template: templates.seriesList
 
     render: genericRender

@@ -1,11 +1,11 @@
-{PoolListView} = require './views/poolList.coffee'
+{DashboardContentView} = require './content.coffee'
 {PoolCollection} = require 'models'
 
 # create a main containing view and insert into it
 # a sidebar view, and a action area view.
 #
 init = (collection) ->
-    content = new PoolListView { collection }
+    content = new DashboardContentView { collection }
     $('body').append content.render().el
 
 $ ->

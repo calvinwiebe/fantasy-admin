@@ -1,4 +1,86 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var Backbone, Cleanup, GenericView, HeaderView, PoolListView, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
+
+Backbone = require('backbone');
+
+Backbone.$ = window.$;
+
+_ = require('lodash');
+
+asink = require('./../../lib/asink.coffee');
+
+templates = {"poolList": require("./templates/poolList.jade"),"seriesList": require("./templates/seriesList.jade")};
+
+_ref = require('./../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+
+PoolListView = require('./views/poolList.coffee').PoolListView;
+
+utils = require('./../../lib/utils.coffee');
+
+PoolModel = require('./../../lib/models/index.coffee').PoolModel;
+
+View = Backbone.View.extend.bind(Backbone.View);
+
+messageBus = require('./../../lib/events.coffee').Bus;
+
+exports.DashboardContentView = View({
+  id: 'dashboard',
+  initialize: function() {
+    this.childViews = [];
+    this.state = 'home';
+    return this.listenForEvents();
+  },
+  listenForEvents: function() {
+    return messageBus.on('nav', this.onNav.bind(this));
+  },
+  onNav: function(_arg) {
+    var page;
+    page = _arg.page;
+    this.state = page;
+    return this.render();
+  },
+  render: function() {
+    this.undelegateEvents();
+    if (this.state === 'home') {
+      this.$el.empty();
+      this.contentView = new PoolListView({
+        collection: this.collection
+      });
+      this.childViews.push(this.contentView);
+      this.$el.append(this.contentView.render().el);
+    } else {
+
+    }
+    this.delegateEvents();
+    return this;
+  }
+});
+
+HeaderView = View({
+  id: 'header',
+  template: templates.header,
+  events: {
+    'click #home-nav': function() {
+      return messageBus.put('nav', {
+        page: 'home'
+      });
+    },
+    'click #picks-nav': function() {
+      return messageBus.put('nav', {
+        page: 'picks'
+      });
+    },
+    'click #standings-nav': function() {
+      return messageBus.put('nav', {
+        page: 'standings'
+      });
+    }
+  },
+  render: genericRender
+});
+
+
+},{"./../../lib/asink.coffee":6,"./../../lib/events.coffee":7,"./../../lib/models/index.coffee":8,"./../../lib/utils.coffee":9,"./../../lib/views.coffee":10,"./templates/poolList.jade":2,"./templates/seriesList.jade":3,"./views/poolList.coffee":5,"backbone":11,"lodash":"V21I5e"}],2:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -87,16 +169,99 @@ buf.push("\n</div>");
 }
 )(params); }
 
-},{"jade/lib/runtime.js":10}],2:[function(require,module,exports){
-var PoolCollection, PoolListView, init;
+},{"jade/lib/runtime.js":13}],3:[function(require,module,exports){
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/seriesList.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined,models = locals_.models;
+jade.indent = [];
 
-PoolListView = require('./views/poolList.coffee').PoolListView;
+
+buf.push("\n<div class=\"page-header\">");
+
+
+buf.push("\n  <h1>");
+
+
+buf.push("Make your picks");
+
+
+buf.push("</h1>");
+
+
+buf.push("\n</div>");
+
+
+buf.push("\n<ul class=\"list-group\">");
+
+
+// iterate models
+;(function(){
+  var $$obj = models;
+  if ('number' == typeof $$obj.length) {
+
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var series = $$obj[$index];
+
+
+
+buf.push("\n  <li class=\"list-group-item\">");
+
+
+buf.push("" + (jade.escape((jade.interp = series.name) == null ? '' : jade.interp)) + "");
+
+
+buf.push("</li>");
+
+
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in $$obj) {
+      $$l++;      var series = $$obj[$index];
+
+
+
+buf.push("\n  <li class=\"list-group-item\">");
+
+
+buf.push("" + (jade.escape((jade.interp = series.name) == null ? '' : jade.interp)) + "");
+
+
+buf.push("</li>");
+
+
+    }
+
+  }
+}).call(this);
+
+
+
+buf.push("\n</ul>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, ".page-header\n    h1 Make your picks\nul.list-group\n    for series in models\n        li.list-group-item\n            | #{series.name}");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":13}],4:[function(require,module,exports){
+var DashboardContentView, PoolCollection, init;
+
+DashboardContentView = require('./content.coffee').DashboardContentView;
 
 PoolCollection = require('./../../lib/models/index.coffee').PoolCollection;
 
 init = function(collection) {
   var content;
-  content = new PoolListView({
+  content = new DashboardContentView({
     collection: collection
   });
   return $('body').append(content.render().el);
@@ -111,7 +276,7 @@ $(function() {
 });
 
 
-},{"./../../lib/models/index.coffee":5,"./views/poolList.coffee":3}],3:[function(require,module,exports){
+},{"./../../lib/models/index.coffee":8,"./content.coffee":1}],5:[function(require,module,exports){
 var Backbone, Cleanup, GenericView, PoolModel, View, asink, genericRender, templates, utils, _, _ref;
 
 Backbone = require('backbone');
@@ -122,7 +287,7 @@ _ = require('lodash');
 
 asink = require('./../../../lib/asink.coffee');
 
-templates = {"poolList": require("./../templates/poolList.jade")};
+templates = {"poolList": require("./../templates/poolList.jade"),"seriesList": require("./../templates/seriesList.jade")};
 
 _ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
 
@@ -139,7 +304,7 @@ exports.PoolListView = View({
 });
 
 
-},{"./../../../lib/asink.coffee":4,"./../../../lib/models/index.coffee":5,"./../../../lib/utils.coffee":6,"./../../../lib/views.coffee":7,"./../templates/poolList.jade":1,"backbone":8,"lodash":"V21I5e"}],4:[function(require,module,exports){
+},{"./../../../lib/asink.coffee":6,"./../../../lib/models/index.coffee":8,"./../../../lib/utils.coffee":9,"./../../../lib/views.coffee":10,"./../templates/poolList.jade":2,"./../templates/seriesList.jade":3,"backbone":11,"lodash":"V21I5e"}],6:[function(require,module,exports){
 var _;
 
 _ = require('lodash');
@@ -185,7 +350,62 @@ exports.each = function(collection, iterator, done) {
 };
 
 
-},{"lodash":"V21I5e"}],5:[function(require,module,exports){
+},{"lodash":"V21I5e"}],7:[function(require,module,exports){
+var EventEmitter;
+
+EventEmitter = (function() {
+  function EventEmitter() {
+    this.listeners = {};
+  }
+
+  EventEmitter.prototype.on = function(event, listener) {
+    var _base;
+    ((_base = this.listeners)[event] != null ? _base[event] : _base[event] = []).push(listener);
+    return this;
+  };
+
+  EventEmitter.prototype.removeListener = function(event, listener) {
+    var index;
+    if (this.listeners[event]) {
+      index = this.listeners[event].indexOf(listener);
+      this.listeners[event].splice(index, 1);
+      if (this.listeners[event].length === 0) {
+        return delete this.listeners[event];
+      }
+    }
+  };
+
+  EventEmitter.prototype.emit = function(event, data) {
+    var listener, _i, _len, _ref, _results;
+    if (this.listeners[event]) {
+      _ref = this.listeners[event];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        listener = _ref[_i];
+        _results.push(listener(data));
+      }
+      return _results;
+    }
+  };
+
+  EventEmitter.prototype.put = function(event, data) {
+    return setTimeout((function(_this) {
+      return function() {
+        return _this.emit(event, data);
+      };
+    })(this), 0);
+  };
+
+  return EventEmitter;
+
+})();
+
+exports.Bus = new EventEmitter;
+
+exports.EventEmitter = EventEmitter;
+
+
+},{}],8:[function(require,module,exports){
 var Backbone, Collection, GenericModel, Model, PoolModel, SeriesModel, UserModel, syncWithId, _;
 
 Backbone = require('backbone');
@@ -280,7 +500,7 @@ exports.TeamsCollection = Collection({
 });
 
 
-},{"backbone":8,"lodash":"V21I5e"}],6:[function(require,module,exports){
+},{"backbone":11,"lodash":"V21I5e"}],9:[function(require,module,exports){
 exports.get = function(_arg, done) {
   var proj, resource;
   resource = _arg.resource, proj = _arg.proj;
@@ -298,7 +518,7 @@ exports.get = function(_arg, done) {
 };
 
 
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var Backbone, Cleanup, genericRender, _;
 
 Backbone = require('backbone');
@@ -352,7 +572,7 @@ Cleanup.mixin = {
 exports.Cleanup = Cleanup;
 
 
-},{"backbone":8,"lodash":"V21I5e"}],8:[function(require,module,exports){
+},{"backbone":11,"lodash":"V21I5e"}],11:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -1962,9 +2182,9 @@ exports.Cleanup = Cleanup;
 
 }));
 
-},{"underscore":"V21I5e"}],9:[function(require,module,exports){
+},{"underscore":"V21I5e"}],12:[function(require,module,exports){
 
-},{}],10:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2169,7 +2389,7 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
   throw err;
 };
 
-},{"fs":9}],"underscore":[function(require,module,exports){
+},{"fs":12}],"underscore":[function(require,module,exports){
 module.exports=require('V21I5e');
 },{}],"V21I5e":[function(require,module,exports){
 (function (global){
@@ -8960,4 +9180,4 @@ module.exports=require('V21I5e');
 }.call(this));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[2])
+},{}]},{},[4])
