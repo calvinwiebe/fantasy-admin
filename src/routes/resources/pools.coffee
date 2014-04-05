@@ -11,12 +11,16 @@ poolUtils   = require '../../models/poolUtils'
 exports.index = (req, res, next) ->
     {conn, r} = req.rethink
 
-    if req.session.user?.permission isnt 'admin'
-        console.log 'This user should only get pools it belongs to'
+    getPools = (filter) ->
+        r.table('pools').filter(filter).run conn, (err, results) ->
+            results.toArray (err, pools) ->
+                res.json pools
 
-    r.table('pools').run conn, (err, results) ->
-        results.toArray (err, pools) ->
-            res.json pools
+    if req.user?.permission isnt 'admin'
+        getPools (pool) ->
+            pool('users').contains(req.user.id)
+    else
+        getPools -> true 
 
 # GET - randomly creates a new pool
 exports.new = (req, res, next) ->

@@ -1,11 +1,105 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var PoolCollection, init;
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/poolList.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined,models = locals_.models;
+jade.indent = [];
+
+
+buf.push("\n<div class=\"container-fluid\">");
+
+
+buf.push("\n  <div class=\"page-header\">");
+
+
+buf.push("\n    <h2>");
+
+
+buf.push("Your Pools");
+
+
+buf.push("</h2>");
+
+
+buf.push("\n  </div>");
+
+
+buf.push("\n  <ul class=\"list-group\">");
+
+
+// iterate models
+;(function(){
+  var $$obj = models;
+  if ('number' == typeof $$obj.length) {
+
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var pool = $$obj[$index];
+
+
+
+buf.push("\n    <li class=\"list-group-item\">");
+
+
+buf.push("" + (jade.escape((jade.interp = pool.name) == null ? '' : jade.interp)) + "");
+
+
+buf.push("</li>");
+
+
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in $$obj) {
+      $$l++;      var pool = $$obj[$index];
+
+
+
+buf.push("\n    <li class=\"list-group-item\">");
+
+
+buf.push("" + (jade.escape((jade.interp = pool.name) == null ? '' : jade.interp)) + "");
+
+
+buf.push("</li>");
+
+
+    }
+
+  }
+}).call(this);
+
+
+
+buf.push("\n  </ul>");
+
+
+buf.push("\n</div>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, ".container-fluid\n    .page-header\n        h2 Your Pools\n    ul.list-group\n        for pool in models\n            li.list-group-item\n                | #{pool.name}");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":10}],2:[function(require,module,exports){
+var PoolCollection, PoolListView, init;
+
+PoolListView = require('./views/poolList.coffee').PoolListView;
 
 PoolCollection = require('./../../lib/models/index.coffee').PoolCollection;
 
 init = function(collection) {
-  console.log("received the user's pools");
-  return console.log(collection);
+  var content;
+  content = new PoolListView({
+    collection: collection
+  });
+  return $('body').append(content.render().el);
 };
 
 $(function() {
@@ -17,7 +111,35 @@ $(function() {
 });
 
 
-},{"./../../lib/models/index.coffee":4}],"l2cV+i":[function(require,module,exports){
+},{"./../../lib/models/index.coffee":5,"./views/poolList.coffee":3}],3:[function(require,module,exports){
+var Backbone, Cleanup, GenericView, PoolModel, View, asink, genericRender, templates, utils, _, _ref;
+
+Backbone = require('backbone');
+
+Backbone.$ = window.$;
+
+_ = require('lodash');
+
+asink = require('./../../../lib/asink.coffee');
+
+templates = {"poolList": require("./../templates/poolList.jade")};
+
+_ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+
+utils = require('./../../../lib/utils.coffee');
+
+PoolModel = require('./../../../lib/models/index.coffee').PoolModel;
+
+View = Backbone.View.extend.bind(Backbone.View);
+
+exports.PoolListView = View({
+  id: 'pool-list',
+  template: templates.poolList,
+  render: genericRender
+});
+
+
+},{"./../../../lib/asink.coffee":4,"./../../../lib/models/index.coffee":5,"./../../../lib/utils.coffee":6,"./../../../lib/views.coffee":7,"./../templates/poolList.jade":1,"backbone":8,"lodash":"V21I5e"}],4:[function(require,module,exports){
 var _;
 
 _ = require('lodash');
@@ -63,9 +185,7 @@ exports.each = function(collection, iterator, done) {
 };
 
 
-},{"lodash":"V21I5e"}],"asink":[function(require,module,exports){
-module.exports=require('l2cV+i');
-},{}],4:[function(require,module,exports){
+},{"lodash":"V21I5e"}],5:[function(require,module,exports){
 var Backbone, Collection, GenericModel, Model, PoolModel, SeriesModel, UserModel, syncWithId, _;
 
 Backbone = require('backbone');
@@ -160,7 +280,7 @@ exports.TeamsCollection = Collection({
 });
 
 
-},{"backbone":9,"lodash":"V21I5e"}],"zm9Tqt":[function(require,module,exports){
+},{"backbone":8,"lodash":"V21I5e"}],6:[function(require,module,exports){
 exports.get = function(_arg, done) {
   var proj, resource;
   resource = _arg.resource, proj = _arg.proj;
@@ -178,11 +298,7 @@ exports.get = function(_arg, done) {
 };
 
 
-},{}],"utils":[function(require,module,exports){
-module.exports=require('zm9Tqt');
-},{}],"views":[function(require,module,exports){
-module.exports=require('yEhrOZ');
-},{}],"yEhrOZ":[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var Backbone, Cleanup, genericRender, _;
 
 Backbone = require('backbone');
@@ -236,7 +352,7 @@ Cleanup.mixin = {
 exports.Cleanup = Cleanup;
 
 
-},{"backbone":9,"lodash":"V21I5e"}],9:[function(require,module,exports){
+},{"backbone":8,"lodash":"V21I5e"}],8:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -1846,7 +1962,214 @@ exports.Cleanup = Cleanup;
 
 }));
 
-},{"underscore":"V21I5e"}],"underscore":[function(require,module,exports){
+},{"underscore":"V21I5e"}],9:[function(require,module,exports){
+
+},{}],10:[function(require,module,exports){
+'use strict';
+
+/**
+ * Merge two attribute objects giving precedence
+ * to values in object `b`. Classes are special-cased
+ * allowing for arrays and merging/joining appropriately
+ * resulting in a string.
+ *
+ * @param {Object} a
+ * @param {Object} b
+ * @return {Object} a
+ * @api private
+ */
+
+exports.merge = function merge(a, b) {
+  if (arguments.length === 1) {
+    var attrs = a[0];
+    for (var i = 1; i < a.length; i++) {
+      attrs = merge(attrs, a[i]);
+    }
+    return attrs;
+  }
+  var ac = a['class'];
+  var bc = b['class'];
+
+  if (ac || bc) {
+    ac = ac || [];
+    bc = bc || [];
+    if (!Array.isArray(ac)) ac = [ac];
+    if (!Array.isArray(bc)) bc = [bc];
+    a['class'] = ac.concat(bc).filter(nulls);
+  }
+
+  for (var key in b) {
+    if (key != 'class') {
+      a[key] = b[key];
+    }
+  }
+
+  return a;
+};
+
+/**
+ * Filter null `val`s.
+ *
+ * @param {*} val
+ * @return {Boolean}
+ * @api private
+ */
+
+function nulls(val) {
+  return val != null && val !== '';
+}
+
+/**
+ * join array as classes.
+ *
+ * @param {*} val
+ * @return {String}
+ */
+exports.joinClasses = joinClasses;
+function joinClasses(val) {
+  return Array.isArray(val) ? val.map(joinClasses).filter(nulls).join(' ') : val;
+}
+
+/**
+ * Render the given classes.
+ *
+ * @param {Array} classes
+ * @param {Array.<Boolean>} escaped
+ * @return {String}
+ */
+exports.cls = function cls(classes, escaped) {
+  var buf = [];
+  for (var i = 0; i < classes.length; i++) {
+    if (escaped && escaped[i]) {
+      buf.push(exports.escape(joinClasses([classes[i]])));
+    } else {
+      buf.push(joinClasses(classes[i]));
+    }
+  }
+  var text = joinClasses(buf);
+  if (text.length) {
+    return ' class="' + text + '"';
+  } else {
+    return '';
+  }
+};
+
+/**
+ * Render the given attribute.
+ *
+ * @param {String} key
+ * @param {String} val
+ * @param {Boolean} escaped
+ * @param {Boolean} terse
+ * @return {String}
+ */
+exports.attr = function attr(key, val, escaped, terse) {
+  if ('boolean' == typeof val || null == val) {
+    if (val) {
+      return ' ' + (terse ? key : key + '="' + key + '"');
+    } else {
+      return '';
+    }
+  } else if (0 == key.indexOf('data') && 'string' != typeof val) {
+    return ' ' + key + "='" + JSON.stringify(val).replace(/'/g, '&apos;') + "'";
+  } else if (escaped) {
+    return ' ' + key + '="' + exports.escape(val) + '"';
+  } else {
+    return ' ' + key + '="' + val + '"';
+  }
+};
+
+/**
+ * Render the given attributes object.
+ *
+ * @param {Object} obj
+ * @param {Object} escaped
+ * @return {String}
+ */
+exports.attrs = function attrs(obj, terse){
+  var buf = [];
+
+  var keys = Object.keys(obj);
+
+  if (keys.length) {
+    for (var i = 0; i < keys.length; ++i) {
+      var key = keys[i]
+        , val = obj[key];
+
+      if ('class' == key) {
+        if (val = joinClasses(val)) {
+          buf.push(' ' + key + '="' + val + '"');
+        }
+      } else {
+        buf.push(exports.attr(key, val, false, terse));
+      }
+    }
+  }
+
+  return buf.join('');
+};
+
+/**
+ * Escape the given string of `html`.
+ *
+ * @param {String} html
+ * @return {String}
+ * @api private
+ */
+
+exports.escape = function escape(html){
+  var result = String(html)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  if (result === '' + html) return html;
+  else return result;
+};
+
+/**
+ * Re-throw the given `err` in context to the
+ * the jade in `filename` at the given `lineno`.
+ *
+ * @param {Error} err
+ * @param {String} filename
+ * @param {String} lineno
+ * @api private
+ */
+
+exports.rethrow = function rethrow(err, filename, lineno, str){
+  if (!(err instanceof Error)) throw err;
+  if ((typeof window != 'undefined' || !filename) && !str) {
+    err.message += ' on line ' + lineno;
+    throw err;
+  }
+  try {
+    str =  str || require('fs').readFileSync(filename, 'utf8')
+  } catch (ex) {
+    rethrow(err, null, lineno)
+  }
+  var context = 3
+    , lines = str.split('\n')
+    , start = Math.max(lineno - context, 0)
+    , end = Math.min(lines.length, lineno + context);
+
+  // Error context
+  var context = lines.slice(start, end).map(function(line, i){
+    var curr = i + start + 1;
+    return (curr == lineno ? '  > ' : '    ')
+      + curr
+      + '| '
+      + line;
+  }).join('\n');
+
+  // Alter exception message
+  err.path = filename;
+  err.message = (filename || 'Jade') + ':' + lineno
+    + '\n' + context + '\n\n' + err.message;
+  throw err;
+};
+
+},{"fs":9}],"underscore":[function(require,module,exports){
 module.exports=require('V21I5e');
 },{}],"V21I5e":[function(require,module,exports){
 (function (global){
@@ -8637,4 +8960,4 @@ module.exports=require('V21I5e');
 }.call(this));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[1])
+},{}]},{},[2])

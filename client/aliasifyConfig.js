@@ -1,5 +1,8 @@
 module.exports = {
     aliases: {
-        "models": './lib/models/index.coffee'
+        "models": "./lib/models/index.coffee",
+        "views" : "./lib/views.coffee",
+        "asink" : "./lib/asink.coffee",
+        "utils" : "./lib/utils.coffee"
     }
 }

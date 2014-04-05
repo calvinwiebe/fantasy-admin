@@ -76,35 +76,25 @@ browserifyBundle = (fullPath, config, watch, debug=false) ->
 #
 browserifyBundles = (watch=false, debug=false) ->
     r =
-        views: [ __dirname + osify('/client/lib/views.coffee'), 'views' ]
-        asink: [ __dirname + osify('/client/lib/asink.coffee'), 'asink' ]
-        utils: [ __dirname + osify('/client/lib/utils.coffee'), 'utils' ]
         underscore: [ 'lodash', 'underscore' ]
 
     configs = [
             name: 'landing'
-            transforms: ['coffeeify', 'browserify-jade']
+            transforms: ['coffeeify', 'aliasify', 'browserify-jade']
             requires: [
-                r.views
                 r.underscore
             ]
         ,
             name: 'adminDashboard'
             transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
-                r.views
-                r.asink
                 r.underscore
-                r.utils
             ]
         ,
             name: 'userDashboard'
             transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
-                r.views
-                r.asink
                 r.underscore
-                r.utils
             ]
         ,
             name: 'jquery'
