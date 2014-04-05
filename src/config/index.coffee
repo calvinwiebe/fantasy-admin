@@ -19,6 +19,7 @@ defaults =
                 'rounds'
                 'series'
                 'categories'
+                'results'
                 'teams'
             ]
         fantasyDb:
