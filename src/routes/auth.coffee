@@ -26,6 +26,10 @@ login = (req, res, next) ->
                     next()
                 else
                     # user successfully logged in
+                    # this will cause client-sessions to add a `Set-Cookie` header with
+                    # the user info in it
+                    delete user.password
+                    delete user.plainPassword
                     req.session.user = user
                     next()
 

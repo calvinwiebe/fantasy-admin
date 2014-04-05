@@ -10,7 +10,7 @@ templates = rfolder './templates', extensions: [ '.jade' ]
 # utils
 utils = require 'utils'
 # models
-{PoolModel, UserCollection, UserModel} = require './models/index.coffee'
+{PoolModel, UserCollection, UserModel} = require 'models'
 # configurations
 viewConfig = require './viewConfig.coffee'
 views = {}

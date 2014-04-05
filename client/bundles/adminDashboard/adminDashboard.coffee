@@ -1,7 +1,5 @@
 {DashboardContentView} = require './content.coffee'
-Backbone = require 'backbone'
-Backbone.$ = window.$
-{PoolCollection} = require './models/index.coffee'
+{PoolCollection} = require 'models'
 
 # create a main containing view and insert into it
 # a sidebar view, and a action area view.

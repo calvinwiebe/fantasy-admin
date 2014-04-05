@@ -5,8 +5,14 @@ moniker     = require 'moniker'
 poolUtils   = require '../../models/poolUtils'
 
 # GET
+# Can be accessed by both admin and users. When a user with `pools` permission
+# is accessing it, filter the response to only be pools that they belong to.
+#
 exports.index = (req, res, next) ->
     {conn, r} = req.rethink
+
+    if req.session.user?.permission isnt 'admin'
+        console.log 'This user should only get pools it belongs to'
 
     r.table('pools').run conn, (err, results) ->
         results.toArray (err, pools) ->

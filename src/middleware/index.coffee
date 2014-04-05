@@ -17,6 +17,14 @@ exports.rethink = ->
                     r: r
                 next()
 
+# Add an existing user to a more convenient variable
+# Alernatively, if we don't want to store the entire user object in the session,
+# we could go to the db here.
+#
+exports.populateUser = (req, res, next) ->
+    req.user = req.session.user
+    next()
+
 # Determine which client is talking to us, and send the
 # appropriate response
 #

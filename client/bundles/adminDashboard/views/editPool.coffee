@@ -9,7 +9,7 @@ utils = require 'utils'
 UserModel, CategoriesCollection,
 RoundsCollection, SeriesCollection,
 TeamsCollection} \
-= require '../models/index.coffee'
+= require 'models'
 viewConfig = require './viewConfig.coffee'
 View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool

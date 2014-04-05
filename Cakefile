@@ -90,7 +90,7 @@ browserifyBundles = (watch=false, debug=false) ->
             ]
         ,
             name: 'adminDashboard'
-            transforms: ['coffeeify', 'browserify-jade', 'rfolderify']
+            transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.views
                 r.asink
@@ -99,7 +99,7 @@ browserifyBundles = (watch=false, debug=false) ->
             ]
         ,
             name: 'userDashboard'
-            transforms: ['coffeeify', 'browserify-jade', 'rfolderify']
+            transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.views
                 r.asink

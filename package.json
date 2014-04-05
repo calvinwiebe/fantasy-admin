@@ -28,6 +28,8 @@
     "nodemon": "*",
     "commander": "*",
     "grunt": "*",
-    "grunt-cli": "*"
-  }
+    "grunt-cli": "*",
+    "aliasify": "~1.4.0"
+  },
+  "aliasify": "./client/aliasifyConfig.js"
 }

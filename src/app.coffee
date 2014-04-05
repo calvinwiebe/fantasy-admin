@@ -36,6 +36,7 @@ app.use sessions
     secure: false
 # connect to our rethinkDB and add the connection to the `req` object
 app.use middleware.rethink()
+app.use middleware.populateUser
 
 ###
 ROUTES
