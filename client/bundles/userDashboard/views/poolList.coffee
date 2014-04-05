@@ -12,10 +12,48 @@ utils = require 'utils'
 {PoolModel} = require 'models'
 View = Backbone.View.extend.bind Backbone.View
 
+messageBus = require('events').Bus
+
+PoolListItem = View
+    tagName: 'li'
+    className: 'list-group-item'
+    template: templates.poolListItem
+
+    events:
+        'click': 'onClick'
+
+    onClick: ->
+        @trigger 'selected', @model
+
+    render: genericRender
+
 # Shows a list of the pools
 #
 exports.PoolListView = View
     id: 'pool-list'
     template: templates.poolList
 
-    render: genericRender
+    initialize: ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+
+    renderPools: ->
+        @childViews = _.chain(@collection.models)
+            .map((model) =>
+                view = new PoolListItem { model }
+                @listenTo view, 'selected', (model) ->
+                    messageBus.put 'poolSelected', model
+                view
+            ).forEach((view) =>
+                @$('ul').append view.render().el
+            ).value()
+        this
+
+    render: ->
+        @undelegateEvents()
+        @$el.empty()
+        @$el.append @template()
+        @cleanUp()
+        @renderPools()
+        @delegateEvents()
+        this

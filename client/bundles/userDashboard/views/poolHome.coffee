@@ -14,13 +14,7 @@ View = Backbone.View.extend.bind Backbone.View
 
 messageBus = require('events').Bus
 
-exports.PicksView = View
-    template: templates.picks
-
-    render: genericRender
-
-exports.SeriesList = View
-    id: 'series-list'
-    template: templates.seriesList
+exports.PoolHomeView = View
+    template: templates.poolHome
 
     render: genericRender

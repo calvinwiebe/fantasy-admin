@@ -7,6 +7,8 @@ templates = rfolder './templates', extensions: [ '.jade' ]
 # views
 {GenericView, genericRender, Cleanup} = require 'views'
 {PoolListView} = require './views/poolList.coffee'
+{PoolHomeView} = require './views/poolHome.coffee'
+{PicksView} = require './views/picks.coffee'
 # utils
 utils = require 'utils'
 # models
@@ -15,43 +17,9 @@ View = Backbone.View.extend.bind Backbone.View
 
 messageBus = require('events').Bus
 
-# The main manager view.
-# This view will swap its content view, while maintaining some basic header/footers. It
-# will retain a bunch of app-wide data, and use an event emitter to act on things, rather than
-# listening on a bunch of views, since this is the end-all containing view.
-#
-exports.DashboardContentView = View
-    id: 'dashboard'
-
-    initialize: ->
-        @childViews = []
-        @state = 'home'
-        @listenForEvents()
-
-    listenForEvents: ->
-        messageBus \
-            .on 'nav', @onNav.bind(this)
-
-    onNav: ({page}) ->
-        @state = page
-        @render()
-
-    render: ->
-        @undelegateEvents()
-        # render the pool list page with no nav header
-        if @state is 'home'
-            @$el.empty()
-            @contentView = new PoolListView { @collection }
-            @childViews.push @contentView
-            @$el.append @contentView.render().el
-        # render the header and content view(s)
-        else
-            # render header view and content view
-        @delegateEvents()
-        this
-
 HeaderView = View
-    id: 'header'
+    tagName: 'nav'
+    className: 'navbar navbar-default navbar-static-top'
     template: templates.header
 
     events:
@@ -59,4 +27,82 @@ HeaderView = View
         'click #picks-nav': -> messageBus.put 'nav', page: 'picks'
         'click #standings-nav': -> messageBus.put 'nav', page: 'standings'
 
-    render: genericRender
+    render: ->
+        genericRender.call this
+        @$el.attr 'role', 'navigation'
+        this
+
+# The main manager view.
+# This view will swap its content view, while maintaining some basic header/footers. It
+# will retain a bunch of app-wide data, and use an event emitter to act on things, rather than
+# listening on a bunch of views, since this is the end-all containing view.
+#
+exports.DashboardContentView = View
+    id: 'dashboard'
+    className: 'container'
+    template: templates.content
+
+    initialize: ->
+        _.bindAll this
+        @childViews = []
+        @state = 'home'
+        @listenForEvents()
+
+    listenForEvents: ->
+        messageBus \
+            .on 'nav', @onNav
+            .on 'poolSelected', @poolSelected
+
+    onNav: ({page}) ->
+        @state = page
+        @render()
+
+    poolSelected: (model) ->
+        @state = 'poolHome'
+        @selectedPool = model
+        @render()
+
+    clearPrevious: ->
+        return this unless @firstPoolRender
+        @$el.empty()
+        this
+
+    renderHeader: ->
+        return this unless @firstPoolRender
+        @headerView = new HeaderView model: @selectedPool
+        $('body').prepend @headerView.render().el
+        this
+
+    renderContent: ->
+        @contentView.remove()
+        switch @state
+            when 'poolHome'
+                @contentView = new PoolHomeView model: @selectedPool
+            when 'picks'
+                @contentView = new PicksView model: @selectedPool
+        @$el.append @contentView.render().el
+        this
+
+    renderHome: ->
+        @firstPoolRender = true
+        @headerView?.remove()
+        @contentView?.remove()
+        @contentView = new PoolListView { @collection }
+        @childViews.push @contentView
+        @$el.append @contentView.render().el
+
+    render: ->
+        @undelegateEvents()
+        # render the pool list page with no nav header
+        if @state is 'home'
+            @renderHome()
+        # render the header and content view(s)
+        else
+            # render header view and content view
+            @clearPrevious()
+            @renderHeader()
+            @renderContent()
+            @firstPoolRender = false
+        @delegateEvents()
+        this
+

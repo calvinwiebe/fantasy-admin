@@ -1,5 +1,5 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Backbone, Cleanup, GenericView, HeaderView, PoolListView, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
+var Backbone, Cleanup, GenericView, HeaderView, PicksView, PoolHomeView, PoolListView, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
 
 Backbone = require('backbone');
 
@@ -9,11 +9,15 @@ _ = require('lodash');
 
 asink = require('./../../lib/asink.coffee');
 
-templates = {"poolList": require("./templates/poolList.jade"),"seriesList": require("./templates/seriesList.jade")};
+templates = {"content": require("./templates/content.jade"),"header": require("./templates/header.jade"),"picks": require("./templates/picks.jade"),"poolHome": require("./templates/poolHome.jade"),"poolList": require("./templates/poolList.jade"),"poolListItem": require("./templates/poolListItem.jade"),"seriesList": require("./templates/seriesList.jade")};
 
 _ref = require('./../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
 
 PoolListView = require('./views/poolList.coffee').PoolListView;
+
+PoolHomeView = require('./views/poolHome.coffee').PoolHomeView;
+
+PicksView = require('./views/picks.coffee').PicksView;
 
 utils = require('./../../lib/utils.coffee');
 
@@ -23,41 +27,9 @@ View = Backbone.View.extend.bind(Backbone.View);
 
 messageBus = require('./../../lib/events.coffee').Bus;
 
-exports.DashboardContentView = View({
-  id: 'dashboard',
-  initialize: function() {
-    this.childViews = [];
-    this.state = 'home';
-    return this.listenForEvents();
-  },
-  listenForEvents: function() {
-    return messageBus.on('nav', this.onNav.bind(this));
-  },
-  onNav: function(_arg) {
-    var page;
-    page = _arg.page;
-    this.state = page;
-    return this.render();
-  },
-  render: function() {
-    this.undelegateEvents();
-    if (this.state === 'home') {
-      this.$el.empty();
-      this.contentView = new PoolListView({
-        collection: this.collection
-      });
-      this.childViews.push(this.contentView);
-      this.$el.append(this.contentView.render().el);
-    } else {
-
-    }
-    this.delegateEvents();
-    return this;
-  }
-});
-
 HeaderView = View({
-  id: 'header',
+  tagName: 'nav',
+  className: 'navbar navbar-default navbar-static-top',
   template: templates.header,
   events: {
     'click #home-nav': function() {
@@ -76,11 +48,315 @@ HeaderView = View({
       });
     }
   },
-  render: genericRender
+  render: function() {
+    genericRender.call(this);
+    this.$el.attr('role', 'navigation');
+    return this;
+  }
+});
+
+exports.DashboardContentView = View({
+  id: 'dashboard',
+  className: 'container',
+  template: templates.content,
+  initialize: function() {
+    _.bindAll(this);
+    this.childViews = [];
+    this.state = 'home';
+    return this.listenForEvents();
+  },
+  listenForEvents: function() {
+    return messageBus.on('nav', this.onNav).on('poolSelected', this.poolSelected);
+  },
+  onNav: function(_arg) {
+    var page;
+    page = _arg.page;
+    this.state = page;
+    return this.render();
+  },
+  poolSelected: function(model) {
+    this.state = 'poolHome';
+    this.selectedPool = model;
+    return this.render();
+  },
+  clearPrevious: function() {
+    if (!this.firstPoolRender) {
+      return this;
+    }
+    this.$el.empty();
+    return this;
+  },
+  renderHeader: function() {
+    if (!this.firstPoolRender) {
+      return this;
+    }
+    this.headerView = new HeaderView({
+      model: this.selectedPool
+    });
+    $('body').prepend(this.headerView.render().el);
+    return this;
+  },
+  renderContent: function() {
+    this.contentView.remove();
+    switch (this.state) {
+      case 'poolHome':
+        this.contentView = new PoolHomeView({
+          model: this.selectedPool
+        });
+        break;
+      case 'picks':
+        this.contentView = new PicksView({
+          model: this.selectedPool
+        });
+    }
+    this.$el.append(this.contentView.render().el);
+    return this;
+  },
+  renderHome: function() {
+    var _ref1, _ref2;
+    this.firstPoolRender = true;
+    if ((_ref1 = this.headerView) != null) {
+      _ref1.remove();
+    }
+    if ((_ref2 = this.contentView) != null) {
+      _ref2.remove();
+    }
+    this.contentView = new PoolListView({
+      collection: this.collection
+    });
+    this.childViews.push(this.contentView);
+    return this.$el.append(this.contentView.render().el);
+  },
+  render: function() {
+    this.undelegateEvents();
+    if (this.state === 'home') {
+      this.renderHome();
+    } else {
+      this.clearPrevious();
+      this.renderHeader();
+      this.renderContent();
+      this.firstPoolRender = false;
+    }
+    this.delegateEvents();
+    return this;
+  }
 });
 
 
-},{"./../../lib/asink.coffee":6,"./../../lib/events.coffee":7,"./../../lib/models/index.coffee":8,"./../../lib/utils.coffee":9,"./../../lib/views.coffee":10,"./templates/poolList.jade":2,"./templates/seriesList.jade":3,"./views/poolList.coffee":5,"backbone":11,"lodash":"V21I5e"}],2:[function(require,module,exports){
+},{"./../../lib/asink.coffee":13,"./../../lib/events.coffee":14,"./../../lib/models/index.coffee":15,"./../../lib/utils.coffee":16,"./../../lib/views.coffee":17,"./templates/content.jade":2,"./templates/header.jade":3,"./templates/picks.jade":4,"./templates/poolHome.jade":5,"./templates/poolList.jade":6,"./templates/poolListItem.jade":7,"./templates/seriesList.jade":8,"./views/picks.coffee":10,"./views/poolHome.coffee":11,"./views/poolList.coffee":12,"backbone":18,"lodash":"V21I5e"}],2:[function(require,module,exports){
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/content.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined;
+jade.indent = [];
+
+
+buf.push("\n<div id=\"header\">");
+
+
+buf.push("</div>");
+
+
+buf.push("\n<div id=\"content\">");
+
+
+buf.push("</div>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "#header\n#content");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":20}],3:[function(require,module,exports){
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/header.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined,name = locals_.name;
+jade.indent = [];
+
+
+buf.push("\n<div class=\"container-fluid\">");
+
+
+buf.push("\n  <div class=\"navbar-header\">");
+
+
+buf.push("\n    <button type=\"button\" data-toggle=\"collapse\" data-target=\".link-collect\" class=\"navbar-toggle collapsed\">");
+
+
+buf.push("<span class=\"sr-only\">");
+
+
+buf.push("Toggle Navigation");
+
+
+buf.push("</span>");
+
+
+buf.push("<span class=\"icon-bar\">");
+
+
+buf.push("</span>");
+
+
+buf.push("<span class=\"icon-bar\">");
+
+
+buf.push("</span>");
+
+
+buf.push("<span class=\"icon-bar\">");
+
+
+buf.push("</span>");
+
+
+buf.push("</button>");
+
+
+buf.push("<a href=\"javascript:false\" class=\"navbar-brand\">");
+
+
+buf.push("" + (jade.escape((jade.interp = name) == null ? '' : jade.interp)) + "");
+
+
+buf.push("</a>");
+
+
+buf.push("\n  </div>");
+
+
+buf.push("\n  <div class=\"link-collect collapse navbar-collapse\">");
+
+
+buf.push("\n    <ul class=\"nav navbar-nav navbar-right\">");
+
+
+buf.push("\n      <li class=\"active\">");
+
+
+buf.push("<a id=\"home-nav\" href=\"javascript:false\" data-link=\"index\">");
+
+
+buf.push("Pools");
+
+
+buf.push("</a>");
+
+
+buf.push("</li>");
+
+
+buf.push("\n      <li>");
+
+
+buf.push("<a id=\"picks-nav\" href=\"javascript:false\" data-link=\"location\">");
+
+
+buf.push("Make Picks");
+
+
+buf.push("</a>");
+
+
+buf.push("</li>");
+
+
+buf.push("\n      <li>");
+
+
+buf.push("<a id=\"standings-nav\" href=\"javascript:false\" data-link=\"location\">");
+
+
+buf.push("Standings");
+
+
+buf.push("</a>");
+
+
+buf.push("</li>");
+
+
+buf.push("\n    </ul>");
+
+
+buf.push("\n  </div>");
+
+
+buf.push("\n</div>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, ".container-fluid\n    .navbar-header\n        button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='.link-collect')\n            span.sr-only\n                | Toggle Navigation\n            span.icon-bar\n            span.icon-bar\n            span.icon-bar\n        a.navbar-brand(href=\"javascript:false\")\n            | #{name}\n    .link-collect.collapse.navbar-collapse\n        ul.nav.navbar-nav.navbar-right\n            li.active\n                a#home-nav(href='javascript:false', data-link=\"index\") Pools\n            li\n                a#picks-nav(href='javascript:false', data-link=\"location\") Make Picks\n            li\n                a#standings-nav(href='javascript:false', data-link=\"location\") Standings\n");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":20}],4:[function(require,module,exports){
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/picks.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined;
+jade.indent = [];
+
+
+buf.push("\n<div>");
+
+
+buf.push("I am the picks view");
+
+
+buf.push("</div>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "div I am the picks view");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":20}],5:[function(require,module,exports){
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/poolHome.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined;
+jade.indent = [];
+
+
+buf.push("\n<div>");
+
+
+buf.push("I am the pool home");
+
+
+buf.push("</div>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "div I am the pool home");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":20}],6:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -88,7 +364,7 @@ var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/c
 try {
 var buf = [];
 var jade_mixins = {};
-var locals_ = (locals || {}),undefined = locals_.undefined,models = locals_.models;
+var locals_ = (locals || {}),undefined = locals_.undefined;
 jade.indent = [];
 
 
@@ -113,63 +389,46 @@ buf.push("\n  </div>");
 buf.push("\n  <ul class=\"list-group\">");
 
 
-// iterate models
-;(function(){
-  var $$obj = models;
-  if ('number' == typeof $$obj.length) {
-
-    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
-      var pool = $$obj[$index];
-
-
-
-buf.push("\n    <li class=\"list-group-item\">");
-
-
-buf.push("" + (jade.escape((jade.interp = pool.name) == null ? '' : jade.interp)) + "");
-
-
-buf.push("</li>");
-
-
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in $$obj) {
-      $$l++;      var pool = $$obj[$index];
-
-
-
-buf.push("\n    <li class=\"list-group-item\">");
-
-
-buf.push("" + (jade.escape((jade.interp = pool.name) == null ? '' : jade.interp)) + "");
-
-
-buf.push("</li>");
-
-
-    }
-
-  }
-}).call(this);
-
-
-
-buf.push("\n  </ul>");
+buf.push("</ul>");
 
 
 buf.push("\n</div>");
 
 ;return buf.join("");
 } catch (err) {
-  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, ".container-fluid\n    .page-header\n        h2 Your Pools\n    ul.list-group\n        for pool in models\n            li.list-group-item\n                | #{pool.name}");
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, ".container-fluid\n    .page-header\n        h2 Your Pools\n    ul.list-group\n");
 }
 }
 )(params); }
 
-},{"jade/lib/runtime.js":13}],3:[function(require,module,exports){
+},{"jade/lib/runtime.js":20}],7:[function(require,module,exports){
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/poolListItem.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined,name = locals_.name;
+jade.indent = [];
+
+
+buf.push("<span>");
+
+
+buf.push("" + (jade.escape((jade.interp = name) == null ? '' : jade.interp)) + "");
+
+
+buf.push("</span>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "span #{name}");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":20}],8:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -252,7 +511,7 @@ buf.push("\n</ul>");
 }
 )(params); }
 
-},{"jade/lib/runtime.js":13}],4:[function(require,module,exports){
+},{"jade/lib/runtime.js":20}],9:[function(require,module,exports){
 var DashboardContentView, PoolCollection, init;
 
 DashboardContentView = require('./content.coffee').DashboardContentView;
@@ -276,8 +535,8 @@ $(function() {
 });
 
 
-},{"./../../lib/models/index.coffee":8,"./content.coffee":1}],5:[function(require,module,exports){
-var Backbone, Cleanup, GenericView, PoolModel, View, asink, genericRender, templates, utils, _, _ref;
+},{"./../../lib/models/index.coffee":15,"./content.coffee":1}],10:[function(require,module,exports){
+var Backbone, Cleanup, GenericView, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
 
 Backbone = require('backbone');
 
@@ -287,7 +546,7 @@ _ = require('lodash');
 
 asink = require('./../../../lib/asink.coffee');
 
-templates = {"poolList": require("./../templates/poolList.jade"),"seriesList": require("./../templates/seriesList.jade")};
+templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"poolListItem": require("./../templates/poolListItem.jade"),"seriesList": require("./../templates/seriesList.jade")};
 
 _ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
 
@@ -297,14 +556,124 @@ PoolModel = require('./../../../lib/models/index.coffee').PoolModel;
 
 View = Backbone.View.extend.bind(Backbone.View);
 
-exports.PoolListView = View({
-  id: 'pool-list',
-  template: templates.poolList,
+messageBus = require('./../../../lib/events.coffee').Bus;
+
+exports.PicksView = View({
+  template: templates.picks,
+  render: genericRender
+});
+
+exports.SeriesList = View({
+  id: 'series-list',
+  template: templates.seriesList,
   render: genericRender
 });
 
 
-},{"./../../../lib/asink.coffee":6,"./../../../lib/models/index.coffee":8,"./../../../lib/utils.coffee":9,"./../../../lib/views.coffee":10,"./../templates/poolList.jade":2,"./../templates/seriesList.jade":3,"backbone":11,"lodash":"V21I5e"}],6:[function(require,module,exports){
+},{"./../../../lib/asink.coffee":13,"./../../../lib/events.coffee":14,"./../../../lib/models/index.coffee":15,"./../../../lib/utils.coffee":16,"./../../../lib/views.coffee":17,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/poolListItem.jade":7,"./../templates/seriesList.jade":8,"backbone":18,"lodash":"V21I5e"}],11:[function(require,module,exports){
+var Backbone, Cleanup, GenericView, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
+
+Backbone = require('backbone');
+
+Backbone.$ = window.$;
+
+_ = require('lodash');
+
+asink = require('./../../../lib/asink.coffee');
+
+templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"poolListItem": require("./../templates/poolListItem.jade"),"seriesList": require("./../templates/seriesList.jade")};
+
+_ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+
+utils = require('./../../../lib/utils.coffee');
+
+PoolModel = require('./../../../lib/models/index.coffee').PoolModel;
+
+View = Backbone.View.extend.bind(Backbone.View);
+
+messageBus = require('./../../../lib/events.coffee').Bus;
+
+exports.PoolHomeView = View({
+  template: templates.poolHome,
+  render: genericRender
+});
+
+
+},{"./../../../lib/asink.coffee":13,"./../../../lib/events.coffee":14,"./../../../lib/models/index.coffee":15,"./../../../lib/utils.coffee":16,"./../../../lib/views.coffee":17,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/poolListItem.jade":7,"./../templates/seriesList.jade":8,"backbone":18,"lodash":"V21I5e"}],12:[function(require,module,exports){
+var Backbone, Cleanup, GenericView, PoolListItem, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
+
+Backbone = require('backbone');
+
+Backbone.$ = window.$;
+
+_ = require('lodash');
+
+asink = require('./../../../lib/asink.coffee');
+
+templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"poolListItem": require("./../templates/poolListItem.jade"),"seriesList": require("./../templates/seriesList.jade")};
+
+_ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+
+utils = require('./../../../lib/utils.coffee');
+
+PoolModel = require('./../../../lib/models/index.coffee').PoolModel;
+
+View = Backbone.View.extend.bind(Backbone.View);
+
+messageBus = require('./../../../lib/events.coffee').Bus;
+
+PoolListItem = View({
+  tagName: 'li',
+  className: 'list-group-item',
+  template: templates.poolListItem,
+  events: {
+    'click': 'onClick'
+  },
+  onClick: function() {
+    return this.trigger('selected', this.model);
+  },
+  render: genericRender
+});
+
+exports.PoolListView = View({
+  id: 'pool-list',
+  template: templates.poolList,
+  initialize: function() {
+    _.extend(this, Cleanup.mixin);
+    return this.childViews = [];
+  },
+  renderPools: function() {
+    this.childViews = _.chain(this.collection.models).map((function(_this) {
+      return function(model) {
+        var view;
+        view = new PoolListItem({
+          model: model
+        });
+        _this.listenTo(view, 'selected', function(model) {
+          return messageBus.put('poolSelected', model);
+        });
+        return view;
+      };
+    })(this)).forEach((function(_this) {
+      return function(view) {
+        return _this.$('ul').append(view.render().el);
+      };
+    })(this)).value();
+    return this;
+  },
+  render: function() {
+    this.undelegateEvents();
+    this.$el.empty();
+    this.$el.append(this.template());
+    this.cleanUp();
+    this.renderPools();
+    this.delegateEvents();
+    return this;
+  }
+});
+
+
+},{"./../../../lib/asink.coffee":13,"./../../../lib/events.coffee":14,"./../../../lib/models/index.coffee":15,"./../../../lib/utils.coffee":16,"./../../../lib/views.coffee":17,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/poolListItem.jade":7,"./../templates/seriesList.jade":8,"backbone":18,"lodash":"V21I5e"}],13:[function(require,module,exports){
 var _;
 
 _ = require('lodash');
@@ -350,7 +719,7 @@ exports.each = function(collection, iterator, done) {
 };
 
 
-},{"lodash":"V21I5e"}],7:[function(require,module,exports){
+},{"lodash":"V21I5e"}],14:[function(require,module,exports){
 var EventEmitter;
 
 EventEmitter = (function() {
@@ -405,7 +774,7 @@ exports.Bus = new EventEmitter;
 exports.EventEmitter = EventEmitter;
 
 
-},{}],8:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var Backbone, Collection, GenericModel, Model, PoolModel, SeriesModel, UserModel, syncWithId, _;
 
 Backbone = require('backbone');
@@ -500,7 +869,7 @@ exports.TeamsCollection = Collection({
 });
 
 
-},{"backbone":11,"lodash":"V21I5e"}],9:[function(require,module,exports){
+},{"backbone":18,"lodash":"V21I5e"}],16:[function(require,module,exports){
 exports.get = function(_arg, done) {
   var proj, resource;
   resource = _arg.resource, proj = _arg.proj;
@@ -518,7 +887,7 @@ exports.get = function(_arg, done) {
 };
 
 
-},{}],10:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var Backbone, Cleanup, genericRender, _;
 
 Backbone = require('backbone');
@@ -572,7 +941,7 @@ Cleanup.mixin = {
 exports.Cleanup = Cleanup;
 
 
-},{"backbone":11,"lodash":"V21I5e"}],11:[function(require,module,exports){
+},{"backbone":18,"lodash":"V21I5e"}],18:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2182,9 +2551,9 @@ exports.Cleanup = Cleanup;
 
 }));
 
-},{"underscore":"V21I5e"}],12:[function(require,module,exports){
+},{"underscore":"V21I5e"}],19:[function(require,module,exports){
 
-},{}],13:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2389,7 +2758,7 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
   throw err;
 };
 
-},{"fs":12}],"underscore":[function(require,module,exports){
+},{"fs":19}],"underscore":[function(require,module,exports){
 module.exports=require('V21I5e');
 },{}],"V21I5e":[function(require,module,exports){
 (function (global){
@@ -9180,4 +9549,4 @@ module.exports=require('V21I5e');
 }.call(this));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[4])
+},{}]},{},[9])
