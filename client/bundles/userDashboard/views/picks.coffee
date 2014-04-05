@@ -34,13 +34,17 @@ exports.PicksView = View
             @render()
 
     # Send the picks to the server
+    # Boil everything down to one flat picks collection and save it
     #
-    save: ->
-        e.preventDefault()
-        console.log 'saving all the picks'
-        console.log
-        false
-
+    submit: ->
+        models = _.chain(@picks)
+            .values()
+            .map((collection) -> collection.models)
+            .flatten()
+            .value()
+        saver = new PicksCollection models
+        xhr = saver.sync 'create', saver, {}
+        xhr.always -> alert 'Picks saved.'
 
     seriesSelected: (model) ->
         @selectedSeries = model
@@ -57,7 +61,7 @@ exports.PicksView = View
         if @state is 'list'
             view = new SeriesList { @collection }
             @listenTo view, 'selected', @seriesSelected
-            @listenTo view, 'save', @save
+            @listenTo view, 'submit', @submit
         else if @state is 'input'
             view = new PickInputView {
                 pool: @model,
@@ -76,13 +80,15 @@ exports.PicksView = View
         this
 
 serializePick = (model) ->
-    name: model.get('categoryObject').name
+    data =
+        name: model.get('categoryObject').name
+        value: model.get 'value'
 
 PickInputView = View
     template: templates.input
 
     events:
-        'click .done': 'save'
+        'click .done': 'done'
 
     initialize: ({@pool, @series, @picks}) ->
         _.extend this, Cleanup.mixin
@@ -119,7 +125,7 @@ PickInputView = View
             ).value()
         this
 
-    save: (e) ->
+    done: (e) ->
         e.preventDefault()
         @trigger 'done'
         false
@@ -143,10 +149,13 @@ SeriesList = View
     id: 'series-list'
     template: templates.seriesList
 
-    'click .save': 'save'
+    events:
+        'click .submit': 'submit'
 
-    save: ->
-        @trigger 'save'
+    submit: (e) ->
+        e.preventDefault()
+        @trigger 'submit'
+        false
 
     initialize: ->
         _.extend this, Cleanup.mixin

@@ -1,4 +1,5 @@
 # Picks
+_ = require 'lodash'
 
 # GET. can be filtered by user id
 exports.index = (req, res, next) ->
@@ -23,19 +24,26 @@ exports.new = (req, res, next) ->
 exports.create = (req, res, next)->
     {conn, r} = req.rethink
 
-    console.log 'Got a pick to save'
-    console.log req.body
+    # send a no-content when there isn't a user, or no data, as we have not done anything
+    return res.send 204 if !req.user? or _.isEmpty req.body
+
+    data = req.body
+    docs = if _.isArray data then data else [ data ]
+    docs.forEach (doc) -> doc.user = req.user.id
+
+    r.table('picks').insert(docs).run conn, (err, results) ->
+        res.send results.generated_keys[0]
 
 exports.show = (req, res, next)->
     {conn, r} = req.rethink
 
-    r.table('series').get(req.param('id')).run conn, (err, results) ->
+    r.table('picks').get(req.param('id')).run conn, (err, results) ->
         res.send results
 
 exports.update = (req, res, next)->
     {conn, r} = req.rethink
 
-    r.table('series').get(req.param('id')).update(req.body).run conn, (err, results) ->
+    r.table('picks').get(req.param('id')).update(req.body).run conn, (err, results) ->
         res.send results
 
 exports.destroy = (req, res, next)->

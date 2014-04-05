@@ -43,7 +43,7 @@ sendFail = (req, res, redirectUrl) ->
 #
 # * `isDebug` - if true, the user checks will be skipped.
 #
-exports.requireUser = ({isDebug}) ->
+exports.requireUser = ({isDebug}={}) ->
     (permission, redirectUrl) ->
         ANY_USER = '*'
         (req, res, next) ->

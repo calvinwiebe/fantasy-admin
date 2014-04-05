@@ -14,7 +14,7 @@ exports.genericRender = genericRender = ->
     else if @model?
         data = @template @model.toJSON()
     else
-        data = {}
+        data = @template {}
     @$el.html data
     @delegateEvents()
     this
@@ -50,7 +50,7 @@ exports.InputListItem = Backbone.View.extend
     template: inputListItem
 
     events:
-        'blur': 'onBlur'
+        'blur input': 'onBlur'
 
     initialize: ({@serialize}) ->
 

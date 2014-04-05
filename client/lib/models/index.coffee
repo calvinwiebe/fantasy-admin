@@ -67,7 +67,7 @@ exports.TeamsCollection = Collection
     initialize: ({@league}={}) ->
     sync: syncWithId 'league'
 
-exports.PicksCollection = Collection
+exports.PicksCollection = PicksCollection = Collection
     url: '/picks'
 
     save: (patch, options) ->
@@ -75,4 +75,7 @@ exports.PicksCollection = Collection
         delete attributes.categoryObject
         attributes = _.extend {}, attributes, patch
         Backbone.Model::save.call this, attributes, options
+
+PicksCollection.url = '/picks'
+
 

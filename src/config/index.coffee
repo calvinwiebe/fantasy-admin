@@ -21,6 +21,7 @@ defaults =
                 'categories'
                 'results'
                 'teams'
+                'picks'
             ]
         fantasyDb:
             name: 'fantasy'

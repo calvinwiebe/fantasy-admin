@@ -1,1 +1,4 @@
-input.form-control(type='text', placeholder='#{name}')
+if value
+    input.form-control(type='text', placeholder='#{name}', value='#{value}')
+else
+    input.form-control(type='text', placeholder='#{name}')
