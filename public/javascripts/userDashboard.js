@@ -533,7 +533,6 @@ exports.PicksView = View({
 serializeSeries = function(model) {
   var populatedModel, _ref2, _ref3;
   populatedModel = ModelStorage.populate(model, ModelStorage.get('teams'));
-  console.log(populatedModel);
   return {
     name: "" + ((_ref2 = populatedModel.team1) != null ? _ref2.name : void 0) + " vs " + ((_ref3 = populatedModel.team2) != null ? _ref3.name : void 0)
   };

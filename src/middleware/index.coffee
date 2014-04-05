@@ -39,10 +39,16 @@ sendFail = (req, res, redirectUrl) ->
 
 # Ensure a user with the needed permissions is accessing the route
 #
-exports.requireUser = (permission, redirectUrl) ->
-    ANY_USER = '*'
-    (req, res, next) ->
-        unless req.session?.user and \
-            (req.session.user.permission is permission or permission is ANY_USER)
-                return sendFail req, res, redirectUrl
-        next()
+# Takes an `options` hash
+#
+# * `isDebug` - if true, the user checks will be skipped.
+#
+exports.requireUser = ({isDebug}) ->
+    (permission, redirectUrl) ->
+        ANY_USER = '*'
+        (req, res, next) ->
+            return next() if isDebug
+            unless req.session?.user and \
+                (req.session.user.permission is permission or permission is ANY_USER)
+                    return sendFail req, res, redirectUrl
+            next()

@@ -35,7 +35,6 @@ exports.PicksView = View
 
 serializeSeries = (model) ->
     populatedModel = ModelStorage.populate model, ModelStorage.get 'teams'
-    console.log populatedModel
     name: "#{populatedModel.team1?.name} vs #{populatedModel.team2?.name}"
 
 SeriesList = View

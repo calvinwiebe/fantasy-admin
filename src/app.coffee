@@ -42,7 +42,7 @@ app.use middleware.populateUser
 ROUTES
 ###
 
-requireUser = middleware.requireUser
+requireUser = middleware.requireUser isDebug: 'production' isnt app.get('env')
 
 # Define our login routes
 app.get '/', routes.auth.forward, routes.index
