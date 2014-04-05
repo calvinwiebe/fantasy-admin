@@ -15,6 +15,11 @@ utils = require 'utils'
 {PoolModel} = require 'models'
 View = Backbone.View.extend.bind Backbone.View
 
+# TODO: Right now in the admin dash and here we are mixing patterns for handling view changes
+# 1. messageBus
+# 2. listenTo'ing our childViews.
+# Both kind make sense in different situations. We need to start using them for their appropriate
+# uses. Can do that after we hack this shit together though.
 messageBus = require('events').Bus
 
 HeaderView = View
@@ -42,8 +47,9 @@ exports.DashboardContentView = View
     className: 'container'
     template: templates.content
 
-    initialize: ->
+    initialize: ({resources}) ->
         _.bindAll this
+        @collection  = resources.pools
         @childViews = []
         @state = 'home'
         @listenForEvents()

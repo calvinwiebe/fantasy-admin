@@ -12,6 +12,8 @@ syncWithId = (id) ->
         data[id] = this[id]
         Backbone.sync.call this, method, collection, _.extend options, { data }
 
+exports.ModelStorage = require './storage.coffee'
+
 exports.GenericModel = GenericModel = Model
     url: '/generic'
 
@@ -28,7 +30,7 @@ exports.UserModel = UserModel = Model
 exports.UserCollection = Collection
     url: '/users'
     model: UserModel
-    initialize: ({@pool}) ->
+    initialize: ({@pool}={}) ->
     sync: syncWithId 'pool'
 
 exports.CategoriesCollection = Collection
@@ -37,7 +39,7 @@ exports.CategoriesCollection = Collection
 exports.RoundsCollection = Collection
     url: '/rounds'
     comparator: 'order'
-    initialize: ({@pool}) ->
+    initialize: ({@pool}={}) ->
     sync: syncWithId 'pool'
 
 exports.SeriesModel = SeriesModel = Model
@@ -54,11 +56,11 @@ exports.SeriesCollection = Collection
     url: '/series'
     model: SeriesModel
     comparator: 'conference'
-    initialize: ({@round}) ->
+    initialize: ({@round}={}) ->
     sync: syncWithId 'round'
 
 exports.TeamsCollection = Collection
     url: '/teams'
     comparator: 'seed'
-    initialize: ({@league}) ->
+    initialize: ({@league}={}) ->
     sync: syncWithId 'league'

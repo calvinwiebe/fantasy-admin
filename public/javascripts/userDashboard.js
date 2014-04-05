@@ -9,9 +9,9 @@ _ = require('lodash');
 
 asink = require('./../../lib/asink.coffee');
 
-templates = {"content": require("./templates/content.jade"),"header": require("./templates/header.jade"),"picks": require("./templates/picks.jade"),"poolHome": require("./templates/poolHome.jade"),"poolList": require("./templates/poolList.jade"),"poolListItem": require("./templates/poolListItem.jade"),"seriesList": require("./templates/seriesList.jade")};
+templates = {"content": require("./templates/content.jade"),"header": require("./templates/header.jade"),"picks": require("./templates/picks.jade"),"poolHome": require("./templates/poolHome.jade"),"poolList": require("./templates/poolList.jade"),"seriesList": require("./templates/seriesList.jade")};
 
-_ref = require('./../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+_ref = require('./../../lib/views/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
 
 PoolListView = require('./views/poolList.coffee').PoolListView;
 
@@ -59,8 +59,11 @@ exports.DashboardContentView = View({
   id: 'dashboard',
   className: 'container',
   template: templates.content,
-  initialize: function() {
+  initialize: function(_arg) {
+    var resources;
+    resources = _arg.resources;
     _.bindAll(this);
+    this.collection = resources.pools;
     this.childViews = [];
     this.state = 'home';
     return this.listenForEvents();
@@ -143,7 +146,7 @@ exports.DashboardContentView = View({
 });
 
 
-},{"./../../lib/asink.coffee":13,"./../../lib/events.coffee":14,"./../../lib/models/index.coffee":15,"./../../lib/utils.coffee":16,"./../../lib/views.coffee":17,"./templates/content.jade":2,"./templates/header.jade":3,"./templates/picks.jade":4,"./templates/poolHome.jade":5,"./templates/poolList.jade":6,"./templates/poolListItem.jade":7,"./templates/seriesList.jade":8,"./views/picks.coffee":10,"./views/poolHome.coffee":11,"./views/poolList.coffee":12,"backbone":18,"lodash":"V21I5e"}],2:[function(require,module,exports){
+},{"./../../lib/asink.coffee":12,"./../../lib/events.coffee":13,"./../../lib/models/index.coffee":14,"./../../lib/utils.coffee":16,"./../../lib/views/views.coffee":18,"./templates/content.jade":2,"./templates/header.jade":3,"./templates/picks.jade":4,"./templates/poolHome.jade":5,"./templates/poolList.jade":6,"./templates/seriesList.jade":7,"./views/picks.coffee":9,"./views/poolHome.coffee":10,"./views/poolList.coffee":11,"backbone":19,"lodash":"V21I5e"}],2:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -173,7 +176,7 @@ buf.push("</div>");
 }
 )(params); }
 
-},{"jade/lib/runtime.js":20}],3:[function(require,module,exports){
+},{"jade/lib/runtime.js":21}],3:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -302,7 +305,7 @@ buf.push("\n</div>");
 }
 )(params); }
 
-},{"jade/lib/runtime.js":20}],4:[function(require,module,exports){
+},{"jade/lib/runtime.js":21}],4:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -314,22 +317,22 @@ var locals_ = (locals || {}),undefined = locals_.undefined;
 jade.indent = [];
 
 
-buf.push("\n<div>");
+buf.push("\n<h2>");
 
 
-buf.push("I am the picks view");
+buf.push("Make Your Picks");
 
 
-buf.push("</div>");
+buf.push("</h2>");
 
 ;return buf.join("");
 } catch (err) {
-  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "div I am the picks view");
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "h2 Make Your Picks");
 }
 }
 )(params); }
 
-},{"jade/lib/runtime.js":20}],5:[function(require,module,exports){
+},{"jade/lib/runtime.js":21}],5:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -356,7 +359,7 @@ buf.push("</div>");
 }
 )(params); }
 
-},{"jade/lib/runtime.js":20}],6:[function(require,module,exports){
+},{"jade/lib/runtime.js":21}],6:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -401,34 +404,7 @@ buf.push("\n</div>");
 }
 )(params); }
 
-},{"jade/lib/runtime.js":20}],7:[function(require,module,exports){
-var jade = require('jade/lib/runtime.js');
-module.exports=function(params) { if (params) {params.require = require;} return (
-function template(locals) {
-var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/bundles/userDashboard/templates/poolListItem.jade" }];
-try {
-var buf = [];
-var jade_mixins = {};
-var locals_ = (locals || {}),undefined = locals_.undefined,name = locals_.name;
-jade.indent = [];
-
-
-buf.push("<span>");
-
-
-buf.push("" + (jade.escape((jade.interp = name) == null ? '' : jade.interp)) + "");
-
-
-buf.push("</span>");
-
-;return buf.join("");
-} catch (err) {
-  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "span #{name}");
-}
-}
-)(params); }
-
-},{"jade/lib/runtime.js":20}],8:[function(require,module,exports){
+},{"jade/lib/runtime.js":21}],7:[function(require,module,exports){
 var jade = require('jade/lib/runtime.js');
 module.exports=function(params) { if (params) {params.require = require;} return (
 function template(locals) {
@@ -436,107 +412,73 @@ var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/c
 try {
 var buf = [];
 var jade_mixins = {};
-var locals_ = (locals || {}),undefined = locals_.undefined,models = locals_.models;
+var locals_ = (locals || {}),undefined = locals_.undefined;
 jade.indent = [];
 
 
-buf.push("\n<div class=\"page-header\">");
+buf.push("\n<div class=\"container-fluid\">");
 
 
-buf.push("\n  <h1>");
+buf.push("\n  <ul class=\"list-group\">");
 
 
-buf.push("Make your picks");
-
-
-buf.push("</h1>");
+buf.push("</ul>");
 
 
 buf.push("\n</div>");
 
-
-buf.push("\n<ul class=\"list-group\">");
-
-
-// iterate models
-;(function(){
-  var $$obj = models;
-  if ('number' == typeof $$obj.length) {
-
-    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
-      var series = $$obj[$index];
-
-
-
-buf.push("\n  <li class=\"list-group-item\">");
-
-
-buf.push("" + (jade.escape((jade.interp = series.name) == null ? '' : jade.interp)) + "");
-
-
-buf.push("</li>");
-
-
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in $$obj) {
-      $$l++;      var series = $$obj[$index];
-
-
-
-buf.push("\n  <li class=\"list-group-item\">");
-
-
-buf.push("" + (jade.escape((jade.interp = series.name) == null ? '' : jade.interp)) + "");
-
-
-buf.push("</li>");
-
-
-    }
-
-  }
-}).call(this);
-
-
-
-buf.push("\n</ul>");
-
 ;return buf.join("");
 } catch (err) {
-  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, ".page-header\n    h1 Make your picks\nul.list-group\n    for series in models\n        li.list-group-item\n            | #{series.name}");
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, ".container-fluid\n    ul.list-group\n");
 }
 }
 )(params); }
 
-},{"jade/lib/runtime.js":20}],9:[function(require,module,exports){
-var DashboardContentView, PoolCollection, init;
+},{"jade/lib/runtime.js":21}],8:[function(require,module,exports){
+var DashboardContentView, ModelStorage, PoolCollection, TeamsCollection, UserCollection, asink, init, _ref;
 
 DashboardContentView = require('./content.coffee').DashboardContentView;
 
-PoolCollection = require('./../../lib/models/index.coffee').PoolCollection;
+_ref = require('./../../lib/models/index.coffee'), PoolCollection = _ref.PoolCollection, TeamsCollection = _ref.TeamsCollection, UserCollection = _ref.UserCollection, ModelStorage = _ref.ModelStorage;
 
-init = function(collection) {
+asink = require('./../../lib/asink.coffee');
+
+init = function(resources) {
   var content;
   content = new DashboardContentView({
-    collection: collection
+    resources: resources
   });
+  ModelStorage.store('teams', resources.teams);
   return $('body').append(content.render().el);
 };
 
 $(function() {
-  var pools;
-  pools = new PoolCollection;
-  return pools.fetch({
-    success: init
+  var resources;
+  resources = {
+    pools: new PoolCollection,
+    teams: new TeamsCollection({
+      league: 'nhl'
+    })
+  };
+  return asink.each(resources, function(collection, cb) {
+    return collection.fetch({
+      success: function(model) {
+        return cb(null, model);
+      }
+    });
+  }, function(err) {
+    if (err != null) {
+      if (typeof console.warn === "function") {
+        console.warn('Problem loading initial resources');
+      }
+    }
+    return init(resources);
   });
 });
 
 
-},{"./../../lib/models/index.coffee":15,"./content.coffee":1}],10:[function(require,module,exports){
-var Backbone, Cleanup, GenericView, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
+},{"./../../lib/asink.coffee":12,"./../../lib/models/index.coffee":14,"./content.coffee":1}],9:[function(require,module,exports){
+var Backbone, Cleanup, GenericView, ListItem, ModelStorage, PoolModel, SeriesCollection, SeriesList, View, asink, genericRender, messageBus, serializeSeries, templates, utils, _, _ref, _ref1;
 
 Backbone = require('backbone');
 
@@ -546,13 +488,13 @@ _ = require('lodash');
 
 asink = require('./../../../lib/asink.coffee');
 
-templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"poolListItem": require("./../templates/poolListItem.jade"),"seriesList": require("./../templates/seriesList.jade")};
+templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"seriesList": require("./../templates/seriesList.jade")};
 
-_ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+_ref = require('./../../../lib/views/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup, ListItem = _ref.ListItem;
 
 utils = require('./../../../lib/utils.coffee');
 
-PoolModel = require('./../../../lib/models/index.coffee').PoolModel;
+_ref1 = require('./../../../lib/models/index.coffee'), PoolModel = _ref1.PoolModel, SeriesCollection = _ref1.SeriesCollection, ModelStorage = _ref1.ModelStorage;
 
 View = Backbone.View.extend.bind(Backbone.View);
 
@@ -560,17 +502,83 @@ messageBus = require('./../../../lib/events.coffee').Bus;
 
 exports.PicksView = View({
   template: templates.picks,
-  render: genericRender
+  initialize: function() {
+    this.needsData = true;
+    this.model.set('roundNeedingPicks', '4575222e-d8a5-42b9-a110-3a1b4d0f30e2');
+    this.collection = new SeriesCollection({
+      round: this.model.get('roundNeedingPicks')
+    });
+    return this.collection.fetch({
+      success: (function(_this) {
+        return function() {
+          _this.needsData = false;
+          return _this.render();
+        };
+      })(this)
+    });
+  },
+  render: function() {
+    if (this.needsData) {
+      return this;
+    }
+    this.$el.empty();
+    this.$el.append(this.template());
+    this.$el.append(new SeriesList({
+      collection: this.collection
+    }).render().el);
+    return this;
+  }
 });
 
-exports.SeriesList = View({
+serializeSeries = function(model) {
+  var populatedModel, _ref2, _ref3;
+  populatedModel = ModelStorage.populate(model, ModelStorage.get('teams'));
+  console.log(populatedModel);
+  return {
+    name: "" + ((_ref2 = populatedModel.team1) != null ? _ref2.name : void 0) + " vs " + ((_ref3 = populatedModel.team2) != null ? _ref3.name : void 0)
+  };
+};
+
+SeriesList = View({
   id: 'series-list',
   template: templates.seriesList,
-  render: genericRender
+  initialize: function() {
+    _.extend(this, Cleanup.mixin);
+    return this.childViews = [];
+  },
+  renderPools: function() {
+    this.childViews = _.chain(this.collection.models).map((function(_this) {
+      return function(model) {
+        var view;
+        view = new ListItem({
+          serialize: serializeSeries,
+          model: model
+        });
+        _this.listenTo(view, 'selected', function(model) {
+          return _this.trigger('seriesSelected', model);
+        });
+        return view;
+      };
+    })(this)).forEach((function(_this) {
+      return function(view) {
+        return _this.$('ul').append(view.render().el);
+      };
+    })(this)).value();
+    return this;
+  },
+  render: function() {
+    this.undelegateEvents();
+    this.$el.empty();
+    this.$el.append(this.template());
+    this.cleanUp();
+    this.renderPools();
+    this.delegateEvents();
+    return this;
+  }
 });
 
 
-},{"./../../../lib/asink.coffee":13,"./../../../lib/events.coffee":14,"./../../../lib/models/index.coffee":15,"./../../../lib/utils.coffee":16,"./../../../lib/views.coffee":17,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/poolListItem.jade":7,"./../templates/seriesList.jade":8,"backbone":18,"lodash":"V21I5e"}],11:[function(require,module,exports){
+},{"./../../../lib/asink.coffee":12,"./../../../lib/events.coffee":13,"./../../../lib/models/index.coffee":14,"./../../../lib/utils.coffee":16,"./../../../lib/views/views.coffee":18,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/seriesList.jade":7,"backbone":19,"lodash":"V21I5e"}],10:[function(require,module,exports){
 var Backbone, Cleanup, GenericView, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
 
 Backbone = require('backbone');
@@ -581,9 +589,9 @@ _ = require('lodash');
 
 asink = require('./../../../lib/asink.coffee');
 
-templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"poolListItem": require("./../templates/poolListItem.jade"),"seriesList": require("./../templates/seriesList.jade")};
+templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"seriesList": require("./../templates/seriesList.jade")};
 
-_ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+_ref = require('./../../../lib/views/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
 
 utils = require('./../../../lib/utils.coffee');
 
@@ -599,8 +607,8 @@ exports.PoolHomeView = View({
 });
 
 
-},{"./../../../lib/asink.coffee":13,"./../../../lib/events.coffee":14,"./../../../lib/models/index.coffee":15,"./../../../lib/utils.coffee":16,"./../../../lib/views.coffee":17,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/poolListItem.jade":7,"./../templates/seriesList.jade":8,"backbone":18,"lodash":"V21I5e"}],12:[function(require,module,exports){
-var Backbone, Cleanup, GenericView, PoolListItem, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
+},{"./../../../lib/asink.coffee":12,"./../../../lib/events.coffee":13,"./../../../lib/models/index.coffee":14,"./../../../lib/utils.coffee":16,"./../../../lib/views/views.coffee":18,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/seriesList.jade":7,"backbone":19,"lodash":"V21I5e"}],11:[function(require,module,exports){
+var Backbone, Cleanup, GenericView, ListItem, PoolModel, View, asink, genericRender, messageBus, templates, utils, _, _ref;
 
 Backbone = require('backbone');
 
@@ -610,9 +618,9 @@ _ = require('lodash');
 
 asink = require('./../../../lib/asink.coffee');
 
-templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"poolListItem": require("./../templates/poolListItem.jade"),"seriesList": require("./../templates/seriesList.jade")};
+templates = {"content": require("./../templates/content.jade"),"header": require("./../templates/header.jade"),"picks": require("./../templates/picks.jade"),"poolHome": require("./../templates/poolHome.jade"),"poolList": require("./../templates/poolList.jade"),"seriesList": require("./../templates/seriesList.jade")};
 
-_ref = require('./../../../lib/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup;
+_ref = require('./../../../lib/views/views.coffee'), GenericView = _ref.GenericView, genericRender = _ref.genericRender, Cleanup = _ref.Cleanup, ListItem = _ref.ListItem;
 
 utils = require('./../../../lib/utils.coffee');
 
@@ -621,19 +629,6 @@ PoolModel = require('./../../../lib/models/index.coffee').PoolModel;
 View = Backbone.View.extend.bind(Backbone.View);
 
 messageBus = require('./../../../lib/events.coffee').Bus;
-
-PoolListItem = View({
-  tagName: 'li',
-  className: 'list-group-item',
-  template: templates.poolListItem,
-  events: {
-    'click': 'onClick'
-  },
-  onClick: function() {
-    return this.trigger('selected', this.model);
-  },
-  render: genericRender
-});
 
 exports.PoolListView = View({
   id: 'pool-list',
@@ -646,7 +641,7 @@ exports.PoolListView = View({
     this.childViews = _.chain(this.collection.models).map((function(_this) {
       return function(model) {
         var view;
-        view = new PoolListItem({
+        view = new ListItem({
           model: model
         });
         _this.listenTo(view, 'selected', function(model) {
@@ -673,7 +668,7 @@ exports.PoolListView = View({
 });
 
 
-},{"./../../../lib/asink.coffee":13,"./../../../lib/events.coffee":14,"./../../../lib/models/index.coffee":15,"./../../../lib/utils.coffee":16,"./../../../lib/views.coffee":17,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/poolListItem.jade":7,"./../templates/seriesList.jade":8,"backbone":18,"lodash":"V21I5e"}],13:[function(require,module,exports){
+},{"./../../../lib/asink.coffee":12,"./../../../lib/events.coffee":13,"./../../../lib/models/index.coffee":14,"./../../../lib/utils.coffee":16,"./../../../lib/views/views.coffee":18,"./../templates/content.jade":2,"./../templates/header.jade":3,"./../templates/picks.jade":4,"./../templates/poolHome.jade":5,"./../templates/poolList.jade":6,"./../templates/seriesList.jade":7,"backbone":19,"lodash":"V21I5e"}],12:[function(require,module,exports){
 var _;
 
 _ = require('lodash');
@@ -719,7 +714,7 @@ exports.each = function(collection, iterator, done) {
 };
 
 
-},{"lodash":"V21I5e"}],14:[function(require,module,exports){
+},{"lodash":"V21I5e"}],13:[function(require,module,exports){
 var EventEmitter;
 
 EventEmitter = (function() {
@@ -774,7 +769,7 @@ exports.Bus = new EventEmitter;
 exports.EventEmitter = EventEmitter;
 
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var Backbone, Collection, GenericModel, Model, PoolModel, SeriesModel, UserModel, syncWithId, _;
 
 Backbone = require('backbone');
@@ -798,6 +793,8 @@ syncWithId = function(id) {
   };
 };
 
+exports.ModelStorage = require('./storage.coffee');
+
 exports.GenericModel = GenericModel = Model({
   url: '/generic'
 });
@@ -819,7 +816,7 @@ exports.UserCollection = Collection({
   url: '/users',
   model: UserModel,
   initialize: function(_arg) {
-    this.pool = _arg.pool;
+    this.pool = (_arg != null ? _arg : {}).pool;
   },
   sync: syncWithId('pool')
 });
@@ -832,7 +829,7 @@ exports.RoundsCollection = Collection({
   url: '/rounds',
   comparator: 'order',
   initialize: function(_arg) {
-    this.pool = _arg.pool;
+    this.pool = (_arg != null ? _arg : {}).pool;
   },
   sync: syncWithId('pool')
 });
@@ -854,7 +851,7 @@ exports.SeriesCollection = Collection({
   model: SeriesModel,
   comparator: 'conference',
   initialize: function(_arg) {
-    this.round = _arg.round;
+    this.round = (_arg != null ? _arg : {}).round;
   },
   sync: syncWithId('round')
 });
@@ -863,13 +860,109 @@ exports.TeamsCollection = Collection({
   url: '/teams',
   comparator: 'seed',
   initialize: function(_arg) {
-    this.league = _arg.league;
+    this.league = (_arg != null ? _arg : {}).league;
   },
   sync: syncWithId('league')
 });
 
 
-},{"backbone":18,"lodash":"V21I5e"}],16:[function(require,module,exports){
+},{"./storage.coffee":15,"backbone":19,"lodash":"V21I5e"}],15:[function(require,module,exports){
+var Backbone, ModelStorage, _;
+
+_ = require('lodash');
+
+Backbone = require('backbone');
+
+ModelStorage = (function() {
+  function ModelStorage() {
+    this.resources = {};
+    this.nil = {};
+  }
+
+  ModelStorage.prototype.store = function(name, model) {
+    return this.resources[name] = model;
+  };
+
+  ModelStorage.prototype.get = function(name) {
+    return this.resources[name];
+  };
+
+  ModelStorage.prototype.isId = function(attribute) {
+    return /[0-9a-f]{22}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(attribute);
+  };
+
+  ModelStorage.prototype.toArray = function(model) {
+    var array;
+    if (model instanceof Backbone.Collection) {
+      return array = model.toJSON();
+    } else if (model instanceof Backbone.Model) {
+      return array = [model.toJSON()];
+    } else {
+      return [this.nil];
+    }
+  };
+
+  ModelStorage.prototype.insert = function(model, key, _arg, populator) {
+    var index, val;
+    index = _arg.index, val = _arg.val;
+    if (this.isId(val) && val === populator.id) {
+      if (index >= 0) {
+        return model[key][index] = populator;
+      } else {
+        return model[key] = populator;
+      }
+    }
+  };
+
+  ModelStorage.prototype.populateModel = function(model, populator) {
+    if (populator === this.nil) {
+
+    } else {
+      return _.forOwn(model, (function(_this) {
+        return function(val, key) {
+          var i, index, _i, _len, _results;
+          if (_.isArray(val)) {
+            _results = [];
+            for (index = _i = 0, _len = val.length; _i < _len; index = ++_i) {
+              i = val[index];
+              _results.push(_this.insert(model, key, {
+                index: index,
+                val: i
+              }, populator));
+            }
+            return _results;
+          } else {
+            return _this.insert(model, key, {
+              val: val
+            }, populator);
+          }
+        };
+      })(this));
+    }
+  };
+
+  ModelStorage.prototype.populate = function(model, populator) {
+    var m, p, _i, _j, _len, _len1;
+    model = this.toArray(model);
+    populator = this.toArray(populator);
+    for (_i = 0, _len = model.length; _i < _len; _i++) {
+      m = model[_i];
+      for (_j = 0, _len1 = populator.length; _j < _len1; _j++) {
+        p = populator[_j];
+        this.populateModel(m, p);
+      }
+    }
+    return m;
+  };
+
+  return ModelStorage;
+
+})();
+
+module.exports = new ModelStorage;
+
+
+},{"backbone":19,"lodash":"V21I5e"}],16:[function(require,module,exports){
 exports.get = function(_arg, done) {
   var proj, resource;
   resource = _arg.resource, proj = _arg.proj;
@@ -888,13 +981,42 @@ exports.get = function(_arg, done) {
 
 
 },{}],17:[function(require,module,exports){
-var Backbone, Cleanup, genericRender, _;
+var jade = require('jade/lib/runtime.js');
+module.exports=function(params) { if (params) {params.require = require;} return (
+function template(locals) {
+var jade_debug = [{ lineno: 1, filename: "/Users/calvinwiebe/dev/fantasy-admin/client/lib/views/listItem.jade" }];
+try {
+var buf = [];
+var jade_mixins = {};
+var locals_ = (locals || {}),undefined = locals_.undefined,name = locals_.name;
+jade.indent = [];
+
+
+buf.push("<span>");
+
+
+buf.push("" + (jade.escape((jade.interp = name) == null ? '' : jade.interp)) + "");
+
+
+buf.push("</span>");
+
+;return buf.join("");
+} catch (err) {
+  jade.rethrow(err, jade_debug[0].filename, jade_debug[0].lineno, "span #{name}");
+}
+}
+)(params); }
+
+},{"jade/lib/runtime.js":21}],18:[function(require,module,exports){
+var Backbone, Cleanup, genericRender, listItem, _;
 
 Backbone = require('backbone');
 
 Backbone.$ = window.$;
 
 _ = require('lodash');
+
+listItem = require('./listItem.jade');
 
 exports.genericRender = genericRender = function() {
   var data;
@@ -921,6 +1043,40 @@ exports.GenericView = Backbone.View.extend({
   render: genericRender
 });
 
+exports.ListItem = Backbone.View.extend({
+  tagName: 'li',
+  className: 'list-group-item',
+  template: listItem,
+  events: {
+    'click': 'onClick'
+  },
+  initialize: function(_arg) {
+    this.serialize = _arg.serialize;
+  },
+  onClick: function() {
+    return this.trigger('selected', this.model);
+  },
+  render: function() {
+    var data;
+    this.undelegateEvents();
+    this.$el.empty();
+    if (this.serialize != null) {
+      data = this.template(this.serialize(this.model));
+    } else if (this.collection != null) {
+      data = this.template({
+        models: this.collection.toJSON()
+      });
+    } else if (this.model != null) {
+      data = this.template(this.model.toJSON());
+    } else {
+      data = {};
+    }
+    this.$el.html(data);
+    this.delegateEvents();
+    return this;
+  }
+});
+
 Cleanup = {};
 
 Cleanup.mixin = {
@@ -941,7 +1097,7 @@ Cleanup.mixin = {
 exports.Cleanup = Cleanup;
 
 
-},{"backbone":18,"lodash":"V21I5e"}],18:[function(require,module,exports){
+},{"./listItem.jade":17,"backbone":19,"lodash":"V21I5e"}],19:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2551,9 +2707,9 @@ exports.Cleanup = Cleanup;
 
 }));
 
-},{"underscore":"V21I5e"}],19:[function(require,module,exports){
+},{"underscore":"V21I5e"}],20:[function(require,module,exports){
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2758,7 +2914,7 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
   throw err;
 };
 
-},{"fs":19}],"underscore":[function(require,module,exports){
+},{"fs":20}],"underscore":[function(require,module,exports){
 module.exports=require('V21I5e');
 },{}],"V21I5e":[function(require,module,exports){
 (function (global){
@@ -9549,4 +9705,4 @@ module.exports=require('V21I5e');
 }.call(this));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[9])
+},{}]},{},[8])

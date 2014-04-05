@@ -5,7 +5,7 @@ asink       = require 'asink'
 # templates
 templates = rfolder '../templates', extensions: [ '.jade' ]
 # views
-{GenericView, genericRender, Cleanup} = require 'views'
+{GenericView, genericRender, Cleanup, ListItem} = require 'views'
 # utils
 utils = require 'utils'
 # models
@@ -13,19 +13,6 @@ utils = require 'utils'
 View = Backbone.View.extend.bind Backbone.View
 
 messageBus = require('events').Bus
-
-PoolListItem = View
-    tagName: 'li'
-    className: 'list-group-item'
-    template: templates.poolListItem
-
-    events:
-        'click': 'onClick'
-
-    onClick: ->
-        @trigger 'selected', @model
-
-    render: genericRender
 
 # Shows a list of the pools
 #
@@ -40,7 +27,7 @@ exports.PoolListView = View
     renderPools: ->
         @childViews = _.chain(@collection.models)
             .map((model) =>
-                view = new PoolListItem { model }
+                view = new ListItem { model }
                 @listenTo view, 'selected', (model) ->
                     messageBus.put 'poolSelected', model
                 view
