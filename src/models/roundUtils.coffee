@@ -5,9 +5,8 @@ exports.create = (conn, r, round, cb) ->
     doc =
         name: round.name
         date: null
-        state: 0
+        state: if round.order is 0 then 1 else 0
         order: round.order
-        completed: false
         series: []
 
     async.times(

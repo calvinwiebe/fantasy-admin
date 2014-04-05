@@ -11,6 +11,10 @@ a {
   color: #00B7FF;
 }
 
+.page-header {
+    margin-top: 0;
+}
+
 /* Dashboard */
 #dashboard .navbar-brand {
     cursor: pointer;
@@ -152,3 +156,6 @@ a {
     margin-bottom: 5px;
 }
 
+#edit-pool-header small {
+    padding-left: 5px;
+}

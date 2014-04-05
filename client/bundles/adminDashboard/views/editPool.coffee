@@ -15,7 +15,7 @@ View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool
 #
 exports.EditPoolFormView = View
-    template: templates.editFormTemplate
+    template: templates.editPoolFormTemplate
     id: 'edit-pool-form'
 
     events:
@@ -68,7 +68,7 @@ exports.EditPoolFormView = View
         @delegateEvents()
         this
 
-# Particpants
+# Participants
 # -----------
 
 ParticipantsView = View
@@ -272,7 +272,7 @@ views.SeriesEditItem = View
         e.preventDefault()
         @model.set 'team1', @$('.team1').val()
         @model.set 'team2', @$('.team2').val()
-        @model.save {}, success: => alert 'series saved'
+        @model.save {}, success: => @dismiss e
         false
 
     dismiss: (e) ->
@@ -284,13 +284,7 @@ views.SeriesEditItem = View
         }
         false
 
-    edit: (e) ->
-        e.preventDefault()
-        @trigger 'goto', page: 'editSeries'
-        false
-
     getTemplateData: ->
-        console.log @model
         series: @model.toJSON()
         teams: _.map(@collection.where(conference: @model.get 'conference' ), (model) -> model.toJSON())
 
@@ -330,6 +324,7 @@ views.SeriesListView = View
 
     events:
         'click .back': 'dismiss'
+        'click .lock-matchups': 'lockMatchups'
 
     initialize: ({@context}) ->
         _.extend this, Cleanup.mixin
@@ -351,6 +346,21 @@ views.SeriesListView = View
         }
         false
 
+    lockMatchups: (e) ->
+        e.preventDefault()
+
+        ready = true
+        @collection.forEach (model) ->
+            ready = false if !model.get('team1')? and !model.get('team2')?
+        
+        if ready
+            @context.round.set 'state', 2
+            @context.round.save {},
+                success: => @dismiss e
+                error: -> alert 'error saving round'
+        else
+            alert 'finish setting your matchups'
+
     mapTeamsOntoSeries: ->
         @collection.forEach (model) =>
             team1 = @teams.find 'id': model.get 'team1'
@@ -363,13 +373,16 @@ views.SeriesListView = View
             .map((model) =>
                 view = new SeriesListItem { model }
                 @listenTo view, 'selected', =>
-                    @trigger 'action', {
-                        event: 'editSingleSeries',
-                        context:
-                            round: @context.round
-                            series: model
-                            teams: @teams
-                    }
+                    if @context.round.get('state') is 1
+                        @trigger 'action', {
+                            event: 'editSingleSeries',
+                            context:
+                                round: @context.round
+                                series: model
+                                teams: @teams
+                        }
+                    else 
+                        alert 'open series results page'
                 view
             ).forEach((view) =>
                 @$('#series-container').prepend view.render().el
@@ -401,11 +414,14 @@ RoundListItem = View
 
     sendAction: (e) ->
         e.preventDefault()
-        #adminClient.resources.rounds.sendAction()
+        @model.set 'state', @model.get('state') + 1 #configured -> running, running -> finished
+        @model.save {}, 
+            success: => @render()
+            error: -> alert('error saving round.')
         false
 
     setDeadline: (e) ->
-        return if @model.get('disabled') or not e.date?
+        return if @model.get('state') is 1 or not e.date?
         @model.set 'date', e.date.valueOf()
 
     render: ->
@@ -419,12 +435,18 @@ RoundListItem = View
         @$('.round-action').remove()
 
     afterRender: ->
-        return @disable() if @model.get('disabled')
+        return @disable() if @model.get('state') is 0 or @model.get('state') is 4
         @$('.input-group.date')
             .datepicker({})
             .datepicker('setValue', @model.get('date'))
             .on 'changeDate', @setDeadline.bind(this)
-        @$('.round-action').html if @model.get('state') is 0 then 'START' else 'END'
+        switch @model.get('state')
+            when 1 #unconfigured
+                @$('.round-action').remove()
+            when 2 #configured
+                @$('.round-action').html 'START'
+             when 3 #running
+                @$('.round-action').html 'END'
 
 
 views.RoundsView = View

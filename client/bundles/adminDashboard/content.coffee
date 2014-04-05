@@ -53,7 +53,7 @@ exports.DashboardContentView = Backbone.View.extend
         @stopListening @actionAreaView
         @actionAreaView.remove()
         @actionAreaView = new viewClass options
-        @listenTo @actionAreaView, 'messageView', @onMessage
+        @listenTo @actionAreaView, 'nav', @onNav
         @render()
 
     onNav: (eventData) ->
@@ -190,7 +190,7 @@ views.MessageView = Backbone.View.extend
 # Form for creating a new pool on the server
 #
 views.CreatePoolFormView = Backbone.View.extend
-    template: templates.createFormTemplate
+    template: templates.createPoolFormTemplate
     id: 'create-pool-form'
 
     events:
@@ -212,7 +212,10 @@ views.CreatePoolFormView = Backbone.View.extend
         @model.save {},
             success: (model) =>
                 @collection.add model
-                @trigger 'messageView', type: 'successPoolCreate'
+                @trigger 'nav', {
+                    type: 'editPool'
+                    model
+                }
             error: ->
                 # TODO show err msg
         false
@@ -222,6 +225,7 @@ views.CreatePoolFormView = Backbone.View.extend
         @types.forEach (type) ->
             # TODO turn into on the fly generic views
             select.append($('<option>').val(type.id).html(type.name))
+        @$('#pool-name').focus()
 
     render: ->
         return this if @needsData

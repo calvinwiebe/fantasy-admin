@@ -24,8 +24,6 @@ exports.index = (req, res, next) ->
                     .value()
                 rounds.forEach (round) ->
                     round.date = round.date?.getTime()
-                    round.disabled = \
-                        round.completed or round.order isnt min
                 res.json rounds
 
     if pool?
