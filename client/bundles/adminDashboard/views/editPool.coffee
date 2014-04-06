@@ -71,12 +71,20 @@ exports.EditPoolFormView = View
         @$('#participants').append @participantsView.render().el
         @$('#categories').append @categoryView.render().el
 
-        if @model.get('state') is 1
-            @roundsSeriesContainerView = new RoundsSeriesContainer { @model }
-            @childViews.push @roundsSeriesContainerView
-            @$('#edit-palette').append @roundsSeriesContainerView.render().el
-        else
-            @$('#edit-palette').hide()
+        switch @model.get('state')
+            when 0
+                @$('#save-pool').show()
+                @$('#edit-palette').hide()
+            when 1
+                @$('#save-pool').hide()
+                @$('#start-pool').hide()
+                @roundsSeriesContainerView = new RoundsSeriesContainer { @model }
+                @childViews.push @roundsSeriesContainerView
+                @$('#edit-palette').append @roundsSeriesContainerView.render().el
+            when 2
+                @$('#save-pool').hide()
+                @$('#start-pool').hide()
+                @$('#edit-palette').hide()
 
         @delegateEvents()
         this
@@ -119,6 +127,8 @@ ParticipantsView = View
         @render()
 
     renderCurrentView: ->
+        @isEditing = false if @model.get('state') is 1
+        
         if !@isEditing
             @childViews.push new ParticipantsListView { @collection }
         else
