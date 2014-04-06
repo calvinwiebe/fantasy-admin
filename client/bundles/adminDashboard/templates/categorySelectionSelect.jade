@@ -1,6 +1,10 @@
 select#category-select.form-control
-    for category in models
-        option(value='#{category.id}') #{category.name}
+    if models.length > 0
+        for category in models
+            option(value='#{category.id}') #{category.name}
+    else
+        | No categories.
+
 button#add.btn.btn-primary
     span
         span.glyph

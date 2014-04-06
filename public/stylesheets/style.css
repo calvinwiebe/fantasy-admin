@@ -113,7 +113,7 @@ a {
 }
 
 #dashboard #participants #users-list {
-    width: 100%;
+    margin: 10px 0;
     font-size: 16px;
 }
 
@@ -125,7 +125,7 @@ a {
     font-size: 16px;
 }
 
-#dashboard #categories .label {
+#dashboard .label {
     margin-right: 4px;
 }
 

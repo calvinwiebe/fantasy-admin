@@ -27,10 +27,9 @@ exports.EditPoolFormView = View
         @model = @context.model
         @participantsView = new ParticipantsView { @model }
         @categoryView = new CategoryView { @model }
-        @roundsSeriesContainerView = new RoundsSeriesContainer { @model }
+
         @childViews.push @participantsView
         @childViews.push @categoryView
-        @childViews.push @roundsSeriesContainerView
 
     # retrieve all of our sub collection/models from
     # our childViews, and persist them to the server.
@@ -71,7 +70,14 @@ exports.EditPoolFormView = View
         @cleanUp()
         @$('#participants').append @participantsView.render().el
         @$('#categories').append @categoryView.render().el
-        @$('#edit-palette').append @roundsSeriesContainerView.render().el
+
+        if @model.get('state') is 1
+            @roundsSeriesContainerView = new RoundsSeriesContainer { @model }
+            @childViews.push @roundsSeriesContainerView
+            @$('#edit-palette').append @roundsSeriesContainerView.render().el
+        else
+            @$('#edit-palette').hide()
+
         @delegateEvents()
         this
 
@@ -81,19 +87,21 @@ exports.EditPoolFormView = View
 ParticipantsView = View
 
     events:
-        'click #users-list'     : 'showEditUsers'
+        'click #edit-users'     : 'showEditUsers'
         'click .check-button'   : 'showUserList'
 
     initialize: (users=[]) ->
-        @isEditing = false
+        @isEditing = @model.get('state') is 0
         _.extend this, Cleanup.mixin
         @collection = new UserCollection pool: @model.get('id')
         @collection.fetch success: => @render()
         @childViews = []
 
-    showEditUsers: ->
-        @isEditing = true
-        @render()
+    showEditUsers: (e) ->
+        e.preventDefault()
+        if @model.get('state') is 0
+            @isEditing = true
+            @render()
 
     showUserList: (e) ->
         e.preventDefault()
@@ -125,6 +133,9 @@ ParticipantsView = View
         @childViews.forEach (v) =>
             @listenTo v, 'new', @newUser
             @$el.append v.render().el
+            
+        @$('#edit-users').toggle @model.get('state') is 0
+
         if empty?
             empty.$el.find('input').focus()
 
@@ -212,7 +223,7 @@ CategoryView = View
     render: (full=true, renders={}) ->
         @undelegateEvents()
         @$el.empty() if full
-        @renderSelection() if renders.selection or full
+        @renderSelection() if @model.get('state') is 0 and (renders.selection or full)
         @renderCategories() if renders.categories or full
         @delegateEvents()
         this
