@@ -15,6 +15,15 @@ a {
     margin-top: 0;
 }
 
+.list-group-item {
+    cursor: pointer;
+}
+
+.list-group-item:hover {
+    background-color: #ddd;
+}
+
+
 /* Dashboard */
 #dashboard .navbar-brand {
     cursor: pointer;
