@@ -23,6 +23,7 @@ login = (req, res, next) ->
                 if err?
                     next err
                 else if not user or user.password isnt attemptedHash
+                    req.session.user = null
                     next()
                 else
                     # user successfully logged in
