@@ -26,7 +26,6 @@ exports.PicksView = View
         @picks = {}
         @getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
             if (round = @rounds.anyNeedPicks())
-                console.log round
                 @getResource "series-#{round.id}", 'round', round.id, SeriesCollection, (@series) =>
                     @series.forEach (model) =>
                         @picks[model.id] = new PicksCollection
@@ -87,6 +86,7 @@ exports.PicksView = View
                 pool: @model,
                 series: @selectedSeries,
                 picks: @picks[@selectedSeries.id]
+                round: @rounds.anyNeedPicks()
             }
             @listenTo view, 'done', @pickSelectionDone
         else if @state is 'none'
@@ -114,7 +114,7 @@ PickInputView = View
     events:
         'click .done': 'done'
 
-    initialize: ({@pool, @series, @picks}) ->
+    initialize: ({@pool, @series, @round, @picks}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
         @needsData = false
@@ -135,7 +135,7 @@ PickInputView = View
             @categories.forEach (model) =>
                 @picks.add
                     series: @series.id
-                    round: @pool.get 'roundNeedingPicks'
+                    round: @round.id
                     category: model.id
                     categoryObject: model.toJSON()
                     value: null
