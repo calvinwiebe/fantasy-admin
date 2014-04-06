@@ -20,7 +20,6 @@ login = (req, res, next) ->
         (err, results) ->
             return next err if err?
             results.toArray (err, [user]) ->
-                console.log user
                 if err?
                     next err
                 else if not user or user.password isnt attemptedHash

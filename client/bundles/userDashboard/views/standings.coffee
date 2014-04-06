@@ -14,7 +14,7 @@ View = Backbone.View.extend.bind Backbone.View
 
 messageBus = require('events').Bus
 
-exports.PoolHomeView = View
-    template: templates.poolHome
+exports.StandingsView = View
+    template: templates.standings
 
     render: genericRender

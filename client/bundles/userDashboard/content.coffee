@@ -7,8 +7,8 @@ templates = rfolder './templates', extensions: [ '.jade' ]
 # views
 {GenericView, genericRender, Cleanup} = require 'views'
 {PoolListView} = require './views/poolList.coffee'
-{PoolHomeView} = require './views/poolHome.coffee'
 {PicksView} = require './views/picks.coffee'
+{StandingsView} = require './views/standings.coffee'
 # utils
 utils = require 'utils'
 # models
@@ -28,9 +28,16 @@ HeaderView = View
     template: templates.header
 
     events:
-        'click #home-nav': -> messageBus.put 'nav', page: 'home'
-        'click #picks-nav': -> messageBus.put 'nav', page: 'picks'
-        'click #standings-nav': -> messageBus.put 'nav', page: 'standings'
+        'click #home-nav': -> @onNav 'home'
+        'click #picks-nav': -> @onNav 'picks'
+        'click #standings-nav': -> @onNav 'standings'
+
+    initialize: ->
+        _.bindAll this
+
+    onNav: (page) ->
+        messageBus.put 'nav', { page }
+        @$('.collapse').collapse('hide')
 
     render: ->
         genericRender.call this
@@ -64,7 +71,7 @@ exports.DashboardContentView = View
         @render()
 
     poolSelected: (model) ->
-        @state = 'poolHome'
+        @state = 'standings'
         @selectedPool = model
         @render()
 
@@ -82,10 +89,10 @@ exports.DashboardContentView = View
     renderContent: ->
         @contentView.remove()
         switch @state
-            when 'poolHome'
-                @contentView = new PoolHomeView model: @selectedPool
             when 'picks'
                 @contentView = new PicksView model: @selectedPool
+            when 'standings'
+                @contentView = new StandingsView model: @selectedPool
         @$el.append @contentView.render().el
         this
 
@@ -93,6 +100,7 @@ exports.DashboardContentView = View
         @firstPoolRender = true
         @headerView?.remove()
         @contentView?.remove()
+        @$el.empty()
         @contentView = new PoolListView { @collection }
         @childViews.push @contentView
         @$el.append @contentView.render().el
