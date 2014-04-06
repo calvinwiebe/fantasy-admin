@@ -4,6 +4,8 @@ _           = require 'lodash'
 listItem    = require './listItem.jade'
 inputListItem    = require './inputListItem.jade'
 
+View = Backbone.View.extend.bind Backbone.View
+
 exports.genericRender = genericRender = ->
     @undelegateEvents()
     @$el.empty()
@@ -19,14 +21,14 @@ exports.genericRender = genericRender = ->
     @delegateEvents()
     this
 
-exports.GenericView = Backbone.View.extend
+exports.GenericView = View
     initialize: ({@template}) ->
     render: genericRender
 
 # A generic view to show a list item in a list-group
 # If it is clicked, it will trigger an event with its model
 #
-exports.ListItem = Backbone.View.extend
+exports.ListItem = View
     tagName: 'li'
     className: 'list-group-item'
     template: listItem
@@ -45,7 +47,7 @@ exports.ListItem = Backbone.View.extend
 # to them. When the view is blurred, it will set the value of the single input
 # on the model's `value` attr
 #
-exports.InputListItem = Backbone.View.extend
+exports.InputListItem = View
     className: 'input-group'
     template: inputListItem
 
@@ -69,5 +71,64 @@ Cleanup.mixin =
 
     remove: ->
         @cleanUp()
+        Backbone.View.prototype.remove.call this
 
 exports.Cleanup = Cleanup
+
+# A Swapper view:
+# This will is in charge of swapping a `content` view depending on
+# the state.
+#
+exports.Swapper = (proto) ->
+    _super =
+        configureSwap: (@_swapper_config) ->
+            @views = []
+            @state = @_swapper_config.default
+
+        onSwap: ({state}) ->
+            @state = state
+            @render()
+
+        removeCurrent: ->
+            @views.forEach (view) ->
+                view.remove()
+            @views = []
+
+        renderContent: ->
+            views = @_swapper_config.map[@state]
+            event = @_swapper_config.event
+            @stopListening()
+            @views = views \
+                .map((config) =>
+                    if typeof config is 'function'
+                        view = config
+                    else
+                        {root, view, method} = config
+                    view = new view { @model, @collection }
+                    root = \
+                        if @$(root).length
+                            root = @$(root)
+                        else if $(root).length
+                            root = $(root)
+                        else
+                            @$el
+                    @listenTo view, event, @onSwap
+                    method = if root[method]? then method else 'append'
+                    root[method] view.render().el
+                    view
+                )
+            @listenTo this, event, @onSwap
+
+        render: ->
+            @undelegateEvents()
+            @removeCurrent()
+            @beforeRender?()
+            @renderContent()
+            @afterRender?()
+            @delegateEvents()
+            this
+
+    proto = _.extend _super, proto
+
+    return View proto
+

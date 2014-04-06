@@ -5,7 +5,7 @@ asink       = require 'asink'
 # templates
 templates = rfolder './templates', extensions: [ '.jade' ]
 # views
-{GenericView, genericRender, Cleanup} = require 'views'
+{GenericView, genericRender, Cleanup, Swapper} = require 'views'
 {PoolListView} = require './views/poolList.coffee'
 {PicksView} = require './views/picks.coffee'
 {StandingsView} = require './views/standings.coffee'
@@ -35,8 +35,8 @@ HeaderView = View
     initialize: ->
         _.bindAll this
 
-    onNav: (page) ->
-        messageBus.put 'nav', { page }
+    onNav: (state) ->
+        @trigger 'nav', { state }
         @$('.collapse').collapse('hide')
 
     render: ->
@@ -49,7 +49,7 @@ HeaderView = View
 # will retain a bunch of app-wide data, and use an event emitter to act on things, rather than
 # listening on a bunch of views, since this is the end-all containing view.
 #
-exports.DashboardContentView = View
+exports.DashboardContentView = Swapper
     id: 'dashboard'
     className: 'container'
     template: templates.content
@@ -58,65 +58,35 @@ exports.DashboardContentView = View
         _.bindAll this
         @collection  = resources.pools
         @childViews = []
-        @state = 'home'
-        @listenForEvents()
-
-    listenForEvents: ->
-        messageBus \
-            .on 'nav', @onNav
-            .on 'poolSelected', @poolSelected
+        header = {
+            root: 'body'
+            view: HeaderView
+            method: 'prepend'
+        }
+        @configureSwap
+            event: 'nav'
+            default: 'home'
+            map:
+                'standings': [
+                    header
+                    StandingsView
+                ]
+                'picks': [
+                    header
+                    PicksView
+                ]
+                'home': [
+                    PoolListView
+                ]
 
     onNav: ({page}) ->
         @state = page
         @render()
 
     poolSelected: (model) ->
-        @state = 'standings'
-        @selectedPool = model
-        @render()
+        @model = model
+        @trigger 'nav', state: 'standings'
 
-    clearPrevious: ->
-        return this unless @firstPoolRender
-        @$el.empty()
-        this
-
-    renderHeader: ->
-        return this unless @firstPoolRender
-        @headerView = new HeaderView model: @selectedPool
-        $('body').prepend @headerView.render().el
-        this
-
-    renderContent: ->
-        @contentView.remove()
-        switch @state
-            when 'picks'
-                @contentView = new PicksView model: @selectedPool
-            when 'standings'
-                @contentView = new StandingsView model: @selectedPool
-        @$el.append @contentView.render().el
-        this
-
-    renderHome: ->
-        @firstPoolRender = true
-        @headerView?.remove()
-        @contentView?.remove()
-        @$el.empty()
-        @contentView = new PoolListView { @collection }
-        @childViews.push @contentView
-        @$el.append @contentView.render().el
-
-    render: ->
-        @undelegateEvents()
-        # render the pool list page with no nav header
+    afterRender: ->
         if @state is 'home'
-            @renderHome()
-        # render the header and content view(s)
-        else
-            # render header view and content view
-            @clearPrevious()
-            @renderHeader()
-            @renderContent()
-            @firstPoolRender = false
-        @delegateEvents()
-        this
-
+            @listenTo @views[0], 'poolSelected', @poolSelected

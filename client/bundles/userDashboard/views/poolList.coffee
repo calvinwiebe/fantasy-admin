@@ -28,8 +28,8 @@ exports.PoolListView = View
         @childViews = _.chain(@collection.models)
             .map((model) =>
                 view = new ListItem { model }
-                @listenTo view, 'selected', (model) ->
-                    messageBus.put 'poolSelected', model
+                @listenTo view, 'selected', (model) =>
+                    @trigger 'poolSelected', model
                 view
             ).forEach((view) =>
                 @$('ul').append view.render().el
