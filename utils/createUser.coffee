@@ -14,17 +14,24 @@ uuid        = require 'node-uuid'
 
 commander
     .version('0.0.1')
-    .usage(' <user> <password>')
+    .option('-t, --type [type]', 'user type')
+    .option('-e, --email <email>', "user's email")
+    .option('-p, --password <password>', 'password to be hashed to db')
     .parse process.argv
+
+userMap =
+    'user':
+        permission: 'pool'
+    'admin':
+        permission: 'admin'
 
 hashPass = (pass) ->
     shasum = crypto.createHash 'sha256'
     hashed = shasum.update(pass).digest 'hex'
-    console.log 'Created password ' + hashed
     hashed
 
-getExisting = (r, conn, name, done) ->
-    r.table('users').filter(name: name).run conn,
+getExisting = (r, conn, email, done) ->
+    r.table('users').filter(email: email).run conn,
         (err, results) ->
             results.toArray (err, [user]) ->
                 done null, user
@@ -32,7 +39,7 @@ getExisting = (r, conn, name, done) ->
 # setup the db and tables if they haven't been created yet.
 # Then add the user to the db.
 #
-createAdmin = (name, password, done) ->
+createUser = ({type, email, password}, done) ->
     r.connect host: dbConfig.address, port: dbConfig.port,
         (err, conn) ->
             if err?
@@ -47,17 +54,16 @@ createAdmin = (name, password, done) ->
                         (err) ->
                             hashed = hashPass password
 
-                            getExisting r, conn, name, (err, user) ->
+                            getExisting r, conn, email, (err, user) ->
                                 if user?
                                     user.password = hashed
                                     query = r.table('users').replace(user)
                                 else
                                     doc =
                                         id: uuid.v4()
-                                        name: name
                                         password: hashed
-                                        permission: 'admin'
-                                        email: 'fantasy-admin@nowhere.com'
+                                        permission: userMap[type].permission
+                                        email: email
                                     query = r.table('users').insert(doc)
 
                                 query.run conn, (err, res) ->
@@ -66,12 +72,14 @@ createAdmin = (name, password, done) ->
                                         process.exit -1
                                     return done()
 
-if commander.args.length < 2
-    console.log 'Arguments must be of length 2: <user> <password>'
+{type, email, password} = commander
+
+type ?= 'user'
+
+unless email? and password?
+    console.log 'email and password are required.'
     process.exit -1
 
-[user, password] = commander.args
-
-createAdmin user, password, ->
-    console.log "Successfully created user #{user}"
+createUser {type, email, password}, ->
+    console.log "Successfully created user #{email} with password #{password}"
     process.exit 0

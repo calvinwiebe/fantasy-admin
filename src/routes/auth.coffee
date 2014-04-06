@@ -6,7 +6,7 @@
 # Login in a user
 #
 login = (req, res, next) ->
-    name = req.body.user
+    email = req.body.email
     password = req.body.password
 
     {conn, r} = req.rethink
@@ -14,12 +14,13 @@ login = (req, res, next) ->
     attemptedHash = hashPassword password
 
     filter = (user) ->
-        user('name').eq(name).or(user('email').eq(name))
+        user('email').eq(email)
 
     r.table('users').filter(filter).run conn,
         (err, results) ->
             return next err if err?
             results.toArray (err, [user]) ->
+                console.log user
                 if err?
                     next err
                 else if not user or user.password isnt attemptedHash

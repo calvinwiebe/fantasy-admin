@@ -56,9 +56,6 @@ exports.RoundsCollection = Collection
         now = Date.now()
         needsPick = false
         @forEach (round) =>
-            console.log 'stuff'
-            console.log round
-            console.log now
             if @stateMap[round.get('state')] is 'running' \
                and round.get('date') > now
                 needsPick = round
