@@ -134,10 +134,8 @@ a {
     font-size: 16px;
 }
 
-#dashboard #save-pool {
+#dashboard #pool-actions .btn {
     font-size: 16px;
-    margin-bottom: 20px;
-    margin-left: 19px;
 }
 
 #dashboard #rounds-container button.round {

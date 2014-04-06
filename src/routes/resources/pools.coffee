@@ -29,6 +29,7 @@ exports.new = (req, res, next) ->
     pool =
         name: moniker.choose()
         type: 'n/a'
+        state: 0
         users: []
         rounds: []
 
@@ -41,6 +42,7 @@ exports.create = (req, res, next) ->
     pool =
         name: req.body.name
         type: req.body.type
+        state: 0
         users: _.uniq(req.body.users) or []
         rounds: []
         categories: []
@@ -52,15 +54,22 @@ exports.create = (req, res, next) ->
 exports.show = (req, res, next) ->
     {conn, r} = req.rethink
 
-    r.table('pools').get(req.param('id')).run conn, (err, results) ->
-        res.send results
+    poolUtils.get conn, r, req.param('id'), (err, pool) ->
+        res.send pool
 
 exports.update = (req, res, next) ->
     {conn, r} = req.rethink
 
-    r.table('pools').get(req.param('id')).update(req.body).run conn, (err, results) ->
-        r.table('pools').get(req.param('id')).run conn, (err, pool) ->
-            res.send pool
+    switch req.body.state
+        when 0
+            poolUtils.update conn, r, req.body, (err, pool) ->
+                res.send pool
+        when 1
+            poolUtils.startPool conn, r, req.body, (err, pool) ->
+                res.send pool
+        when 2
+            poolUtils.endPool conn, r, req.body, (err, pool) ->
+                res.send pool
 
 exports.destroy = (req, res, next) ->
     {conn, r} = req.rethink

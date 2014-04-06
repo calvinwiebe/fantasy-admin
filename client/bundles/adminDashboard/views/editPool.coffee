@@ -19,6 +19,7 @@ exports.EditPoolFormView = View
 
     events:
         'click #save-pool' : 'save'
+        'click #start-pool' : 'start'
 
     initialize: ({@context}) ->
         _.extend this, Cleanup.mixin
@@ -38,16 +39,17 @@ exports.EditPoolFormView = View
     # In this case we sent it to the server to be created. We should also then
     # resync the pool, as it will have a new user attached to it.
     #
-    save: (e) ->
+    save: (e, onSaved) ->
         e?.preventDefault()
         participants = @participantsView.collection
         categories = @categoryView.collection
+        
         savePool = =>
             pids = participants.map (p) -> p.get('id')
             cids = categories.map (c) -> c.get('id')
             @model.set users: pids, categories: cids
             @model.save {},
-                success: -> alert('pool saved.')
+                success: -> (onSaved ?= -> alert('pool saved.'))()
                 error: -> alert('error saving.')
         asink.each participants.models,
             (model, cb) =>
@@ -55,8 +57,13 @@ exports.EditPoolFormView = View
                     success: -> cb()
                     error: -> alert('error saving.')
             , (err) -> savePool()
-
         false
+
+    start: (e) ->
+        e?.preventDefault()
+        @model.set 'state', 1
+        @save e, =>
+            @render()
 
     render: ->
         @undelegateEvents()
