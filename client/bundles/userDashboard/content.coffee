@@ -57,7 +57,6 @@ exports.DashboardContentView = Swapper
     initialize: ({resources}) ->
         _.bindAll this
         @collection  = resources.pools
-        @childViews = []
         header = {
             root: 'body'
             view: HeaderView
@@ -67,15 +66,15 @@ exports.DashboardContentView = Swapper
             event: 'nav'
             default: 'home'
             map:
-                'standings': [
+                'standings': views: [
                     header
                     StandingsView
                 ]
-                'picks': [
+                'picks': views: [
                     header
                     PicksView
                 ]
-                'home': [
+                'home': views: [
                     PoolListView
                 ]
 

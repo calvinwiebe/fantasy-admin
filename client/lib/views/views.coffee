@@ -11,6 +11,8 @@ exports.genericRender = genericRender = ->
     @$el.empty()
     if @serialize?
         data = @template @serialize @model
+    else if @collection? and @model?
+        data = @template _.extend @model.toJSON(), models: @collection.toJSON()
     else if @collection?
         data = @template models: @collection.toJSON()
     else if @model?
@@ -85,8 +87,7 @@ exports.Swapper = (proto) ->
             @views = []
             @state = @_swapper_config.default
 
-        onSwap: ({state}) ->
-            @state = state
+        onSwap: ({@state, @context}) ->
             @render()
 
         removeCurrent: ->
@@ -95,7 +96,7 @@ exports.Swapper = (proto) ->
             @views = []
 
         renderContent: ->
-            views = @_swapper_config.map[@state]
+            views = @_swapper_config.map[@state].views
             event = @_swapper_config.event
             @stopListening()
             @views = views \
@@ -104,7 +105,7 @@ exports.Swapper = (proto) ->
                         view = config
                     else
                         {root, view, method} = config
-                    view = new view { @model, @collection }
+                    view = new view { @model, @collection, @context }
                     root = \
                         if @$(root).length
                             root = @$(root)
@@ -123,6 +124,8 @@ exports.Swapper = (proto) ->
             @undelegateEvents()
             @removeCurrent()
             @beforeRender?()
+            @$el.html @template? \
+                @_swapper_config.map[@state].template ? {}
             @renderContent()
             @afterRender?()
             @delegateEvents()

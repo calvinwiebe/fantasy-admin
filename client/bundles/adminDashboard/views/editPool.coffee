@@ -3,14 +3,13 @@ Backbone.$  = window.$
 _           = require 'lodash'
 asink       = require 'asink'
 templates   = rfolder '../templates', extensions: [ '.jade' ]
-{GenericView, genericRender, Cleanup} = require 'views'
+{GenericView, genericRender, Cleanup, Swapper} = require 'views'
 utils = require 'utils'
 {PoolModel, UserCollection,
 UserModel, CategoriesCollection,
 RoundsCollection, SeriesCollection,
 TeamsCollection} \
 = require 'models'
-viewConfig = require './viewConfig.coffee'
 View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool
 #
@@ -250,9 +249,7 @@ CategoryItemView = View
 # Rounds And Series
 # -----------------
 
-views = {}
-
-views.SeriesEditItem = View
+SeriesEditItem = View
     template: templates.seriesEditItem
     className: 'series-edit-item'
     tagName: 'div'
@@ -278,7 +275,7 @@ views.SeriesEditItem = View
     dismiss: (e) ->
         e.preventDefault()
         @trigger 'action', {
-            event: 'clearSingleSeries',
+            state: 'seriesList',
             context:
                 round: @context.round
         }
@@ -321,7 +318,7 @@ SeriesListItem = View
 
     render: genericRender
 
-views.SeriesListView = View
+SeriesListView = View
     template: templates.seriesListView
     id: 'series-list-view'
     tagName: 'div'
@@ -344,7 +341,7 @@ views.SeriesListView = View
     dismiss: (e) ->
         e.preventDefault()
         @trigger 'action', {
-            event: 'clearSeries',
+            state: 'roundsList',
             context:
                 round: @context.round
         }
@@ -356,7 +353,7 @@ views.SeriesListView = View
         ready = true
         @collection.forEach (model) ->
             ready = false if !model.get('team1')? and !model.get('team2')?
-        
+
         if ready
             @context.round.set 'state', 2
             @context.round.save {},
@@ -379,13 +376,13 @@ views.SeriesListView = View
                 @listenTo view, 'selected', =>
                     if @context.round.get('state') is 1
                         @trigger 'action', {
-                            event: 'editSingleSeries',
+                            state: 'singleSeries',
                             context:
                                 round: @context.round
                                 series: model
                                 teams: @teams
                         }
-                    else 
+                    else
                         alert 'open series results page'
                 view
             ).forEach((view) =>
@@ -420,8 +417,8 @@ RoundListItem = View
         e.preventDefault()
 
         @model.set 'state', @model.get('state') + 1 #configured -> running, running -> finished
-        @model.save {}, 
-            success: => 
+        @model.save {},
+            success: =>
                 @render()
                 if @model.get('state') is 4
                     @trigger 'completed'
@@ -457,17 +454,17 @@ RoundListItem = View
                 @$('.round-action').html 'END'
 
 
-views.RoundsView = View
+RoundsView = View
     template: templates.roundsView
 
     events:
         'click #save-rounds': 'save'
 
-    initialize: ({@pool}) ->
+    initialize: ->
         _.extend this, Cleanup.mixin
         @childViews = []
         @needsData = true
-        @collection = new RoundsCollection pool: @pool.get('id')
+        @collection = new RoundsCollection pool: @model.get('id')
         @collection.fetch success: =>
             @needsData = false
             @render()
@@ -488,7 +485,7 @@ views.RoundsView = View
                 view = new RoundListItem { model }
                 @listenTo view, 'selected', =>
                     @trigger 'action', {
-                        event: 'editSeries'
+                        state: 'seriesList'
                         context:
                             round: model
                     }
@@ -521,35 +518,23 @@ views.RoundsView = View
 # This will swap between Rounds, Series and Single Series
 # views.
 #
-RoundsSeriesContainer = View
+RoundsSeriesContainer = Swapper
     template: templates.roundsContainer
 
     initialize: ->
-        _.extend this, Cleanup.mixin
-        @_ = viewConfig
-        @childViews = []
-        @viewClass = @_.defaults.view
-        @title = @_.defaults.title
-
-    renderContent: (context) ->
-        options =
-            pool: @model
-            context: context
-        view = new views[@viewClass] options
-        @childViews.push view
-        @listenTo view, 'action', @handleContentViewAction
-        @$el.append view.render().el
-
-    handleContentViewAction: (data) ->
-        @viewClass = @_.events[data.event]
-        @title = @_.titles[@viewClass]
-        @render data.context
-
-    render: (context) ->
-        @undelegateEvents
-        @cleanUp()
-        @$el.empty()
-        @$el.append @template { @title }
-        @renderContent context
-        @delegateEvents()
-        this
+        @configureSwap
+            event: 'action'
+            default: 'roundsList'
+            map:
+                'roundsList':
+                    views: [ RoundsView ]
+                    template:
+                        title: 'Rounds'
+                'seriesList':
+                    views: [ SeriesListView ]
+                    template:
+                        title: 'Rounds > Series'
+                'singleSeries':
+                    views: [ SeriesEditItem ]
+                    template:
+                        title: 'Rounds > Series > Single Series'
