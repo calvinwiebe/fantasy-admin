@@ -5,7 +5,7 @@ asink       = require 'asink'
 # templates
 templates = rfolder './templates', extensions: [ '.jade' ]
 # views
-{GenericView, genericRender, Cleanup} = require 'views'
+{GenericView, genericRender, Cleanup, Swapper} = require 'views'
 {editPool} = rfolder './views', extensions: [ '.coffee' ]
 # utils
 utils = require 'utils'
@@ -15,6 +15,7 @@ utils = require 'utils'
 viewConfig = require './viewConfig.coffee'
 views = {}
 views = _.extend views, editPool
+View = Backbone.View.extend.bind Backbone.View
 
 # --- Three main views: Dashboard, Sidebar, Header ---
 # the dashboard contains the sidebar and header. The sidebar
@@ -34,52 +35,56 @@ views = _.extend views, editPool
 # * `sidebarView`
 # * `actionAreaView`
 #
-exports.DashboardContentView = Backbone.View.extend
+exports.DashboardContentView = Swapper
     id: 'dashboard'
     template: templates.contentTemplate
 
     initialize: ->
         # set a default action area
         @sidebarEventClasses = viewConfig.sidebar.events
-        @messageClasses = viewConfig.actionArea.events
-        @actionAreaId = 'dashboard-action-area'
-        @actionAreaView = new views[viewConfig.actionArea.default] { @collection }
         @sidebarView = new SidebarView { @collection }
         @headerView = new HeaderView
+        @firstRender = true
+        @configureSwap
+            event: 'action'
+            default: 'home'
+            map:
+                'home':
+                    views: [ {
+                        root: '#action-area-content'
+                        view: DefaultView
+                    } ]
+                'create':
+                    views: [ {
+                        root: '#action-area-content'
+                        view: CreatePoolFormView
+                    } ]
+                'edit':
+                    views: [ {
+                        root: '#action-area-content'
+                        view: editPool.EditPoolFormView
+                    } ]
+                # 'editSeries':
+                #     views: [ {
+                #         root: '#action-area-content'
+                #         EditSeriesFormView
+                #     } ]
+
+    onNav: ({state, context}) ->
+        @trigger 'action', { state, context }
+
+    afterRender: ->
         @listenTo @sidebarView, 'nav', @onNav
         @listenTo @headerView, 'nav', @onNav
-
-    replaceActionArea: (viewClass, options) ->
-        @stopListening @actionAreaView
-        @actionAreaView.remove()
-        @actionAreaView = new viewClass options
-        @listenTo @actionAreaView, 'nav', @onNav
-        @render()
-
-    onNav: (eventData) ->
-        actionClass = views[@sidebarEventClasses[eventData.type]]
-        return false unless actionClass?
-        model = eventData.model
-        collection = if model? then null else @collection
-        @replaceActionArea actionClass, { collection, model }
-
-    onMessage: (eventData) ->
-        config = @messageClasses[eventData.type]
-        return false unless (viewClass = views[config.view])?
-        @replaceActionArea viewClass, config.msg
-
-    render: ->
-        @$el.empty()
-        @$el.append @headerView.render().el
-        @$el.append @template()
+        return this if not @firstRender
+        @$el.prepend @headerView.render().el
         @$('#sidebar-content').append @sidebarView.render().el
-        @$('#action-area-content').append @actionAreaView.render().el
-        this
+        @firstRender = false
 
 # Contains controls for navigating the page on the left
 # sidebar
 #
-SidebarView = Backbone.View.extend
+SidebarView = View
 
     initialize: ->
         @children = []
@@ -93,7 +98,7 @@ SidebarView = Backbone.View.extend
                 @collection
             }
             @children.push child
-            @listenTo child, 'nav', (data) -> @trigger 'nav', data
+            @listenTo child, 'nav', (data) => @trigger 'nav', data
 
     render: ->
         @$el.empty()
@@ -103,13 +108,13 @@ SidebarView = Backbone.View.extend
 
 # The header view
 #
-HeaderView = Backbone.View.extend
+HeaderView = View
     template: templates.headerTemplate
     id: 'dashboard-header'
     className: 'navbar navbar-inverse navbar-fixed-top'
 
     events:
-        'click .navbar-brand': -> @trigger 'nav', type: 'default'
+        'click .navbar-brand': -> @trigger 'nav', state: 'home'
 
     render: genericRender
 
@@ -117,12 +122,12 @@ HeaderView = Backbone.View.extend
 
 # Pool List View
 #
-views.PoolListView = Backbone.View.extend
+views.PoolListView = View
     template: templates.poolTemplate
     id: 'dashboard-pool-list'
 
     events:
-        'click #new-pool': -> @trigger 'nav', type: 'newPool'
+        'click #new-pool': -> @trigger 'nav', state: 'create'
 
     initialize: ->
         _.extend this, Cleanup.mixin
@@ -131,8 +136,10 @@ views.PoolListView = Backbone.View.extend
 
     poolSelected: ({model, event}) ->
         @trigger 'nav', {
-            type: 'editPool'
-            model
+            state: 'edit'
+            context: {
+                model
+            }
         }
 
     render: ->
@@ -149,7 +156,7 @@ views.PoolListView = Backbone.View.extend
 # Pool List Item
 # Contains a view of a pool with its own pool model
 #
-PoolListItemView = Backbone.View.extend
+PoolListItemView = View
     template: templates.poolListItem
     tagName: 'li'
     class: 'pool-item'
@@ -164,7 +171,7 @@ PoolListItemView = Backbone.View.extend
 
 # A simple first-login view for dashboard
 #
-views.DefaultView = Backbone.View.extend
+DefaultView = View
     template: templates.actionAreaTemplate
 
     render: ->
@@ -174,7 +181,7 @@ views.DefaultView = Backbone.View.extend
 
 # A generic message view to indicate something to the user
 #
-views.MessageView = Backbone.View.extend
+MessageView = View
     template: templates.genericMsgTemplate
     id: 'generic-message'
 
@@ -189,7 +196,7 @@ views.MessageView = Backbone.View.extend
 
 # Form for creating a new pool on the server
 #
-views.CreatePoolFormView = Backbone.View.extend
+CreatePoolFormView = View
     template: templates.createPoolFormTemplate
     id: 'create-pool-form'
 
@@ -212,9 +219,11 @@ views.CreatePoolFormView = Backbone.View.extend
         @model.save {},
             success: (model) =>
                 @collection.add model
-                @trigger 'nav', {
-                    type: 'editPool'
-                    model
+                @trigger 'action', {
+                    state: 'edit'
+                    context: {
+                        model
+                    }
                 }
             error: ->
                 # TODO show err msg

@@ -86,14 +86,18 @@ exports.Swapper = (proto) ->
         configureSwap: (@_swapper_config) ->
             @views = []
             @state = @_swapper_config.default
+            @_swapper_firstRender = true
+
+        getConfig: ->
+            return @_swapper_config
 
         onSwap: ({@state, @context}) ->
             @render()
 
         removeCurrent: ->
-            @views.forEach (view) ->
+            @views.forEach (view) =>
                 view.remove()
-            @views = []
+            @views.length = 0
 
         renderContent: ->
             views = @_swapper_config.map[@state].views
@@ -125,7 +129,8 @@ exports.Swapper = (proto) ->
             @removeCurrent()
             @beforeRender?()
             @$el.html @template? \
-                @_swapper_config.map[@state].template ? {}
+                @_swapper_config.map[@state].template ? {} if @_swapper_firstRender
+            @_swapper_firstRender = false
             @renderContent()
             @afterRender?()
             @delegateEvents()

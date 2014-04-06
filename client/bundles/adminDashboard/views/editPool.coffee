@@ -20,9 +20,10 @@ exports.EditPoolFormView = View
     events:
         'click #save-pool' : 'save'
 
-    initialize: ->
+    initialize: ({@context}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
+        @model = @context.model
         @participantsView = new ParticipantsView { @model }
         @categoryView = new CategoryView { @model }
         @roundsSeriesContainerView = new RoundsSeriesContainer { @model }
@@ -538,3 +539,6 @@ RoundsSeriesContainer = Swapper
                     views: [ SeriesEditItem ]
                     template:
                         title: 'Rounds > Series > Single Series'
+
+    afterRender: ->
+        @$('.title').html @getConfig().map[@state].template.title
