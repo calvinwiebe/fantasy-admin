@@ -53,6 +53,7 @@ exports.update = (req, res, next)->
     doc.date = new Date req.body.date if req.body.date?
 
     r.table('rounds').get(req.param('id')).update(doc).run conn, (err, results) ->
-        res.send results
+        return next err if err?
+        res.send doc
 
 exports.destroy = (req, res, next)->

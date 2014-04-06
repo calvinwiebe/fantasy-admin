@@ -11,7 +11,7 @@ utils = require 'utils'
 # models
 {PoolModel, SeriesCollection,
 PicksCollection, ModelStorage,
-CategoriesCollection} \
+CategoriesCollection, RoundsCollection} \
 = require 'models'
 View = Backbone.View.extend.bind Backbone.View
 
@@ -23,15 +23,34 @@ exports.PicksView = View
     initialize: ->
         @needsData = true
         @state = 'list'
-        # TODO: get real thing
-        @model.set 'roundNeedingPicks', '4575222e-d8a5-42b9-a110-3a1b4d0f30e2'
         @picks = {}
-        @collection = new SeriesCollection round: @model.get 'roundNeedingPicks'
-        @collection.fetch success: =>
-            @collection.forEach (model) =>
-                @picks[model.id] = new PicksCollection
-            @needsData = false
-            @render()
+        @getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
+            if (round = @rounds.anyNeedPicks())
+                console.log round
+                @getResource "series-#{round.id}", 'round', round.id, SeriesCollection, (@series) =>
+                    @series.forEach (model) =>
+                        @picks[model.id] = new PicksCollection
+                    @needsData = false
+                    @render()
+            else
+                @state = 'none'
+                @needsData = false
+                @render()
+
+    # Generic async getResource; either from cache or server.
+    # TODO: this can probably go into ModelStorage
+    #
+    getResource: (modelStorageKey, key, val, collectionClass, cb) ->
+        resource = ModelStorage.get modelStorageKey
+        if resource?
+            cb resource
+        else
+            options = {}
+            options[key] = val
+            resource = new collectionClass options
+            resource.fetch success: =>
+                ModelStorage.store modelStorageKey, resource
+                cb resource
 
     # Send the picks to the server
     # Boil everything down to one flat picks collection and save it
@@ -43,8 +62,9 @@ exports.PicksView = View
             .flatten()
             .value()
         saver = new PicksCollection models
-        xhr = saver.sync 'create', saver, {}
-        xhr.always -> alert 'Picks saved.'
+        saver.save success: ->
+            alert 'Picks saved.'
+
 
     seriesSelected: (model) ->
         @selectedSeries = model
@@ -59,7 +79,7 @@ exports.PicksView = View
     renderContent: ->
         @stopListening()
         if @state is 'list'
-            view = new SeriesList { @collection }
+            view = new SeriesList { collection: @series }
             @listenTo view, 'selected', @seriesSelected
             @listenTo view, 'submit', @submit
         else if @state is 'input'
@@ -69,6 +89,8 @@ exports.PicksView = View
                 picks: @picks[@selectedSeries.id]
             }
             @listenTo view, 'done', @pickSelectionDone
+        else if @state is 'none'
+            view = NoPicksNeeded
         @$('.picks').append view.render().el
         this
 
@@ -83,6 +105,8 @@ serializePick = (model) ->
     data =
         name: model.get('categoryObject').name
         value: model.get 'value'
+
+NoPicksNeeded = new GenericView template: templates.none
 
 PickInputView = View
     template: templates.input

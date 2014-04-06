@@ -41,7 +41,30 @@ exports.CategoriesCollection = Collection
 exports.RoundsCollection = Collection
     url: '/rounds'
     comparator: 'order'
+    stateMap:
+        0: 'disabled'
+        1: 'unconfigured'
+        2: 'configured'
+        3: 'running'
+        4: 'finished'
+
     initialize: ({@pool}={}) ->
+
+    # compute whether a round is needing/ready to accept picks
+    #
+    anyNeedPicks: ->
+        now = Date.now()
+        needsPick = false
+        @forEach (round) =>
+            console.log 'stuff'
+            console.log round
+            console.log now
+            if @stateMap[round.get('state')] is 'running' \
+               and round.get('date') > now
+                needsPick = round
+
+        return needsPick
+
     sync: syncWithId 'pool'
 
 exports.SeriesModel = SeriesModel = Model
@@ -67,14 +90,21 @@ exports.TeamsCollection = Collection
     initialize: ({@league}={}) ->
     sync: syncWithId 'league'
 
+exports.PickModel = PickModel = Model
+    urlRoot: '/picks'
+
+    toJSON: ->
+        attributes = Backbone.Model.prototype.toJSON.call this
+        delete attributes.categoryObject
+        attributes
+
 exports.PicksCollection = PicksCollection = Collection
     url: '/picks'
+    model: PickModel
 
-    save: (patch, options) ->
-        attributes = @toJSON()
-        delete attributes.categoryObject
-        attributes = _.extend {}, attributes, patch
-        Backbone.Model::save.call this, attributes, options
+    save: (options={}) ->
+        xhr = @sync 'create', this, {}
+        xhr.always options.success
 
 PicksCollection.url = '/picks'
 

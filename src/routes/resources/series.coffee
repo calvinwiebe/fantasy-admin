@@ -17,7 +17,12 @@ exports.index = (req, res, next) ->
     if round?
         r.table('rounds').get(round)('series').run conn, (err, series) ->
             getSeries (s) ->
-                r.expr(series).contains(s('id'))
+                answer = series? and r.expr(series).contains(s('id'))
+                if not answer
+                    console.log 'Couldnt find round, it is hard coded in
+                        picks.coffee for now, probs need to change it
+                    '
+                answer
     else
         getSeries filter
 
