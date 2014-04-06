@@ -39,7 +39,7 @@ exports.EditPoolFormView = View
     # resync the pool, as it will have a new user attached to it.
     #
     save: (e) ->
-        e.preventDefault()
+        e?.preventDefault()
         participants = @participantsView.collection
         categories = @categoryView.collection
         savePool = =>
@@ -285,8 +285,12 @@ views.SeriesEditItem = View
         false
 
     getTemplateData: ->
+        conference = @model.get('conference')
+        if conference is -1 then teams = @collection.toJSON()
+        else teams = _.map(@collection.where(conference: conference ), (model) -> model.toJSON())
+
         series: @model.toJSON()
-        teams: _.map(@collection.where(conference: @model.get 'conference' ), (model) -> model.toJSON())
+        teams: teams
 
     render: ->
         @undelegateEvents
@@ -414,9 +418,13 @@ RoundListItem = View
 
     sendAction: (e) ->
         e.preventDefault()
+
         @model.set 'state', @model.get('state') + 1 #configured -> running, running -> finished
         @model.save {}, 
-            success: => @render()
+            success: => 
+                @render()
+                if @model.get('state') is 4
+                    @trigger 'completed'
             error: -> alert('error saving round.')
         false
 
@@ -465,7 +473,7 @@ views.RoundsView = View
             @render()
 
     save: (e) ->
-        e.preventDefault()
+        e?.preventDefault()
         asink.each @collection.models,
             (model, cb) =>
                 model.save {},
@@ -484,6 +492,7 @@ views.RoundsView = View
                         context:
                             round: model
                     }
+                @listenTo view, 'completed', => @roundComplete()
                 view
             ).forEach((view) =>
                 @$('#rounds-container').append view.render().el
@@ -499,6 +508,15 @@ views.RoundsView = View
         @renderRounds()
         @delegateEvents()
         this
+
+    roundComplete: ->
+        nextRound = @collection.findWhere state: 0
+
+        if nextRound
+            nextRound.set 'state', 1
+            @render()
+            @save()
+        else alert 'pool over man'
 
 # This will swap between Rounds, Series and Single Series
 # views.
