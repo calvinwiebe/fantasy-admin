@@ -16,6 +16,23 @@ class ModelStorage
     get: (name) ->
         @resources[name]
 
+    # Generic async getResource; either from cache or server.
+    #
+    getResource: (name, key, val, collectionClass, cb) ->
+        resource = @get name
+        if resource?
+            console.log "got a cached version of a resource #{name}"
+            setTimeout ->
+                cb resource
+            , 0
+        else
+            options = {}
+            options[key] = val
+            resource = new collectionClass options
+            resource.fetch success: =>
+                @store name, resource
+                cb resource
+
     # Test to see if a string is a valid `uuid v4`.
     #
     isId: (attribute) ->
@@ -61,13 +78,14 @@ class ModelStorage
     # and basic types
     #
     populate: (model, populator) ->
-        model = @toArray model
+        _model = @toArray model
         populator = @toArray populator
 
-        for m in model
+        for m in _model
             for p in populator
                 @populateModel m, p
-        m
+
+        if _model.length is 1 then _model[0] else _model
 
 
 module.exports = new ModelStorage

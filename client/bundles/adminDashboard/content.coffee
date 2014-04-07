@@ -6,7 +6,7 @@ asink       = require 'asink'
 templates = rfolder './templates', extensions: [ '.jade' ]
 # views
 {GenericView, genericRender, Cleanup, Swapper} = require 'views'
-{editPool} = rfolder './views', extensions: [ '.coffee' ]
+{editPool, editSeriesDetail} = rfolder './views', extensions: [ '.coffee' ]
 # utils
 utils = require 'utils'
 # models
@@ -32,15 +32,18 @@ View = Backbone.View.extend.bind Backbone.View
 # Main Dashboard View.
 # It contains:
 #
+# * `headerView`
 # * `sidebarView`
 # * `actionAreaView`
+#
+# Only the actionArea is swap managed. We do this because `Swapper` only has a concept of one set of views
+# per state. This means header and sidebar would be re-rendered everytime, and they do not need to be.
 #
 exports.DashboardContentView = Swapper
     id: 'dashboard'
     template: templates.contentTemplate
 
     initialize: ->
-        # set a default action area
         @sidebarEventClasses = viewConfig.sidebar.events
         @sidebarView = new SidebarView { @collection }
         @headerView = new HeaderView
@@ -64,14 +67,22 @@ exports.DashboardContentView = Swapper
                         root: '#action-area-content'
                         view: editPool.EditPoolFormView
                     } ]
-                # 'editSeries':
-                #     views: [ {
-                #         root: '#action-area-content'
-                #         EditSeriesFormView
-                #     } ]
+                'editSeriesDetail':
+                    views: [ {
+                        root: '#action-area-content'
+                        view: editSeriesDetail.EditSingleSeriesDetail
+                    } ]
 
+    # listen to sidebar events that are not being swap managed.
+    #
     onNav: ({state, context}) ->
         @trigger 'action', { state, context }
+
+    # listen for `bubble` events from child `Swappers`
+    #
+    onBubble: ({state, context}) ->
+        @trigger 'action', { state, context }
+        return false
 
     afterRender: ->
         @listenTo @sidebarView, 'nav', @onNav

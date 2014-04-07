@@ -24,9 +24,9 @@ exports.PicksView = View
         @needsData = true
         @state = 'list'
         @picks = {}
-        @getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
+        ModelStorage.getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
             if (round = @rounds.anyNeedPicks())
-                @getResource "series-#{round.id}", 'round', round.id, SeriesCollection, (@series) =>
+                ModelStorage.getResource "series-#{round.id}", 'round', round.id, SeriesCollection, (@series) =>
                     @series.forEach (model) =>
                         @picks[model.id] = new PicksCollection
                     @needsData = false
@@ -35,21 +35,6 @@ exports.PicksView = View
                 @state = 'none'
                 @needsData = false
                 @render()
-
-    # Generic async getResource; either from cache or server.
-    # TODO: this can probably go into ModelStorage
-    #
-    getResource: (modelStorageKey, key, val, collectionClass, cb) ->
-        resource = ModelStorage.get modelStorageKey
-        if resource?
-            cb resource
-        else
-            options = {}
-            options[key] = val
-            resource = new collectionClass options
-            resource.fetch success: =>
-                ModelStorage.store modelStorageKey, resource
-                cb resource
 
     # Send the picks to the server
     # Boil everything down to one flat picks collection and save it

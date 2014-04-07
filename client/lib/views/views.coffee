@@ -50,7 +50,7 @@ exports.ListItem = View
 # on the model's `value` attr
 #
 exports.InputListItem = View
-    className: 'input-group'
+    className: 'form-group'
     template: inputListItem
 
     events:
@@ -94,13 +94,26 @@ exports.Swapper = (proto) ->
         onSwap: ({@state, @context}) ->
             @render()
 
+        # Bubble up an event, as there may be Swappers inside swappers.
+        # If an object defines a `onBubble`, they can intercept the bubble.
+        # The `onBubble` should return a boolean. `true` for continue bubbling, and
+        # `false` to not.
+        #
+        bubbleUp: (data) ->
+            if @onBubble?(data) ? true
+                @trigger 'bubble', data
+
         removeCurrent: ->
             @views.forEach (view) =>
                 view.remove()
             @views.length = 0
 
         renderContent: ->
-            views = @_swapper_config.map[@state].views
+            try
+                views = @_swapper_config.map[@state].views
+            catch err
+                console.warn? "Swapper could not find config for state #{@state}"
+                return
             event = @_swapper_config.event
             @stopListening()
             @views = views \
@@ -118,6 +131,7 @@ exports.Swapper = (proto) ->
                         else
                             @$el
                     @listenTo view, event, @onSwap
+                    @listenTo view, 'bubble', @bubbleUp
                     method = if root[method]? then method else 'append'
                     root[method] view.render().el
                     view

@@ -105,4 +105,17 @@ exports.PicksCollection = PicksCollection = Collection
 
 PicksCollection.url = '/picks'
 
+exports.ResultsModel = ResultsModel = Model
+    urlRoot: '/results'
+
+    toJSON: ->
+        attributes = Backbone.Model.prototype.toJSON.call this
+        delete attributes.categoryObject
+        attributes
+
+exports.ResultsCollection = Collection
+    url: '/results'
+    model: ResultsModel
+
+
 

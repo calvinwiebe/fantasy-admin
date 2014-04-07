@@ -13,7 +13,10 @@ TeamsCollection} \
 View = Backbone.View.extend.bind Backbone.View
 # Form for editing an existing pool
 #
-exports.EditPoolFormView = View
+# Use a `Swapper` here so we can get `bubble` events and pass them to
+# the main containing view.
+#
+exports.EditPoolFormView = Swapper
     template: templates.editPoolFormTemplate
     id: 'edit-pool-form'
 
@@ -22,14 +25,23 @@ exports.EditPoolFormView = View
         'click #start-pool' : 'start'
 
     initialize: ({@context}) ->
-        _.extend this, Cleanup.mixin
-        @childViews = []
         @model = @context.model
-        @participantsView = new ParticipantsView { @model }
-        @categoryView = new CategoryView { @model }
-
-        @childViews.push @participantsView
-        @childViews.push @categoryView
+        @configureSwap
+            event: 'action'
+            default: 'only'
+            map:
+                'only':
+                    views: [
+                            root: '#participants'
+                            view: ParticipantsView
+                        ,
+                            root: '#categories'
+                            view: CategoryView
+                        ,
+                            root: '#edit-palette'
+                            view: RoundsSeriesContainer
+                    ]
+                    template: @model.toJSON()
 
     # retrieve all of our sub collection/models from
     # our childViews, and persist them to the server.
@@ -42,7 +54,7 @@ exports.EditPoolFormView = View
         e?.preventDefault()
         participants = @participantsView.collection
         categories = @categoryView.collection
-        
+
         onError = (error) =>
             alert('error saving: ' + error.message)
             @model.fetch()
@@ -69,13 +81,7 @@ exports.EditPoolFormView = View
         @save e, state: 1, =>
             @render()
 
-    render: ->
-        @undelegateEvents()
-        genericRender.call this
-        @cleanUp()
-        @$('#participants').append @participantsView.render().el
-        @$('#categories').append @categoryView.render().el
-
+    afterRender: ->
         switch @model.get('state')
             when 0
                 @$('#save-pool').show()
@@ -90,9 +96,6 @@ exports.EditPoolFormView = View
                 @$('#save-pool').hide()
                 @$('#start-pool').hide()
                 @$('#edit-palette').hide()
-
-        @delegateEvents()
-        this
 
 # Participants
 # -----------
@@ -148,7 +151,7 @@ ParticipantsView = View
         @childViews.forEach (v) =>
             @listenTo v, 'new', @newUser
             @$el.append v.render().el
-            
+
         @$('#edit-users').toggle @model.get('state') is 0
 
         if empty?
@@ -417,7 +420,13 @@ SeriesListView = View
                                 teams: @teams
                         }
                     else
-                        alert 'open series results page'
+                        @trigger 'bubble', {
+                            state: 'editSeriesDetail',
+                            context:
+                                round: @context.round
+                                series: model
+                                teams: @teams
+                        }
                 view
             ).forEach((view) =>
                 @$('#series-container').prepend view.render().el
@@ -572,6 +581,12 @@ RoundsSeriesContainer = Swapper
                     views: [ SeriesEditItem ]
                     template:
                         title: 'Rounds > Series > Single Series'
+
+    # intercept and add the pool onto the context
+    #
+    onBubble: ({context})->
+        context.pool = @model
+        true
 
     afterRender: ->
         @$('.title').html @getConfig().map[@state].template.title

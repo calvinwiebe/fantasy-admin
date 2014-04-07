@@ -13,12 +13,8 @@ exports.new = (req, res, next) ->
 exports.create = (req, res, next) ->
     {conn, r} = req.rethink
 
-    result =
-        categoryId: req.body.categoryId
-        seriesId: req.body.seriesId
-        value: req.body.value
-
-    if req.body.gameNumber? then result.gameNumber = parseInt req.body.gameNumber, 10
+    result = req.body
+    if req.body.game? then result.game = parseInt req.body.game, 10
 
     r.table('results').insert(result).run conn, (err, results) ->
             res.send results.generated_keys[0]
