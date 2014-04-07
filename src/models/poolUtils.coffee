@@ -14,6 +14,12 @@ exports.update = update = (conn, r, pool, cb) ->
         get conn, r, pool.id, cb
 
 exports.startPool = (conn, r, pool, cb) ->
+    if pool.users?.length is 0
+        cb code: 1, message: 'Need at least 1 user.'
+        return
+    if pool.categories?.length is 0
+        cb code: 1, message: 'Need at least 1 category.'
+        return
     parsePoolType conn, r, pool, (ids) ->
         pool.rounds = ids
         update conn, r, pool, cb

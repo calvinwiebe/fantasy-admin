@@ -66,7 +66,11 @@ exports.update = (req, res, next) ->
                 res.send pool
         when 1
             poolUtils.startPool conn, r, req.body, (err, pool) ->
-                res.send pool
+                if err
+                    res.status 418
+                    res.json error: err
+                else
+                    res.send pool
         when 2
             poolUtils.endPool conn, r, req.body, (err, pool) ->
                 res.send pool

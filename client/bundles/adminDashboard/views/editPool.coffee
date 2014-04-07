@@ -38,30 +38,35 @@ exports.EditPoolFormView = View
     # In this case we sent it to the server to be created. We should also then
     # resync the pool, as it will have a new user attached to it.
     #
-    save: (e, onSaved) ->
+    save: (e, obj, onSaved) ->
         e?.preventDefault()
         participants = @participantsView.collection
         categories = @categoryView.collection
         
+        onError = (error) =>
+            alert('error saving: ' + error.message)
+            @model.fetch()
+
         savePool = =>
+            originalModel = @model.attributes
             pids = participants.map (p) -> p.get('id')
             cids = categories.map (c) -> c.get('id')
             @model.set users: pids, categories: cids
-            @model.save {},
+            @model.save obj or {},
                 success: -> (onSaved ?= -> alert('pool saved.'))()
-                error: -> alert('error saving.')
+                error: (model, jqxhr) => onError jqxhr.responseJSON.error
+
         asink.each participants.models,
             (model, cb) =>
                 model.save {},
                     success: -> cb()
-                    error: -> alert('error saving.')
+                    error: -> alert('error saving because of the users.')
             , (err) -> savePool()
         false
 
     start: (e) ->
         e?.preventDefault()
-        @model.set 'state', 1
-        @save e, =>
+        @save e, state: 1, =>
             @render()
 
     render: ->
@@ -128,7 +133,7 @@ ParticipantsView = View
 
     renderCurrentView: ->
         @isEditing = false if @model.get('state') is 1
-        
+
         if !@isEditing
             @childViews.push new ParticipantsListView { @collection }
         else
