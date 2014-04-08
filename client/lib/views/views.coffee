@@ -103,10 +103,24 @@ exports.Swapper = (proto) ->
             if @onBubble?(data) ? true
                 @trigger 'bubble', data
 
+        getCollections: ->
+            _.chain(@views) \
+                .map((view) ->
+                    name: view.name
+                    collection: view.collection
+                ).reduce((result, obj) ->
+                    result[obj.name] = obj.collection
+                    result
+                , {})
+                .value()
+
+        getView: (name) ->
+            _.find @views, { name }
+
         removeCurrent: ->
-            @views.forEach (view) =>
+            @views.forEach((view) =>
                 view.remove()
-            @views.length = 0
+            )
 
         renderContent: ->
             try
@@ -121,8 +135,9 @@ exports.Swapper = (proto) ->
                     if typeof config is 'function'
                         view = config
                     else
-                        {root, view, method} = config
+                        {root, view, method, name} = config
                     view = new view { @model, @collection, @context }
+                    view.name = name
                     root = \
                         if @$(root).length
                             root = @$(root)
@@ -143,7 +158,7 @@ exports.Swapper = (proto) ->
             @removeCurrent()
             @beforeRender?()
             @$el.html @template? \
-                @_swapper_config.map[@state].template ? {} if @_swapper_firstRender
+                @_swapper_config.map[@state].template ? @model?.toJSON() ? {} if @_swapper_firstRender
             @_swapper_firstRender = false
             @renderContent()
             @afterRender?()

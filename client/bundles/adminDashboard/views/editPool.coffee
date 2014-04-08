@@ -26,22 +26,56 @@ exports.EditPoolFormView = Swapper
 
     initialize: ({@context}) ->
         @model = @context.model
+        start = \
+            switch @model.get('state')
+                when 0
+                    'unconfigured'
+                when 1
+                    'started'
+                when 2
+                    'completed'
         @configureSwap
-            event: 'action'
-            default: 'only'
+            event: 'editFormSwap'
+            default: start
             map:
-                'only':
+                'unconfigured':
                     views: [
                             root: '#participants'
                             view: ParticipantsView
+                            name: 'participants'
                         ,
                             root: '#categories'
                             view: CategoryView
+                            name: 'categories'
+                    ]
+                'started':
+                    views: [
+                            root: '#participants'
+                            view: ParticipantsView
+                            name: 'participants'
+                        ,
+                            root: '#categories'
+                            view: CategoryView
+                            name: 'categories'
                         ,
                             root: '#edit-palette'
                             view: RoundsSeriesContainer
+                            name: 'rounds'
                     ]
-                    template: @model.toJSON()
+                'completed':
+                    views: [
+                        view: PoolOverManView
+                        name: 'poolOverMan'
+                    ]
+                template: @model.toJSON()
+
+    # Catch the deep bubble and shutdown the pool
+    onBubble: ({state}) ->
+        if state is 'completed'
+            @trigger 'editFormSwap', state: 'completed'
+            false
+        else
+            true
 
     # retrieve all of our sub collection/models from
     # our childViews, and persist them to the server.
@@ -52,8 +86,7 @@ exports.EditPoolFormView = Swapper
     #
     save: (e, obj, onSaved) ->
         e?.preventDefault()
-        participants = @participantsView.collection
-        categories = @categoryView.collection
+        {participants, categories} = @getCollections()
 
         onError = (error) =>
             alert('error saving: ' + error.message)
@@ -79,7 +112,12 @@ exports.EditPoolFormView = Swapper
     start: (e) ->
         e?.preventDefault()
         @save e, state: 1, =>
-            @render()
+            @trigger 'editFormSwap', state: 'started'
+
+    beforeRender: ->
+        switch @model.get('state')
+            when 1
+                @$('#edit-palette').show()
 
     afterRender: ->
         switch @model.get('state')
@@ -89,13 +127,15 @@ exports.EditPoolFormView = Swapper
             when 1
                 @$('#save-pool').hide()
                 @$('#start-pool').hide()
-                @roundsSeriesContainerView = new RoundsSeriesContainer { @model }
-                @childViews.push @roundsSeriesContainerView
-                @$('#edit-palette').append @roundsSeriesContainerView.render().el
             when 2
                 @$('#save-pool').hide()
                 @$('#start-pool').hide()
                 @$('#edit-palette').hide()
+
+# TODO: Implement
+PoolOverManView = View
+    template: templates.poolOverMan
+    render: genericRender
 
 # Participants
 # -----------
@@ -556,7 +596,9 @@ RoundsView = View
             nextRound.set 'state', 1
             @render()
             @save()
-        else alert 'pool over man'
+        else
+            @model.save { state: 2 }, success: =>
+                @trigger 'bubble', { state: 'completed', context: {} }
 
 # This will swap between Rounds, Series and Single Series
 # views.
