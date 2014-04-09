@@ -4,8 +4,8 @@
 .col-xs-4.col-sm-4.col-md-4.col-lg-4
     - var d = new Date(date);
     - var dateString = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear();
-    .input-group.date(data-date='#{dateString}', data-date-format='dd-mm-yyyy', placeholder='Deadline')
-        input.form-control(type='text')
+    .input-group.date(data-date='#{dateString}', data-date-format='dd-mm-yyyy')
+        input.form-control(type='text', placeholder='Deadline')
         span.input-group-addon
             i.glyphicon.glyphicon-th
 .col-xs-2.col-sm-2.col-md-2.col-lg-2
