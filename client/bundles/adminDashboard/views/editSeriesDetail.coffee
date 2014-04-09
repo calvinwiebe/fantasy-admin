@@ -21,33 +21,59 @@ domainMap =
     game: 0
     series: 1
 
-exports.EditSingleSeriesDetail = View
+exports.EditSingleSeriesDetail = Swapper
     template: templates.editSeriesDetail
+
+    initialize: ({@context})->
+        _.extend this, Cleanup.mixin
+        {@pool, @series, @teams, @round} = @context
+        @results = new ResultsCollection
+        @configureSwap
+            event: 'action:editDetail'
+            default: 'only'
+            map:
+                'only':
+                    views: [
+                            root: '#current'
+                            view: CurrentResult
+                            name: 'current'
+                        ,
+                            root: '#previous'
+                            view: PreviousResults
+                            name: 'previous'
+                    ]
+
+    serialize: ->
+        populatedSeries = ModelStorage.populate @series, @teams
+        pool: @pool.get 'name'
+        series: "#{populatedSeries.team1?.name} vs #{populatedSeries.team2?.name}"
+
+CurrentResult = View
+    template: templates.currentResults
 
     events:
         'click .save': 'save'
 
-    initialize: ({@context})->
+    initialize: ({@parent}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
-        {@pool, @series, @teams, @round} = @context
+        {@results, @pool, @series, @round} = @parent
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
-                @resetPrevious()
-                @results = new ResultsCollection
-                @listenTo @results, 'sync', (model) =>
-                    @previous.add model unless @previous.contains model
-                    @resetPrevious()
-                    @render()
                 @populateResults()
                 @needsData = false
                 @render()
 
-    resetPrevious: ->
-        @previousGrouped = ModelStorage.populate(@previous, @categories)
-        @previousGrouped = _.groupBy \
-            (if _.isArray @previousGrouped then @previousGrouped else [ @previousGrouped ]), 'game'
+    save: (e) ->
+        e.preventDefault()
+        asink.each @results.models, (model, cb) ->
+            model.save {},
+                success: -> cb()
+                error: (err, res, options) -> alert 'error saving.'
+        , (err) =>
+            alert 'results saved.'
+        false
 
     populateResults: ->
         _.chain(@categories.models)
@@ -62,18 +88,58 @@ exports.EditSingleSeriesDetail = View
                     value: null
             )
 
-    save: (e) ->
-        e.preventDefault()
-        asink.each @results.models, (model, cb) ->
-            model.save {},
-                success: -> cb()
-                error: (err, res, options) -> alert 'error saving.'
-        , (err) =>
-            alert 'results saved.'
-        false
-
     renderResults: ->
-        previousViews = _.chain(@previousGrouped)
+        @childViews = _.chain(@results.models)
+            .map((model) =>
+                view = new InputListItem { serialize: serializeResult, model }
+            ).forEach((view) =>
+                @$('form').append view.render().el
+            ).value()
+        this
+
+    render: ->
+        return this if @needsData
+        @undelegateEvents()
+        @$el.empty()
+        @cleanUp()
+        @$el.append @template()
+        @renderResults()
+        @delegateEvents()
+        this
+
+PreviousResults = View
+    template: templates.previousResults
+    noTemplate: templates.noPrevious
+
+    initialize: ({@parent}) ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+        {@results, @pool, @series} = @parent
+        @needsData = true
+        ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
+            @resetPrevious()
+            @listenTo @results, 'sync', (model) =>
+                @previous.add model unless @previous.contains model
+                @resetPrevious()
+                @render()
+            @needsData = false
+            @render()
+
+    resetPrevious: ->
+        @previousGrouped = ModelStorage.populate(@previous, @categories)
+        @previousGrouped = _.groupBy \
+            (if _.isArray @previousGrouped then @previousGrouped else [ @previousGrouped ]), 'game'
+
+    renderPrevious: ->
+        # tableHeadings = _.chain(@previous.models)
+        #     .pluck('name')
+        #     .uniq()
+        #     .map((heading) ->
+        #         new TableHeadingView { heading }
+        #     )
+        #     .value()
+
+        @childViews = _.chain(@previousGrouped)
             .map((collection) =>
                 collection.map (model) ->
                     view = new GenericView
@@ -84,29 +150,20 @@ exports.EditSingleSeriesDetail = View
             .flatten()
             .value()
 
-        currentViews = _.chain(@results.models)
-            .map((model) =>
-                view = new InputListItem { serialize: serializeResult, model }
-            ).forEach((view) =>
-                @$('form').append view.render().el
-            ).value()
-
-        @childViews = _.union previousViews, currentViews
+        # @childViews = _.union tableHeadings, previousViews
         @childViews.forEach (view) =>
-            @$('form').append view.render().el
+            @$('tbody').append view.render().el
         this
-
-    serialize: ->
-        populatedSeries = ModelStorage.populate @series, @teams
-        pool: @pool.get 'name'
-        series: "#{populatedSeries.team1?.name} vs #{populatedSeries.team2?.name}"
 
     render: ->
         return this if @needsData
         @undelegateEvents()
         @$el.empty()
         @cleanUp()
-        @$el.append @template @serialize()
-        @renderResults()
+        @$el.append @template()
+        if @previous.length
+            @renderPrevious()
+        else
+            @$el.append @noTemplate()
         @delegateEvents()
         this

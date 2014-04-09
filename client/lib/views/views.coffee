@@ -136,7 +136,7 @@ exports.Swapper = (proto) ->
                         view = config
                     else
                         {root, view, method, name} = config
-                    view = new view { @model, @collection, @context }
+                    view = new view { @model, @collection, @context, parent: this }
                     view.name = name
                     root = \
                         if @$(root).length
@@ -158,7 +158,7 @@ exports.Swapper = (proto) ->
             @removeCurrent()
             @beforeRender?()
             @$el.html @template? \
-                @_swapper_config.map[@state].template ? @model?.toJSON() ? {} if @_swapper_firstRender
+                @_swapper_config.map[@state].template ? @serialize?() ? @model?.toJSON() ? {} if @_swapper_firstRender
             @_swapper_firstRender = false
             @renderContent()
             @afterRender?()
