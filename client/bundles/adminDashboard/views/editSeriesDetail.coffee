@@ -25,7 +25,6 @@ exports.EditSingleSeriesDetail = Swapper
     template: templates.editSeriesDetail
 
     initialize: ({@context})->
-        _.extend this, Cleanup.mixin
         {@pool, @series, @teams, @round} = @context
         @results = new ResultsCollection
         @configureSwap
@@ -61,6 +60,7 @@ CurrentResult = View
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
+                window.previous = @previous
                 @populateResults()
                 @needsData = false
                 @render()
@@ -84,7 +84,7 @@ CurrentResult = View
                     round: @round.id
                     category: model.id
                     categoryObject: model.toJSON()
-                    game: if (game = @previous.max('game')) is -Infinity then 1 else parseInt(game) + 1
+                    game: if (max = @previous.max((p) -> p.get('game'))) is -Infinity then 1 else max.get('game') + 1
                     value: null
             )
 

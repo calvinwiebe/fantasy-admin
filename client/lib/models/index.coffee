@@ -112,6 +112,8 @@ exports.ResultsModel = ResultsModel = Model
 exports.ResultsCollection = Collection
     url: '/results'
     model: ResultsModel
+    initialize: ({@series}={}) ->
+    sync: syncWithId 'series'
 
 
 
