@@ -1,13 +1,27 @@
 # Results
 
 # GET
+# Can be filtered by the series and game
 exports.index = (req, res, next) ->
     {conn, r} = req.rethink
 
-    r.table('results')
-    .run conn, (err, cursor) ->
-        cursor.toArray (err, results) ->
-            res.send results
+    series = req.query.series
+    game = req.query.game
+    filter = -> true
+
+    getResults = (filter) ->
+        r.table('results').filter(filter).run conn, (err, dbResults) ->
+            results.toArray (err, results) ->
+                res.json results
+
+    if series? and game?
+        getResults (result) ->
+            result('game').eq(game)
+    else if series?
+        getResults (result) ->
+            result('series').eq(series)
+    else
+        getResults filter
 
 exports.new = (req, res, next) ->
 exports.create = (req, res, next) ->

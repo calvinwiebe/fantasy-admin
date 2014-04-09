@@ -11,12 +11,14 @@ dbService   = require '../src/services/db'
 dbConfig    = db
 crypto      = require 'crypto'
 uuid        = require 'node-uuid'
+async       = require 'async'
 
 commander
     .version('0.0.1')
     .option('-t, --type [type]', 'user type')
     .option('-e, --email <email>', "user's email")
     .option('-p, --password <password>', 'password to be hashed to db')
+    .option('-m, --mock', 'create some default test users')
     .parse process.argv
 
 userMap =
@@ -72,14 +74,35 @@ createUser = ({type, email, password}, done) ->
                                         process.exit -1
                                     return done()
 
-{type, email, password} = commander
+{type, email, password, mock} = commander
 
-type ?= 'user'
-
-unless email? and password?
+unless (email? and password?) or mock?
     console.log 'email and password are required.'
     process.exit -1
 
-createUser {type, email, password}, ->
-    console.log "Successfully created user #{email} with password #{password}"
-    process.exit 0
+if mock?
+    mockData = [
+            type: 'admin'
+            email: 'admin'
+            password: 'admin'
+        ,
+            type: 'user'
+            email: 'test@test.com'
+            password: 'test'
+    ]
+
+    async.each mockData, (args, cb) ->
+        createUser args, cb
+    , (err) ->
+        if err?
+            console.error 'Received error creating mock users', err
+            process.exit -1
+            return
+        console.log 'Successfully created mock users'
+        process.exit 0
+
+else
+    type ?= 'user'
+    createUser {type, email, password}, ->
+        console.log "Successfully created user #{email} with password #{password}"
+        process.exit 0
