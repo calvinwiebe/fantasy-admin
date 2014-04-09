@@ -491,6 +491,11 @@ RoundListItem = View
         'click .round'          : 'emitSelected'
         'click .round-action'   : 'sendAction'
 
+    render: ->
+        genericRender.call this
+        @afterRender()
+        this
+
     emitSelected: (e) ->
         e.preventDefault()
         @trigger 'selected', @model
@@ -498,43 +503,61 @@ RoundListItem = View
 
     sendAction: (e) ->
         e.preventDefault()
-
-        @model.set 'state', @model.get('state') + 1 #configured -> running, running -> finished
+        @model.set 'state', @model.get('state') + 1 #configured -> started, started -> finished
         @model.save {},
-            success: =>
-                @render()
-                if @model.get('state') is 4
-                    @trigger 'completed'
+            success: => @render()
             error: -> alert('error saving round.')
-        false
 
-    setDeadline: (e) ->
-        return if @model.get('state') is 1 or not e.date?
-        @model.set 'date', e.date.valueOf()
-
-    render: ->
-        genericRender.call this
-        @afterRender()
-        this
+    setDeadline: () ->
+        timestamp = @$('.input-group.date').datepicker('getDate').getTime()
+        isDeadlineInFuture = timestamp > new Date().getTime()
+        switch @model.get('state')
+            when 1
+                isValid = false
+            when 2
+                isValid = isDeadlineInFuture 
+            when 3
+                isValid = !isDeadlineInFuture
+        @$('.round-action').prop 'disabled', !isValid
+        @model.set 'date', timestamp if isValid
 
     disable: ->
-        @$('.input-group.date input').prop 'disabled', 'true'
-        @$('.round').prop 'disabled', 'true'
+        @disableDate()
+        @$('.round').prop 'disabled', 'disabled'
         @$('.round-action').remove()
 
-    afterRender: ->
-        return @disable() if @model.get('state') is 0 or @model.get('state') is 4
+    disableDate: ->
+        @$('.input-group.date input').prop 'disabled', 'true'
+
+    setDatePicker: ->
+        date = @model.get('date')
+        if !date 
+            date = new Date()
+            date.setDate(date.getDate() + 1)
+        else date = new Date(date)
         @$('.input-group.date')
-            .datepicker({})
-            .datepicker('setValue', @model.get('date'))
+            .datepicker {}
+            .datepicker 'setDate', date
             .on 'changeDate', @setDeadline.bind(this)
+        @setDeadline()
+
+    afterRender: ->
         switch @model.get('state')
+            when 0
+                @disable()
             when 1 #unconfigured
-                @$('.round-action').remove()
+                @$('.round-action').html 'START'
+                @setDatePicker()
             when 2 #configured
                 @$('.round-action').html 'START'
-             when 3 #running
+                @setDatePicker()
+            when 3 #started
+                @setDatePicker()
+                @disableDate()
                 @$('.round-action').html 'END'
+            when 4 #finished
+                @setDatePicker()
+                @disable()
 
 
 RoundsView = View
