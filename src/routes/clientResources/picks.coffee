@@ -32,7 +32,7 @@ exports.create = (req, res, next)->
     docs.forEach (doc) -> doc.user = req.user.id
 
     r.table('picks').insert(docs).run conn, (err, results) ->
-        res.send results.generated_keys[0]
+        res.send docs
 
 exports.show = (req, res, next)->
     {conn, r} = req.rethink
@@ -44,6 +44,6 @@ exports.update = (req, res, next)->
     {conn, r} = req.rethink
 
     r.table('picks').get(req.param('id')).update(req.body).run conn, (err, results) ->
-        res.send results
+        res.send req.body
 
 exports.destroy = (req, res, next)->

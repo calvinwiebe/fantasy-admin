@@ -11,7 +11,7 @@ exports.index = (req, res, next) ->
 
     getResults = (filter) ->
         r.table('results').filter(filter).run conn, (err, dbResults) ->
-            results.toArray (err, results) ->
+            dbResults.toArray (err, results) ->
                 res.json results
 
     if series? and game?
@@ -31,7 +31,7 @@ exports.create = (req, res, next) ->
     if req.body.game? then result.game = parseInt req.body.game, 10
 
     r.table('results').insert(result).run conn, (err, results) ->
-            res.send results.generated_keys[0]
+        res.json result
 
 exports.show = (req, res, next) ->
 exports.update = (req, res, next) ->

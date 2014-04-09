@@ -99,10 +99,6 @@ exports.PicksCollection = PicksCollection = Collection
     url: '/picks'
     model: PickModel
 
-    save: (options={}) ->
-        xhr = @sync 'create', this, {}
-        xhr.always options.success
-
 PicksCollection.url = '/picks'
 
 exports.ResultsModel = ResultsModel = Model

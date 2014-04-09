@@ -46,9 +46,9 @@ exports.PicksView = View
             .flatten()
             .value()
         saver = new PicksCollection models
-        saver.save success: ->
-            alert 'Picks saved.'
-
+        saver.sync 'create', saver,
+            success: -> alert 'Picks saved.'
+            error: -> alert 'error saving'
 
     seriesSelected: (model) ->
         @selectedSeries = model

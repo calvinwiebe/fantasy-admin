@@ -34,11 +34,20 @@ exports.EditSingleSeriesDetail = View
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
-                @previous = _.groupBy ModelStorage.populate(@previous, @categories), 'game'
+                @resetPrevious()
                 @results = new ResultsCollection
+                @listenTo @results, 'sync', (model) =>
+                    @previous.add model unless @previous.contains model
+                    @resetPrevious()
+                    @render()
                 @populateResults()
                 @needsData = false
                 @render()
+
+    resetPrevious: ->
+        @previousGrouped = ModelStorage.populate(@previous, @categories)
+        @previousGrouped = _.groupBy \
+            (if _.isArray @previousGrouped then @previousGrouped else [ @previousGrouped ]), 'game'
 
     populateResults: ->
         _.chain(@categories.models)
@@ -49,20 +58,22 @@ exports.EditSingleSeriesDetail = View
                     round: @round.id
                     category: model.id
                     categoryObject: model.toJSON()
-                    game: if (game = _.max(@previous, 'game')) is -Infinity then 1 else game + 1
+                    game: if (game = @previous.max('game')) is -Infinity then 1 else parseInt(game) + 1
                     value: null
             )
 
     save: (e) ->
         e.preventDefault()
         asink.each @results.models, (model, cb) ->
-            model.save {}, success: => cb
-        , (err) -> alert 'Results saved.'
+            model.save {},
+                success: -> cb()
+                error: (err, res, options) -> alert 'error saving.'
+        , (err) =>
+            alert 'results saved.'
         false
 
     renderResults: ->
-        console.log @previous
-        previousViews = _.chain(@previous)
+        previousViews = _.chain(@previousGrouped)
             .map((collection) =>
                 collection.map (model) ->
                     view = new GenericView
@@ -82,7 +93,7 @@ exports.EditSingleSeriesDetail = View
 
         @childViews = _.union previousViews, currentViews
         @childViews.forEach (view) =>
-            @$el.append view.render().el
+            @$('form').append view.render().el
         this
 
     serialize: ->
