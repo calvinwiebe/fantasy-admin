@@ -80,7 +80,7 @@ browserifyBundles = (watch=false, debug=false) ->
 
     configs = [
             name: 'landing'
-            transforms: ['coffeeify', 'aliasify', 'browserify-jade']
+            transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.underscore
             ]
