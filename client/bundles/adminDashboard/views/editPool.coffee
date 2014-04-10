@@ -518,7 +518,7 @@ RoundListItem = View
             when 1
                 isValid = false
             when 2
-                isValid = isDeadlineInFuture 
+                isValid = isDeadlineInFuture
             when 3
                 #TODO for testing purposes, we won't disable ending a round based on the date
                 isValid = true #!isDeadlineInFuture
@@ -538,7 +538,7 @@ RoundListItem = View
 
     setDatePicker: ->
         date = @model.get('date')
-        if !date 
+        if !date
             date = moment().add 'd', 1
         else
             date = moment(date)

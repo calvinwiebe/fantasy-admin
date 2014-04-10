@@ -77,7 +77,7 @@ exports.SeriesModel = SeriesModel = Model
 exports.SeriesCollection = Collection
     url: '/series'
     model: SeriesModel
-    comparator: 'conference'
+    comparator: (model) -> return [model.get('conference'), model.get('id')]
     initialize: ({@round}={}) ->
     sync: syncWithId 'round'
 

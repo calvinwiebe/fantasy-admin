@@ -1,3 +1,18 @@
-form(role='form')
-button.save.btn.btn-success
-    | SAVE
+if state == 'active'
+    form(role='form')
+    button.back.btn.btn-primary
+        | BACK
+    button.save.btn.btn-success
+        | SAVE
+    button.ending.btn.btn-warning
+        | END SERIES
+else if state == 'ending'
+    form(role='form')
+    button.back.btn.btn-primary
+        | BACK
+    button.end.btn.btn-warning
+        | END
+else
+    h2 Series over man
+    button.back.btn.btn-primary
+        | BACK

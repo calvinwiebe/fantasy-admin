@@ -7,7 +7,8 @@ templates   = rfolder '../templates', extensions: [ '.jade' ]
 utils = require 'utils'
 {CategoriesCollection, ResultsCollection, ModelStorage} = require 'models'
 View = Backbone.View.extend.bind Backbone.View
-
+{EventEmitter} = require 'events'
+localBus = new EventEmitter
 # Edit a single series in detail
 #
 # 1. Enter the results of games
@@ -47,11 +48,27 @@ exports.EditSingleSeriesDetail = Swapper
         pool: @pool.get 'name'
         series: "#{populatedSeries.team1?.name} vs #{populatedSeries.team2?.name}"
 
+computeState = ->
+    switch @series.get 'state'
+        when 0
+            @state = 'active'
+            @domain = 'game'
+        when 1
+            @state = 'ended'
+            @domain = null
+
+# Can be in 3 states:
+#
+# 1. Active - can input game results
+# 2. Ending - can enter series results
+# 3. Ended - cannot enter anything
 CurrentResult = View
     template: templates.currentResults
 
     events:
-        'click .save': 'save'
+        'click .save'   : 'save'
+        'click .ending' : 'ending'
+        'click .end'    : 'end'
 
     initialize: ({@parent}) ->
         _.extend this, Cleanup.mixin
@@ -60,39 +77,66 @@ CurrentResult = View
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
-                window.previous = @previous
-                @populateResults()
+                computeState.call this
+                @resetResults() unless @state is 'ended'
                 @needsData = false
                 @render()
 
     save: (e) ->
         e.preventDefault()
+        asink.each @results.models, (model, cb) =>
+            model.save {},
+                success: (model) =>
+                    localBus.put 'new', model
+                    cb()
+                error: (err, res, options) -> alert 'error saving.'
+        , (err) =>
+            model = @results.models[0]
+            @resetResults model
+            @render()
+        false
+
+    ending: (e) ->
+        e.preventDefault()
+        @state = 'ending'
+        @domain = 'series'
+        @resetResults()
+        @render()
+        false
+
+    end: (e) ->
+        e.preventDefault()
+        @state = 'ended'
         asink.each @results.models, (model, cb) ->
             model.save {},
                 success: -> cb()
                 error: (err, res, options) -> alert 'error saving.'
         , (err) =>
-            model = @results.models[0]
-            @results = new ResultsCollection
-            @populateResults model
-            @render()
-
+            @series.save state: 1,
+                success: =>
+                    alert 'series ended.'
+                    @render()
         false
 
-    populateResults: (model)->
+    resetResults: (model)->
+        @results.set []
         maxGameModel = \
             model ? @previous.max((p) -> p.get('game'))
 
         _.chain(@categories.models)
-            .filter((model) -> model.get('domain') is domainMap['game'])
+            .filter((model) => model.get('domain') is domainMap[@domain])
             .forEach((model) =>
-                @results.add
+                result =
                     series: @series.id
                     round: @round.id
                     category: model.id
                     categoryObject: model.toJSON()
-                    game: if maxGameModel is -Infinity then 1 else maxGameModel.get('game') + 1
                     value: null
+                if @state is 'active'
+                    result.game = if maxGameModel is -Infinity then 1 else maxGameModel.get('game') + 1
+                else if @state is 'ending'
+                    result.final = '*'
+                @results.add result
             )
 
     renderResults: ->
@@ -102,6 +146,7 @@ CurrentResult = View
             ).forEach((view) =>
                 @$('form').append view.render().el
             ).value()
+        console.log @childViews
         this
 
     render: ->
@@ -109,8 +154,8 @@ CurrentResult = View
         @undelegateEvents()
         @$el.empty()
         @cleanUp()
-        @$el.append @template()
-        @renderResults()
+        @$el.append @template { @state }
+        @renderResults() unless @state is 'ended'
         @delegateEvents()
         this
 
@@ -123,20 +168,30 @@ PreviousResults = View
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
-                @listenTo @results, 'sync', (model) =>
-                    @previous.add model unless @previous.contains model
+                localBus.on 'new', (model) =>
+                    @previous.add model
                     @render()
+                computeState.call this
                 @needsData = false
                 @render()
 
     renderPrevious: ->
-        r = new ResultTableView
+        gameResults = new ResultTableView
             headings: _.filter @categories.toJSON(), (model) -> model.domain is domainMap['game']
-            results: @previous.toJSON()
+            results: _.filter @previous.toJSON(), (model) -> model.game?
             resultHeadingKey: 'category'
             groupBy: 'game'
 
-        @$el.append r.render().el
+        @$el.append gameResults.render().el
+
+        return unless @state is 'ended'
+        seriesResults = new ResultTableView
+            headings: _.filter @categories.toJSON(), (model) -> model.domain is domainMap['series']
+            results: _.filter @previous.toJSON(), (model) -> model.final?
+            resultHeadingKey: 'category'
+            groupBy: 'final'
+
+        @$el.append seriesResults.render().el
 
     render: ->
         return this if @needsData
