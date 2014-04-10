@@ -505,21 +505,25 @@ RoundListItem = View
         e.preventDefault()
         @model.set 'state', @model.get('state') + 1 #configured -> started, started -> finished
         @model.save {},
-            success: => @render()
+            success: =>
+                @render()
+                if @model.get('state') is 4
+                    @trigger 'completed'
             error: -> alert('error saving round.')
 
     setDeadline: () ->
-        timestamp = @$('.input-group.date').datepicker('getDate').getTime()
-        isDeadlineInFuture = timestamp > new Date().getTime()
+        date = @$('.input-group.date').data('DateTimePicker').getDate()
+        isDeadlineInFuture = moment().isBefore date
         switch @model.get('state')
             when 1
                 isValid = false
             when 2
                 isValid = isDeadlineInFuture 
             when 3
-                isValid = !isDeadlineInFuture
+                #TODO for testing purposes, we won't disable ending a round based on the date
+                isValid = true #!isDeadlineInFuture
         @$('.round-action').prop 'disabled', !isValid
-        @model.set 'date', timestamp if isValid
+        @model.set 'date', date.valueOf() if isValid
 
     disable: ->
         @disableDate()
@@ -527,21 +531,21 @@ RoundListItem = View
         @$('.round-action').remove()
 
     disableDate: ->
-        @$('.input-group.date input').prop 'disabled', 'true'
+        @$('.input-group.date').data('DateTimePicker').disable()
 
     setDatePicker: ->
         date = @model.get('date')
         if !date 
-            date = new Date()
-            date.setDate(date.getDate() + 1)
-        else date = new Date(date)
+            date = moment().add 'd', 1
+        else
+            date = moment(date)
+
         @$('.input-group.date')
-            .datepicker {}
-            .datepicker 'setDate', date
-            .on 'changeDate', @setDeadline.bind(this)
-        @setDeadline()
+            .on 'dp.change', @setDeadline.bind(this)
+            .data('DateTimePicker').setDate date
 
     afterRender: ->
+        @$('.input-group.date').datetimepicker()
         switch @model.get('state')
             when 0
                 @disable()
