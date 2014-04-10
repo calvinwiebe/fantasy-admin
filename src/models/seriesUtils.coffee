@@ -1,6 +1,5 @@
 exports.create = (conn, r, numberOfGames, conference, cb) ->
     doc =
-        teams: []
         numberOfGames: numberOfGames
         conference: conference
 

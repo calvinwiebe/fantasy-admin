@@ -636,16 +636,10 @@ RoundsSeriesContainer = Swapper
             map:
                 'roundsList':
                     views: [ RoundsView ]
-                    template:
-                        title: 'Rounds'
                 'seriesList':
                     views: [ SeriesListView ]
-                    template:
-                        title: 'Rounds > Series'
                 'singleSeries':
                     views: [ SeriesEditItem ]
-                    template:
-                        title: 'Rounds > Series > Single Series'
 
     # intercept and add the pool onto the context
     #
@@ -654,4 +648,13 @@ RoundsSeriesContainer = Swapper
         true
 
     afterRender: ->
-        @$('.title').html @getConfig().map[@state].template.title
+        switch @state
+            when 'roundsList'
+                title = 'Rounds'
+            when 'seriesList'
+                title = "#{@context.round.get('name')} > Series"
+            when 'singleSeries'
+                team1Name = @context.series.get('team1Name') or 'favorite'
+                team2Name = @context.series.get('team2Name') or 'underdog'
+                title = "#{@context.round.get('name')} > Series > #{team1Name} vs. #{team2Name}"
+        @$('.title').html title
