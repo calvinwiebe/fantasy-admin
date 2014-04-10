@@ -3,8 +3,8 @@
 Backbone        = require 'backbone'
 Backbone.$      = window.$
 _               = require 'lodash'
-listItem        = require './listItem.jade'
-inputListItem   = require './inputListItem.jade'
+templates       = rfolder './templates', extensions: [ '.jade' ]
+{Cleanup}       = require './manage.coffee'
 
 View = Backbone.View.extend.bind Backbone.View
 
@@ -35,7 +35,7 @@ exports.GenericView = View
 exports.ListItem = View
     tagName: 'li'
     className: 'list-group-item'
-    template: listItem
+    template: templates.listItem
 
     events:
         'click': 'onClick'
@@ -53,7 +53,7 @@ exports.ListItem = View
 #
 exports.InputListItem = View
     className: 'form-group'
-    template: inputListItem
+    template: templates.inputListItem
 
     events:
         'blur input': 'onBlur'
@@ -64,3 +64,66 @@ exports.InputListItem = View
         @model.set 'value', @$('input').val()
 
     render: genericRender
+
+# A row in a table
+#
+ResultTableRow = View
+    tagName: 'tr'
+
+    initialize: ({@tagType, @value}) ->
+        @template = if @tagType is 'td' then templates.td else templates.th
+
+    renderChildren: ->
+        _.forEach @collection, (rowData) =>
+            @$el.append @template
+                value: rowData[@value]
+
+    render: ->
+        @$el.empty()
+        @renderChildren()
+        this
+
+# A reusable TableView
+# This takes a collection of headings, and a collection of result collections.
+#
+exports.ResultTableView = View
+    template: templates.table
+
+    initialize: ({@headings, @results, @resultHeadingKey, @groupBy}) ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+        @headings = _.sortBy @headings, 'id'
+        @headings.unshift name: @groupBy.toUpperCase()
+        @results = _.groupBy @results, @groupBy
+        rowKeys = _.keys @results
+        @results = _.map @results, (collection) => _.sortBy collection, "#{@resultHeadingKey}"
+        @results.forEach (collection, i) ->
+            collection.unshift value: rowKeys[i]
+
+    renderRows: ->
+        heading = new ResultTableRow
+            collection: @headings
+            tagType: 'th'
+            value: 'name'
+        @$('thead').append heading.render().el
+
+        rows = _.chain(@results)
+            .map((collection) =>
+                new ResultTableRow
+                    collection: collection
+                    tagType: 'tr'
+                    value: 'value'
+            ).forEach((view) =>
+                @$('tbody').append view.render().el
+            )
+
+        @childViews = _.union heading, rows
+
+    render: ->
+        @cleanUp()
+        @$el.empty()
+        @$el.html @template()
+        @renderRows()
+        this
+
+

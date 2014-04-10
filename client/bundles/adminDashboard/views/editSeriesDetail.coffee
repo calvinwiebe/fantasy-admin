@@ -3,7 +3,7 @@ Backbone.$  = window.$
 _           = require 'lodash'
 asink       = require 'asink'
 templates   = rfolder '../templates', extensions: [ '.jade' ]
-{GenericView, genericRender, Cleanup, Swapper, InputListItem} = require 'views'
+{GenericView, genericRender, Cleanup, Swapper, InputListItem, ResultTableView} = require 'views'
 utils = require 'utils'
 {CategoriesCollection, ResultsCollection, ModelStorage} = require 'models'
 View = Backbone.View.extend.bind Backbone.View
@@ -112,54 +112,29 @@ PreviousResults = View
     noTemplate: templates.noPrevious
 
     initialize: ({@parent}) ->
-        _.extend this, Cleanup.mixin
-        @childViews = []
         {@results, @pool, @series} = @parent
         @needsData = true
-        ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
-            @resetPrevious()
-            @listenTo @results, 'sync', (model) =>
-                @previous.add model unless @previous.contains model
-                @resetPrevious()
+        ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
+            ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
+                @listenTo @results, 'sync', (model) =>
+                    @previous.add model unless @previous.contains model
+                    @render()
+                @needsData = false
                 @render()
-            @needsData = false
-            @render()
-
-    resetPrevious: ->
-        @previousGrouped = ModelStorage.populate(@previous, @categories)
-        @previousGrouped = _.groupBy \
-            (if _.isArray @previousGrouped then @previousGrouped else [ @previousGrouped ]), 'game'
 
     renderPrevious: ->
-        # tableHeadings = _.chain(@previous.models)
-        #     .pluck('name')
-        #     .uniq()
-        #     .map((heading) ->
-        #         new TableHeadingView { heading }
-        #     )
-        #     .value()
+        r = new ResultTableView
+            headings: @categories.toJSON()
+            results: @previous.toJSON()
+            resultHeadingKey: 'category'
+            groupBy: 'game'
 
-        @childViews = _.chain(@previousGrouped)
-            .map((collection) =>
-                collection.map (model) ->
-                    view = new GenericView
-                        template: templates.previousResult
-                        model:
-                            toJSON: -> model
-            )
-            .flatten()
-            .value()
-
-        # @childViews = _.union tableHeadings, previousViews
-        @childViews.forEach (view) =>
-            @$('tbody').append view.render().el
-        this
+        @$el.append r.render().el
 
     render: ->
         return this if @needsData
         @undelegateEvents()
         @$el.empty()
-        @cleanUp()
         @$el.append @template()
         if @previous.length
             @renderPrevious()
