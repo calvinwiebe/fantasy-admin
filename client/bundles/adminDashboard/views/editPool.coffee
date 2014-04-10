@@ -527,11 +527,14 @@ RoundListItem = View
 
     disable: ->
         @disableDate()
+        @disableAction()
         @$('.round').prop 'disabled', 'disabled'
-        @$('.round-action').remove()
 
     disableDate: ->
         @$('.input-group.date').data('DateTimePicker').disable()
+
+    disableAction: ->
+        @$('.round-action').remove()
 
     setDatePicker: ->
         date = @model.get('date')
@@ -550,8 +553,8 @@ RoundListItem = View
             when 0
                 @disable()
             when 1 #unconfigured
-                @$('.round-action').html 'START'
-                @setDatePicker()
+                @disableDate()
+                @disableAction()
             when 2 #configured
                 @$('.round-action').html 'START'
                 @setDatePicker()
