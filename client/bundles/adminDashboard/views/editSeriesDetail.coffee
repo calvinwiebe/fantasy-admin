@@ -72,10 +72,17 @@ CurrentResult = View
                 success: -> cb()
                 error: (err, res, options) -> alert 'error saving.'
         , (err) =>
-            alert 'results saved.'
+            model = @results.models[0]
+            @results = new ResultsCollection
+            @populateResults model
+            @render()
+
         false
 
-    populateResults: ->
+    populateResults: (model)->
+        maxGameModel = \
+            model ? @previous.max((p) -> p.get('game'))
+
         _.chain(@categories.models)
             .filter((model) -> model.get('domain') is domainMap['game'])
             .forEach((model) =>
@@ -84,7 +91,7 @@ CurrentResult = View
                     round: @round.id
                     category: model.id
                     categoryObject: model.toJSON()
-                    game: if (max = @previous.max((p) -> p.get('game'))) is -Infinity then 1 else max.get('game') + 1
+                    game: if maxGameModel is -Infinity then 1 else maxGameModel.get('game') + 1
                     value: null
             )
 
@@ -124,7 +131,7 @@ PreviousResults = View
 
     renderPrevious: ->
         r = new ResultTableView
-            headings: @categories.toJSON()
+            headings: _.filter @categories.toJSON(), (model) -> model.domain is domainMap['game']
             results: @previous.toJSON()
             resultHeadingKey: 'category'
             groupBy: 'game'
