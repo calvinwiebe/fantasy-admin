@@ -132,6 +132,7 @@ PickInputView = View
             ).forEach((view) =>
                 @$('form').append view.render().el
             ).value()
+        @$('input').first().focus()
         this
 
     done: (e) ->
