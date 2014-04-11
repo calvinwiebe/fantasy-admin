@@ -1,6 +1,10 @@
+label
+    | Favorite:
 select.team1.form-control
     for team in teams
         option(value='#{team.id}') (#{team.seed}) #{team.shortName}
+label
+    | Underdog:
 select.team2.form-control
     for team in teams
         option(value='#{team.id}') (#{team.seed}) #{team.shortName}

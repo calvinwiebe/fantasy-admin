@@ -661,7 +661,7 @@ RoundsSeriesContainer = Swapper
             when 'seriesList'
                 title = "#{@context.round.get('name')} > Series"
             when 'singleSeries'
-                team1Name = @context.series.get('team1Name') or 'favorite'
-                team2Name = @context.series.get('team2Name') or 'underdog'
+                team1Name = @context.series.get('team1Name') or 'Favorite'
+                team2Name = @context.series.get('team2Name') or 'Underdog'
                 title = "#{@context.round.get('name')} > Series > #{team1Name} vs. #{team2Name}"
         @$('.title').html title
