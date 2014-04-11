@@ -48,15 +48,6 @@ exports.EditSingleSeriesDetail = Swapper
         pool: @pool.get 'name'
         series: "#{populatedSeries.team1?.name} vs #{populatedSeries.team2?.name}"
 
-computeState = ->
-    switch @series.get 'state'
-        when 0
-            @state = 'active'
-            @domain = 'game'
-        when 1
-            @state = 'ended'
-            @domain = null
-
 # Can be in 3 states:
 #
 # 1. Active - can input game results
@@ -77,10 +68,19 @@ CurrentResult = View
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
-                computeState.call this
+                @computeState()
                 @resetResults() unless @state is 'ended'
                 @needsData = false
                 @render()
+
+    computeState: ->
+        switch @series.get 'state'
+            when 0
+                @state = 'active'
+                @domain = 'game'
+            when 1
+                @state = 'ended'
+                @domain = null
 
     save: (e) ->
         e.preventDefault()
@@ -109,7 +109,9 @@ CurrentResult = View
         @state = 'ended'
         asink.each @results.models, (model, cb) ->
             model.save {},
-                success: -> cb()
+                success: (model) ->
+                    localBus.put 'new', model
+                    cb()
                 error: (err, res, options) -> alert 'error saving.'
         , (err) =>
             @series.save state: 1,
@@ -171,7 +173,6 @@ PreviousResults = View
                 localBus.on 'new', (model) =>
                     @previous.add model
                     @render()
-                computeState.call this
                 @needsData = false
                 @render()
 
@@ -184,7 +185,6 @@ PreviousResults = View
 
         @$el.append gameResults.render().el
 
-        return unless @state is 'ended'
         seriesResults = new ResultTableView
             headings: _.filter @categories.toJSON(), (model) -> model.domain is domainMap['series']
             results: _.filter @previous.toJSON(), (model) -> model.final?
