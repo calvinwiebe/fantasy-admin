@@ -13,6 +13,12 @@ exports.update = update = (conn, r, pool, cb) ->
     r.table('pools').get(pool.id).update(pool).run conn, (err) ->
         get conn, r, pool.id, cb
 
+exports.filter = ({context, filter, cb}) ->
+    {conn, r} = context
+    r.table('pools').filter(filter).run conn, (err, results) ->
+        results.toArray (err, results) ->
+            cb err, results
+
 exports.startPool = (conn, r, pool, cb) ->
     if pool.users?.length is 0
         cb code: 1, message: 'Need at least 1 user.'

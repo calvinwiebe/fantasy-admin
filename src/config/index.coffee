@@ -22,6 +22,7 @@ defaults =
                 'results'
                 'teams'
                 'picks'
+                'pendingPicks'
             ]
         fantasyDb:
             name: 'fantasy'
