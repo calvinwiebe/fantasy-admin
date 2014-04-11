@@ -65,6 +65,41 @@ exports.InputListItem = View
 
     render: genericRender
 
+
+exports.CategoryInput = View
+    template: templates.categoryInput
+
+    initialize: ({ @model, @populatedSeries }) ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+        @render()
+    
+    render: ->
+        @$el.empty()
+        @cleanUp()
+        categoryObject = @model.get('categoryObject')
+        args = 
+            id: categoryObject.id
+            type: categoryObject.type
+            value: @model.get 'value'
+            name: categoryObject.name
+        switch categoryObject.type
+            when 0
+                switch categoryObject.enumType
+                    when 0
+                        args.data = _.map [@populatedSeries.team1, @populatedSeries.team2], (team) ->
+                             value: team.id, label: team.name
+                    when 1
+                        args.data = _.map @populatedSeries.team1.players, (player) ->
+                            value: player.name, label: player.name  + ' (' + player.position + ')'
+                    when 2
+                        args.data = _.map @populatedSeries.team2.players, (player) ->
+                            value: player.name, label: player.name + ' (' + player.position + ')'
+
+        @$el.append @template args
+        this
+
+
 # A row in a table
 #
 ResultTableRow = View

@@ -3,7 +3,7 @@ Backbone.$  = window.$
 _           = require 'lodash'
 asink       = require 'asink'
 templates   = rfolder '../templates', extensions: [ '.jade' ]
-{GenericView, genericRender, Cleanup, Swapper, InputListItem, ResultTableView} = require 'views'
+{GenericView, genericRender, Cleanup, Swapper, InputListItem, ResultTableView, CategoryInput} = require 'views'
 utils = require 'utils'
 {CategoriesCollection, ResultsCollection, ModelStorage} = require 'models'
 View = Backbone.View.extend.bind Backbone.View
@@ -64,7 +64,7 @@ CurrentResult = View
     initialize: ({@parent}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
-        {@results, @pool, @series, @round} = @parent
+        {@results, @pool, @series, @round, @teams} = @parent
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
@@ -84,6 +84,11 @@ CurrentResult = View
 
     save: (e) ->
         e.preventDefault()
+
+        @$('.category-input').each (i, el) =>
+            category = @results.findWhere category: $(el).attr('data-id')
+            category.set value: $(el).val()
+
         asink.each @results.models, (model, cb) =>
             model.save {},
                 success: (model) =>
@@ -106,6 +111,11 @@ CurrentResult = View
 
     end: (e) ->
         e.preventDefault()
+        
+        @$('.category-input').each (i, el) =>
+            category = @results.findWhere category: $(el).attr('data-id')
+            category.set value: $(el).val()
+
         @state = 'ended'
         asink.each @results.models, (model, cb) ->
             model.save {},
@@ -142,13 +152,14 @@ CurrentResult = View
             )
 
     renderResults: ->
+        populatedSeries = ModelStorage.populate @series, @teams
         @childViews = _.chain(@results.models)
             .map((model) =>
-                view = new InputListItem { serialize: serializeResult, model }
+                view = new CategoryInput { model, populatedSeries}
             ).forEach((view) =>
                 @$('form').append view.render().el
             ).value()
-        console.log @childViews
+        @$('.category-input').first().focus()
         this
 
     render: ->
