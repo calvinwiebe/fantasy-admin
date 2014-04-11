@@ -116,5 +116,11 @@ exports.ResultsCollection = Collection
     initialize: ({@series}={}) ->
     sync: syncWithId 'series'
 
+exports.PendingPicksUrl = '/pending'
 
+exports.PendingPickModel = Model
+    urlRoot: '/pending'
+
+    needsPick: ->
+        return !_.isEmpty @attributes
 

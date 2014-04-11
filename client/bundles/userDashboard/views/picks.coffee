@@ -11,7 +11,8 @@ utils = require 'utils'
 # models
 {PoolModel, SeriesCollection,
 PicksCollection, ModelStorage,
-CategoriesCollection, RoundsCollection} \
+CategoriesCollection, RoundsCollection,
+PendingPickModel, PendingPicksUrl} \
 = require 'models'
 View = Backbone.View.extend.bind Backbone.View
 
@@ -24,17 +25,19 @@ exports.PicksView = View
         @needsData = true
         @state = 'list'
         @picks = {}
-        ModelStorage.getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
-            if (round = @rounds.anyNeedPicks())
-                ModelStorage.getResource "series-#{round.id}", 'round', round.id, SeriesCollection, (@series) =>
-                    @series.forEach (model) =>
-                        @picks[model.id] = new PicksCollection
+        $.get PendingPicksUrl, (data) =>
+            @userPending = new PendingPickModel data
+            ModelStorage.getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
+                if @userPending.needsPick() && round = @userPending.get('round')
+                    ModelStorage.getResource "series-#{round}", 'round', round, SeriesCollection, (@series) =>
+                        @series.forEach (model) =>
+                            @picks[model.id] = new PicksCollection
+                        @needsData = false
+                        @render()
+                else
+                    @state = 'none'
                     @needsData = false
                     @render()
-            else
-                @state = 'none'
-                @needsData = false
-                @render()
 
     # Send the picks to the server
     # Boil everything down to one flat picks collection and save it
@@ -47,8 +50,11 @@ exports.PicksView = View
             .value()
         saver = new PicksCollection models
         saver.sync 'create', saver,
-            success: -> alert 'Picks saved.'
+            success: =>
+                @userPending.destroy success: =>
+                @trigger 'nav', state: 'standings'
             error: -> alert 'error saving'
+
 
     seriesSelected: (model) ->
         @selectedSeries = model
@@ -71,7 +77,7 @@ exports.PicksView = View
                 pool: @model,
                 series: @selectedSeries,
                 picks: @picks[@selectedSeries.id]
-                round: @rounds.anyNeedPicks()
+                round: @userPending.get('round')
             }
             @listenTo view, 'done', @pickSelectionDone
         else if @state is 'none'
@@ -121,7 +127,7 @@ PickInputView = View
             @categories.forEach (model) =>
                 @picks.add
                     series: @series.id
-                    round: @round.id
+                    round: @round
                     category: model.id
                     categoryObject: model.toJSON()
                     value: null

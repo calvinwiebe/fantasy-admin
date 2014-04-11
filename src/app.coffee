@@ -50,7 +50,7 @@ app.use middleware.populateUser
 ROUTES
 ###
 
-requireUser = middleware.requireUser()# { isDebug }
+requireUser = middleware.requireUser { isDebug }
 
 # Define our login routes
 app.get '/', routes.auth.forward, routes.index
