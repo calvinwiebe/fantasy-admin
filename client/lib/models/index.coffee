@@ -35,6 +35,7 @@ exports.UserCollection = Collection
 
 exports.CategoriesCollection = Collection
     url: '/categories'
+    comparator: 'domain'
     initialize: ({@pool}={}) ->
     sync: syncWithId 'pool'
 

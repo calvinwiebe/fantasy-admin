@@ -6,94 +6,126 @@ exports.teams = [
 		players: [
 				name: 'David Krejci'
 				position: 'F'
-				ptsReg: 70
-				gwgReg: 6
-				gpReg: 82
+				gReg: 70
 			,
 				name: 'Jarome Iginla'
 				position: 'F'
-				ptsReg: 68
-				gwgReg: 6
-				gpReg: 82
+				gReg: 68
 			,
 				name: 'Torey Krug'
 				position: 'D'
-				ptsReg: 42
-				gwgReg: 3
-				gpReg: 81
+				gReg: 42
 			,
 				name: 'Zdeno Chara'
 				position: 'D'
-				ptsReg: 38
-				gwgReg: 4
-				gpReg: 79
+				gReg: 38
 		]
 	,
 		name: 'Pittsburgh Penguins'
 		shortName: 'PIT'
 		conference: 0 #east
 		seed: 2
-		players: []
+		players: [
+				name: 'Sydney Crosby'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Evgeni Malkin'
+				position: 'F'
+				gReg: 85
+		]		
 	,
 		name: 'Tampa Bay Lightning'
 		shortName: 'TAM'
 		conference: 0 #east
 		seed: 3
-		players: []
+		players: [
+				name: 'Steven Stamkos'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Valtteri Filppula'
+				position: 'F'
+				gReg: 85
+		]		
 	,
 		name: 'Montreal Canadiens'
 		shortName: 'MON'
 		conference: 0 #east
 		seed: 4
-		players: []
-	,
-		name: 'Philadephia Flyers'
-		shortName: 'PHI'
-		conference: 0 #east
-		seed: 5
-		players: []
+		players: [
+				name: 'Max Pacioretty'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Tomas Plekanec'
+				position: 'F'
+				gReg: 85
+		]		
 	,
 		name: 'New York Rangers'
 		shortName: 'NYR'
 		conference: 0 #east
-		seed: 6
-		players: []
-	,
-		name: 'Toronto Maple Leafs'
-		shortName: 'TOR'
-		conference: 0 #east
-		seed: 7
+		seed: 5
 		players: [
-				name: 'Phil Kessel'
+				name: 'Rick Nash'
 				position: 'F'
-				ptsReg: 90
-				gwgReg: 8
-				gpReg: 82
+				gReg: 90
 			,
-				name: 'James van Riemsdyk'
+				name: 'Brad Richards'
 				position: 'F'
-				ptsReg: 65
-				gwgReg: 4
-				gpReg: 80
+				gReg: 85
+		]		
+	,
+		name: 'Philadephia Flyers'
+		shortName: 'PHI'
+		conference: 0 #east
+		seed: 6
+		players: [
+				name: 'Claude Giroux'
+				position: 'F'
+				gReg: 90
 			,
-				name: 'Morgan Reilly'
-				position: 'D'
-				ptsReg: 30
-				gwgReg: 1
-				gpReg: 80
-			,
-				name: 'Jake Gardiner'
-				position: 'D'
-				ptsReg: 32
-				gwgReg: 0
-				gpReg: 79
-		]
+				name: 'Wayne Simmonds'
+				position: 'F'
+				gReg: 85
+		]		
 	,
 		name: 'Detroit Red Wings'
 		shortName: 'DET'
 		conference: 0 #east
+		seed: 7
+		players: [
+				name: 'Gustav Nyquist'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Tomas Tatar'
+				position: 'F'
+				gReg: 85
+		]		
+	,
+		name: 'Columbus Blue Jackets'
+		shortName: 'COB'
+		conference: 0 #east
 		seed: 8
-		players: []
+		players: [
+				name: 'Ryan Johansen'
+				position: 'F'
+				gReg: 32
+			,
+				name: 'Artem Anisimov'
+				position: 'F'
+				gReg: 22
+			,
+				name: 'James Wisniewski'
+				position: 'D'
+				gReg: 7
+			,
+				name: 'Jack Johnson'
+				position: 'D'
+				gReg: 5
+		]
 	,
 		name: 'St. Louis Blues'
 		shortName: 'STL'
@@ -102,27 +134,19 @@ exports.teams = [
 		players: [
 				name: 'Alexander Steen'
 				position: 'F'
-				ptsReg: 70
-				gwgReg: 12
-				gpReg: 72
+				gReg: 70
 			,
 				name: 'T.J. Oshie'
 				position: 'F'
-				ptsReg: 69
-				gwgReg: 6
-				gpReg: 81
+				gReg: 69
 			,
 				name: 'Alex Pietrangelo'
 				position: 'D'
-				ptsReg: 55
-				gwgReg: 2
-				gpReg: 82
+				gReg: 55
 			,
 				name: 'Kevin Shattenkirk'
 				position: 'D'
-				ptsReg: 50
-				gwgReg: 6
-				gpReg: 81
+				gReg: 50
 		]
 	,
 		name: 'Anaheim Ducks'
@@ -132,62 +156,102 @@ exports.teams = [
 		players: [
 				name: 'Ryan Getzlaf'
 				position: 'F'
-				ptsReg: 90
-				gwgReg: 8
-				gpReg: 78
+				gReg: 90
 			,
 				name: 'Corey Perry'
 				position: 'F'
-				ptsReg: 85
-				gwgReg: 11
-				gpReg: 82
+				gReg: 85
 			,
 				name: 'Cam Fowler'
 				position: 'D'
-				ptsReg: 36
-				gwgReg: 2
-				gpReg: 67
+				gReg: 36
 			,
 				name: 'Hampus Lindholm'
 				position: 'D'
-				ptsReg: 30
-				gwgReg: 1
-				gpReg: 78
+				gReg: 30
+		]
+	,
+		name: 'Colorado Avalanche'
+		shortName: 'COL'
+		conference: 1 #west
+		seed: 3
+		players: [
+				name: 'Ryan O\'Reilly'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Gabriel Landeskog'
+				position: 'F'
+				gReg: 85
 		]
 	,
 		name: 'San Jose Sharks'
 		shortName: 'SAN'
 		conference: 1 #west
-		seed: 3
-		players: []
-	,
-		name: 'Colorado Avalanche'
-		shortName: 'COL'
-		conference: 1 #west
 		seed: 4
-		players: []
+		players: [
+				name: 'Joe Pavelski'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Patrick Marleau'
+				position: 'F'
+				gReg: 85
+		]		
 	,
 		name: 'Chicago Blackhawks'
 		shortName: 'CHI'
 		conference: 1 #west
 		seed: 5
-		players: []
+		players: [
+				name: 'Patrick Sharp'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Marian Hossa'
+				position: 'F'
+				gReg: 85
+		]
 	,
 		name: 'Los Angeles Kings'
 		shortName: 'LOS'
 		conference: 1 #west
 		seed: 6
-		players: []
+		players: [
+				name: 'Jeff Carter'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Anze Kopitar'
+				position: 'F'
+				gReg: 85
+		]
 	,
 		name: 'Minnesota Wild'
 		shortName: 'MIN'
 		conference: 1 #west
 		seed: 7
-		players: []
+		players: [
+				name: 'Jason Pominville'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Zach Parise'
+				position: 'F'
+				gReg: 85
+		]
 	,
 		name: 'Phoenix Coyotes'
 		shortName: 'PHO'
 		conference: 1 #west
 		seed: 8
-		players: []
+		players: [
+				name: 'Antoine Vermette'
+				position: 'F'
+				gReg: 90
+			,
+				name: 'Shane Doan'
+				position: 'F'
+				gReg: 85
+		]		
 ]

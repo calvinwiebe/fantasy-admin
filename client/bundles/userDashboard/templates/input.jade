@@ -1,6 +1,8 @@
 form(role='form')
     .form-group-header
-        h4 Make picks for #{team1.shortName} vs #{team2.shortName}
+        h4 Make picks for (#{team1.seed}) #{team1.shortName} vs (#{team2.seed}) #{team2.shortName}
 
-button.done.btn.btn-warning
-    | DONE
+button.back.btn.btn-warning
+    | BACK
+button.save.btn.btn-success
+    | SAVE PICKS

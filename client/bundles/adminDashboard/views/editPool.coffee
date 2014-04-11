@@ -99,7 +99,7 @@ exports.EditPoolFormView = Swapper
             @model.set users: pids, categories: cids
             @model.save obj or {},
                 success: -> (onSaved ?= -> alert('pool saved.'))()
-                error: (model, jqxhr) => onError jqxhr.responseJSON.error
+                error: (model, jqxhr) => onError jqxhr.responseJSON?.error
 
         asink.each participants.models,
             (model, cb) =>

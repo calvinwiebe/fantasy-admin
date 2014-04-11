@@ -97,7 +97,8 @@ PickInputView = View
     template: templates.input
 
     events:
-        'click .done': 'done'
+        'click .back': 'back'
+        'click .save': 'save'
 
     initialize: ({@pool, @series, @round, @picks}) ->
         _.extend this, Cleanup.mixin
@@ -125,17 +126,23 @@ PickInputView = View
                     categoryObject: model.toJSON()
                     value: null
 
-    renderCategories: ->
+    renderCategories: (populatedSeries) ->
         @childViews = _.chain(@picks.models)
             .map((model) =>
-                view = new InputListItem { serialize: serializePick, model }
+                view = new CategoryInput { model, populatedSeries}
             ).forEach((view) =>
                 @$('form').append view.render().el
             ).value()
-        @$('input').first().focus()
+        @$('input, select').first().focus()
         this
 
-    done: (e) ->
+    save: (e) ->
+        @$('input, select').each (i, el) =>
+            category = @picks.findWhere category: $(el).attr('data-id')
+            category.set value: $(el).val()
+        @back(e)
+
+    back: (e) ->
         e.preventDefault()
         @trigger 'done'
         false
@@ -147,13 +154,46 @@ PickInputView = View
         @cleanUp()
         populatedSeries = ModelStorage.populate @series, ModelStorage.get 'teams'
         @$el.append @template populatedSeries
-        @renderCategories()
+        @renderCategories populatedSeries
         @delegateEvents()
+        this
+
+CategoryInput = View
+    template: templates.categoryInput
+
+    initialize: ({ @model, @populatedSeries }) ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+        @render()
+    
+    render: ->
+        @$el.empty()
+        @cleanUp()
+        categoryObject = @model.get('categoryObject')
+        args = 
+            id: categoryObject.id
+            type: categoryObject.type
+            value: @model.get 'value'
+            name: categoryObject.name
+        switch categoryObject.type
+            when 0
+                switch categoryObject.enumType
+                    when 0
+                        args.data = _.map [@populatedSeries.team1, @populatedSeries.team2], (team) ->
+                             value: team.id, label: team.name
+                    when 1
+                        args.data = _.map @populatedSeries.team1.players, (player) ->
+                            value: player.name, label: player.name  + ' (' + player.position + ')'
+                    when 2
+                        args.data = _.map @populatedSeries.team2.players, (player) ->
+                            value: player.name, label: player.name + ' (' + player.position + ')'
+
+        @$el.append @template args
         this
 
 serializeSeries = (model) ->
     populatedModel = ModelStorage.populate model, ModelStorage.get 'teams'
-    name: "#{populatedModel.team1?.name} vs #{populatedModel.team2?.name}"
+    name: "(#{populatedModel.team1?.seed}) #{populatedModel.team1?.name} vs (#{populatedModel.team2?.seed}) #{populatedModel.team2?.name}"
 
 SeriesList = View
     id: 'series-list'
