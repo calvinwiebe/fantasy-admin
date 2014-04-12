@@ -13,11 +13,11 @@ TeamsCollection} \
 View = Backbone.View.extend.bind Backbone.View
 
 roundMap =
-    'disabled': 0
-    'unconfigured': 1
-    'configured': 2
-    'started': 3
-    'finished': 4
+    disabled: 0
+    unconfigured: 1
+    configured: 2
+    started: 3
+    finished: 4
 
 # Form for editing an existing pool
 #

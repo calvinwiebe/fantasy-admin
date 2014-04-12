@@ -22,6 +22,10 @@ domainMap =
     game: 0
     series: 1
 
+seriesMap =
+    active: 0
+    completed: 1
+
 exports.EditSingleSeriesDetail = Swapper
     template: templates.editSeriesDetail
 
@@ -111,7 +115,7 @@ CurrentResult = View
 
     end: (e) ->
         e.preventDefault()
-        
+
         @$('.category-input').each (i, el) =>
             category = @results.findWhere category: $(el).attr('data-id')
             category.set value: $(el).val()
@@ -177,7 +181,7 @@ PreviousResults = View
     noTemplate: templates.noPrevious
 
     initialize: ({@parent}) ->
-        {@results, @pool, @series} = @parent
+        {@results, @pool, @series, @teams} = @parent
         @needsData = true
         ModelStorage.getResource "categories-#{@pool.id}", 'pool', @pool.id, CategoriesCollection, (@categories) =>
             ModelStorage.getResource "results-#{@series.id}", 'series', @series.id, ResultsCollection, (@previous) =>
@@ -196,10 +200,13 @@ PreviousResults = View
 
         @$el.append gameResults.render().el
 
+        return unless @series.get 'state', seriesMap['completed']
+
         seriesResults = new ResultTableView
             headings: _.filter @categories.toJSON(), (model) -> model.domain is domainMap['series']
             results: _.filter @previous.toJSON(), (model) -> model.final?
             resultHeadingKey: 'category'
+            populator: @teams
             groupBy: 'final'
 
         @$el.append seriesResults.render().el

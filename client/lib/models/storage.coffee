@@ -39,7 +39,9 @@ class ModelStorage
         /[0-9a-f]{22}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test attribute
 
     toArray: (model) ->
-        if model instanceof Backbone.Collection
+        if _.isArray model
+            model
+        else if model instanceof Backbone.Collection
             array = model.toJSON()
         else if model instanceof Backbone.Model
             array = [ model.toJSON() ]
@@ -79,10 +81,10 @@ class ModelStorage
     #
     populate: (model, populator) ->
         _model = @toArray model
-        populator = @toArray populator
+        _populator = @toArray populator
 
         for m in _model
-            for p in populator
+            for p in _populator
                 @populateModel m, p
 
         if _model.length is 1 then _model[0] else _model

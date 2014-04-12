@@ -5,6 +5,7 @@ Backbone.$      = window.$
 _               = require 'lodash'
 templates       = rfolder './templates', extensions: [ '.jade' ]
 {Cleanup}       = require './manage.coffee'
+{ModelStorage}  = require 'models'
 
 View = Backbone.View.extend.bind Backbone.View
 
@@ -73,12 +74,12 @@ exports.CategoryInput = View
         _.extend this, Cleanup.mixin
         @childViews = []
         @render()
-    
+
     render: ->
         @$el.empty()
         @cleanUp()
         categoryObject = @model.get('categoryObject')
-        args = 
+        args =
             id: categoryObject.id
             type: categoryObject.type
             value: @model.get 'value'
@@ -105,13 +106,24 @@ exports.CategoryInput = View
 ResultTableRow = View
     tagName: 'tr'
 
-    initialize: ({@tagType, @value}) ->
+    initialize: ({@tagType, @value, @pluck}) ->
         @template = if @tagType is 'td' then templates.td else templates.th
+
+    deepFind: (object, prop) ->
+        return object[prop] if object[prop]?
+        for key, val of object
+            if val[prop]?
+                return val[prop]
+            else if _.isObject val
+                @deepFind val
+        return null
 
     renderChildren: ->
         _.forEach @collection, (rowData) =>
-            @$el.append @template
-                value: rowData[@value]
+            value = rowData[@value]
+            if @pluck and _.isObject value
+                value = @deepFind value, @pluck
+            @$el.append @template { value }
 
     render: ->
         @$el.empty()
@@ -124,7 +136,7 @@ ResultTableRow = View
 exports.ResultTableView = View
     template: templates.table
 
-    initialize: ({@headings, @results, @resultHeadingKey, @groupBy}) ->
+    initialize: ({@headings, @results, @resultHeadingKey, @groupBy, @populator}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
         @headings = _.sortBy @headings, 'id'
@@ -144,10 +156,12 @@ exports.ResultTableView = View
 
         rows = _.chain(@results)
             .map((collection) =>
+                populatedCollection = ModelStorage.populate collection, @populator
                 new ResultTableRow
-                    collection: collection
+                    collection: populatedCollection
                     tagType: 'tr'
                     value: 'value'
+                    pluck: 'name'
             ).forEach((view) =>
                 @$('tbody').append view.render().el
             )
