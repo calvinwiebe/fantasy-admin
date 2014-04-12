@@ -178,7 +178,7 @@ PickInputView = View
 
 serializeSeries = (model) ->
     populatedModel = ModelStorage.populate model, ModelStorage.get 'teams'
-    name: "(#{populatedModel.team1?.seed}) #{populatedModel.team1?.name} vs (#{populatedModel.team2?.seed}) #{populatedModel.team2?.name}"
+    name: "(#{populatedModel.team1?.seed}) #{populatedModel.team1?.shortName} vs (#{populatedModel.team2?.seed}) #{populatedModel.team2?.shortName}"
 
 SeriesList = View
     id: 'series-list'

@@ -1,3 +1,5 @@
+/* html elements */
+
 body {
   padding: 50px 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -21,6 +23,43 @@ a {
 
 .list-group-item:hover {
     background-color: #ddd;
+}
+
+/* Media size specific */
+
+/* Large desktops and laptops */
+@media (min-width: 1200px) {
+    .non-mobile-hidden {
+        display: none;
+    }
+}
+
+/* Portrait tablets and medium desktops */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .non-mobile-hidden {
+        display: none;
+    }
+}
+
+/* Portrait tablets and small desktops */
+@media (min-width: 768px) and (max-width: 991px) {
+    .non-mobile-hidden {
+        display: none;
+    }
+}
+
+/* Landscape phones and portrait tablets */
+@media (max-width: 767px) {
+    .non-mobile-hidden {
+        display: block;
+    }
+}
+
+/* Landscape phones and smaller */
+@media (max-width: 480px) {
+    .non-mobile-hidden {
+        display: block;
+    }
 }
 
 
@@ -177,4 +216,12 @@ input[type=number] {
 }
 .input-separator {
     margin: 0 10px;
+}
+
+/* User dashboard */
+
+/* Header */
+
+#nav-state {
+    margin-left: 10px;
 }

@@ -8,9 +8,11 @@
             span.icon-bar
         a.navbar-brand(href="javascript:void(0)")
             | #{name}
+            span#nav-state.non-mobile-hidden.pull-right
+                | #{state}
     .link-collect.collapse.navbar-collapse
         ul.nav.navbar-nav.navbar-right
-            li.active
+            li
                 a#home-nav(href='javascript:void(0)') Pools
             li
                 a#picks-nav(href='javascript:void(0)') Make Picks

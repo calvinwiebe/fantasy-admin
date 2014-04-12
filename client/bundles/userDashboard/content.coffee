@@ -34,15 +34,20 @@ HeaderView = View
 
     initialize: ->
         _.bindAll this
+        @state = 'Standings'
 
-    onNav: (e, state) ->
+    setStateText: ->
+        @$('#nav-state').html " - #{@state.slice(0, 1).toUpperCase() + @state.slice(1)}"
+
+    onNav: (e, @state) ->
         @$('li').removeClass 'active'
         @$(e.target).parent().addClass 'active'
-        @$('.collapse').collapse('hide')
-        @trigger 'nav', { state }
+        @setStateText()
+        @trigger 'nav', { @state }
 
     render: ->
         genericRender.call this
+        @setStateText()
         @$el.attr 'role', 'navigation'
         this
 
@@ -54,7 +59,6 @@ HeaderView = View
 exports.DashboardContentView = Swapper
     id: 'dashboard'
     className: 'container'
-    template: templates.content
 
     initialize: ({resources}) ->
         _.bindAll this
@@ -91,5 +95,8 @@ exports.DashboardContentView = Swapper
         @trigger 'nav', state: 'standings'
 
     afterRender: ->
-        if @state is 'home'
-            @listenTo @views[0], 'poolSelected', @poolSelected
+        switch @state
+            when 'home'
+                @listenTo @views[0], 'poolSelected', @poolSelected
+            when 'standings'
+                $('#standings-nav').parent().addClass 'active'
