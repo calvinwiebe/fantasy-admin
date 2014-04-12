@@ -13,16 +13,16 @@ if type === 0
                 option(value='#{datum.value}') #{datum.label}
 else if type === 1
     if value
-        input.category-input.form-control(type='number', value='#{value}')
+        input.category-input.form-control(type='number', min='0', value='#{value}')
     else
-        input.category-input.form-control(type='number')
+        input.category-input.form-control(type='number', min='0')
 else if type === 2 && value
-        input.category-input.form-control(type='number', value='#{value[0]}')
+        input.category-input.form-control(type='number', min='0', value='#{value[0]}')
         span.input-separator
             | -
-        input.category-input.form-control(type='number', value='#{value[1]}')
+        input.category-input.form-control(type='number', min='0', value='#{value[1]}')
     else
-        input.category-input.form-control(type='number')
+        input.category-input.form-control(type='number', min='0')
         span.input-separator
             | -
-        input.category-input.form-control(type='number')
+        input.category-input.form-control(type='number', min='0')
