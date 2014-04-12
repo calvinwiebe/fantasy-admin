@@ -1,7 +1,7 @@
 label
     | #{name}
 if type === 0
-    select.category-input.form-control(data-id='#{id}')
+    select.category-input.form-control
         if value
             option(value='' disabled) Select one
         else
@@ -13,11 +13,16 @@ if type === 0
                 option(value='#{datum.value}') #{datum.label}
 else if type === 1
     if value
-        input.category-input.form-control(type='number', data-id='#{id}', value='#{value}')
+        input.category-input.form-control(type='number', value='#{value}')
     else
-        input.category-input.form-control(type='number', data-id='#{id}')
-else if type === 2
-    if value
-        input.category-input.form-control(type='text', data-id='#{id}', value='#{value}')
+        input.category-input.form-control(type='number')
+else if type === 2 && value
+        input.category-input.form-control(type='number', value='#{value[0]}')
+        span.input-separator
+            | -
+        input.category-input.form-control(type='number', value='#{value[1]}')
     else
-        input.category-input.form-control(type='text', data-id='#{id}')
+        input.category-input.form-control(type='number')
+        span.input-separator
+            | -
+        input.category-input.form-control(type='number')

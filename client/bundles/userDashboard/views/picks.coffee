@@ -143,9 +143,9 @@ PickInputView = View
         this
 
     save: (e) ->
-        @$('.category-input').each (i, el) =>
-            category = @picks.findWhere category: $(el).attr('data-id')
-            category.set value: $(el).val()
+        _.each @childViews, (view) =>
+            category = @picks.findWhere category: view.model.get('category')
+            category.set value: view.getValue()
         @back(e)
 
     back: (e) ->

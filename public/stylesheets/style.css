@@ -166,3 +166,15 @@ a {
 h1 small {
     padding-left: 5px;
 }
+
+label {
+    display: block;
+}
+
+input[type=number] {
+    display: inline-block;
+    width: 70px;
+}
+.input-separator {
+    margin: 0 10px;
+}

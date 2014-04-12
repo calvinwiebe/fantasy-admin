@@ -100,6 +100,10 @@ exports.CategoryInput = View
         @$el.append @template args
         this
 
+    getValue: ->
+        inputs = @$('.category-input')
+        if inputs.length is 1 then inputs.val()
+        else _.map inputs, (input) -> $(input).val()
 
 # A row in a table
 #
@@ -174,5 +178,6 @@ exports.ResultTableView = View
         @$el.html @template()
         @renderRows()
         this
+
 
 

@@ -88,10 +88,8 @@ CurrentResult = View
 
     save: (e) ->
         e.preventDefault()
-
-        @$('.category-input').each (i, el) =>
-            category = @results.findWhere category: $(el).attr('data-id')
-            category.set value: $(el).val()
+        
+        @setPickValues()
 
         asink.each @results.models, (model, cb) =>
             model.save {},
@@ -113,12 +111,15 @@ CurrentResult = View
         @render()
         false
 
+    setPickValues: ->
+        _.each @childViews, (view) =>
+            category = @results.findWhere category: view.model.get('category')
+            category.set value: view.getValue()
+
     end: (e) ->
         e.preventDefault()
-
-        @$('.category-input').each (i, el) =>
-            category = @results.findWhere category: $(el).attr('data-id')
-            category.set value: $(el).val()
+        
+        @setPickValues()
 
         @state = 'ended'
         asink.each @results.models, (model, cb) ->
