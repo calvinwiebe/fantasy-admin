@@ -28,16 +28,18 @@ HeaderView = View
     template: templates.header
 
     events:
-        'click #home-nav': -> @onNav 'home'
-        'click #picks-nav': -> @onNav 'picks'
-        'click #standings-nav': -> @onNav 'standings'
+        'click #home-nav': (e) -> @onNav e, 'home'
+        'click #picks-nav': (e) -> @onNav e, 'picks'
+        'click #standings-nav': (e) -> @onNav e, 'standings'
 
     initialize: ->
         _.bindAll this
 
-    onNav: (state) ->
-        @trigger 'nav', { state }
+    onNav: (e, state) ->
+        @$('li').removeClass 'active'
+        @$(e.target).parent().addClass 'active'
         @$('.collapse').collapse('hide')
+        @trigger 'nav', { state }
 
     render: ->
         genericRender.call this
@@ -61,6 +63,8 @@ exports.DashboardContentView = Swapper
             root: 'body'
             view: HeaderView
             method: 'prepend'
+            isStatic: true
+            name: 'header'
         }
         @configureSwap
             event: 'nav'

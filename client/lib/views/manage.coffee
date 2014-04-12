@@ -24,16 +24,57 @@ exports.Cleanup = Cleanup
 # This will is in charge of swapping a `content` view depending on
 # the state.
 #
+# To use, pass in the same object prototype you would for creating a `Backbone.View`.
+# This function will extend that prototype with its properties, and propagate the result
+# to the `Backbone.View.extend` constructor.
+#
+# To start using the `swapping` methods, in your `initialize` method, call `configureSwap` with
+# an options hash such as this:
+# ```
+# header = {
+#     root: 'body'
+#     view: HeaderView
+#     method: 'prepend'
+#     isStatic: true
+#     name: 'header'
+# }
+# @configureSwap
+#     event: 'nav'
+#     default: 'home'
+#     map:
+#         'standings': views: [
+#             header
+#             StandingsView
+#         ]
+#         'picks': views: [
+#             header
+#             PicksView
+#         ]
+#         'home': views: [
+#             PoolListView
+#         ]
+# ```
+#
 exports.Swapper = (proto) ->
+
+    # Prototype object
+    #
     _super =
+
+        # Start managing ourselves
+        #
         configureSwap: (@_swapper_config) ->
             @views = []
             @state = @_swapper_config.default
             @_swapper_firstRender = true
 
+        # helper method for below functions
+        #
         getConfig: ->
             return @_swapper_config
 
+        # The event handler that delegates to `render`
+        #
         onSwap: ({@state, @context}) ->
             @render()
 
@@ -46,6 +87,9 @@ exports.Swapper = (proto) ->
             if @onBubble?(data) ? true
                 @trigger 'bubble', data
 
+        # Get the collections of the managed views that are currently rendered/visible.
+        # This can be used by the "sub-classing" function
+        #
         getCollections: ->
             _.chain(@views) \
                 .map((view) ->
@@ -57,57 +101,100 @@ exports.Swapper = (proto) ->
                 , {})
                 .value()
 
+        # If using the `name` option in the config hash, you can grab a view
+        # by its name
+        #
         getView: (name) ->
             _.find @views, { name }
 
-        removeCurrent: ->
-            @views.forEach((view) =>
-                view.remove()
-            )
+        # if the view is isStatic, and already exists, retain the view instance
+        #
+        leaveAlone: ({name, isStatic}) ->
+            if name and isStatic?
+                return current if current = _.find(@views,
+                    (view) -> view.__swapper_context__.name is name)
 
-        renderContent: ->
+        # From the new config, as per the state, map the config options
+        # into their corresponding view instances
+        #
+        mapViews: ->
             try
-                views = @_swapper_config.map[@state].views
+                viewConfigs = @_swapper_config.map[@state].views
             catch err
                 console.warn? "Swapper could not find config for state #{@state}"
                 return
-            event = @_swapper_config.event
-            @stopListening()
-            @views = views \
+            views = viewConfigs \
                 .map((config) =>
                     if typeof config is 'function'
                         view = config
                     else
-                        {root, view, method, name} = config
+                        if current = @leaveAlone config
+                            current.__swapper_context__.leaveAlone = true
+                            return current
+                        {root, view, method, name, isStatic} = config
+
                     view = new view { @model, @collection, @context, parent: this }
-                    view.name = name
-                    root = \
-                        if @$(root).length
-                            root = @$(root)
-                        else if $(root).length
-                            root = $(root)
-                        else
-                            @$el
-                    @listenTo view, event, @onSwap
-                    @listenTo view, 'bubble', @bubbleUp
-                    method = if root[method]? then method else 'append'
-                    root[method] view.render().el
+                    view.__swapper_context__ = {
+                        name
+                        isStatic
+                        root
+                        method
+                    }
                     view
                 )
+
+            @viewsToRemove = _.difference @views, views
+            @views = views
+
+        # Called by `render`. This will remove all the views that are being swapped out
+        # or are `static`
+        #
+        removeViews: ->
+            @viewsToRemove?.forEach((view) =>
+                 view.remove()
+            )
+
+        # Take the mapped view instances and add them to the DOM
+        #
+        renderViews: ->
+            event = @_swapper_config.event
+            @stopListening()
+            @views.forEach (view) =>
+                { name, isStatic, root, method, leaveAlone } = view.__swapper_context__
+                root = \
+                    if @$(root).length
+                        root = @$(root)
+                    else if $(root).length
+                        root = $(root)
+                    else
+                        @$el
+                @listenTo view, event, @onSwap
+                @listenTo view, 'bubble', @bubbleUp
+                return if leaveAlone
+                method = if root[method]? then method else 'append'
+                root[method] view.render().el
             @listenTo this, event, @onSwap
 
+        # Called when a swap event is fired. This will recreate the content
+        # as per the configurations
+        #
         render: ->
             @undelegateEvents()
-            @removeCurrent()
             @beforeRender?()
             @$el.html @template? \
-                @_swapper_config.map[@state].template ? @serialize?() ? @model?.toJSON() ? {} if @_swapper_firstRender
+                @_swapper_config.map[@state].template ? \
+                @serialize?() ? \
+                @model?.toJSON() ? \
+                {} if @_swapper_firstRender
             @_swapper_firstRender = false
-            @renderContent()
+            @mapViews()
+            @removeViews()
+            @renderViews()
             @afterRender?()
             @delegateEvents()
             this
 
+    # Extend the `Swapper` functionality with the subclass and
+    # create the `Backbone.View` function
     proto = _.extend _super, proto
-
     return View proto
