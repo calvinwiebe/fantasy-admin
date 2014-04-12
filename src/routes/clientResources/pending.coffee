@@ -6,13 +6,15 @@ exports.index = (req, res, next) ->
     {conn, r} = req.rethink
 
     user = req.user?.id
-    filter = if user? then { user } else -> true
+    pool = req.param 'pool'
+    filter = if user? then { user }
+    filter?.pool = pool if pool?
+    filter = if !filter then -> true else filter
 
     r.table('pendingPicks').filter(filter).run conn, (err, results) ->
         results.toArray (err, pendingPicks) ->
             # this should only ever be one, if it isn't badness
             if pendingPicks.length > 1
-                console.warn "pending picks for user #{user} have exceeded one!"
                 data = pendingPicks
             else if pendingPicks.length is 0
                 data = {}
