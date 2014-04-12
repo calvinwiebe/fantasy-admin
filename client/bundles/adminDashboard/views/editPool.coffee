@@ -585,9 +585,6 @@ RoundListItem = View
 RoundsView = View
     template: templates.roundsView
 
-    events:
-        'click #save-rounds': 'save'
-
     initialize: ->
         _.extend this, Cleanup.mixin
         @childViews = []
