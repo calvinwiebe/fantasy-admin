@@ -48,6 +48,30 @@ exports.ListItem = View
 
     render: genericRender
 
+exports.IdicatingListItem = View
+    tagName: 'li'
+    className: 'list-group-item'
+    template: templates.indicatingListItem
+
+    events:
+        'click': 'onClick'
+
+    initialize: ({@serialize, @icon, @class}) ->
+        @serialize = _.compose @_serialize, @serialize
+
+    onClick: ->
+        @trigger 'selected', @model
+
+    _serialize: (data) ->
+        _.extend data, {@icon}
+
+    render: ->
+        genericRender.call this
+        return this unless @class
+        @$el.addClass @class
+        this
+
+
 # A generic view to show a bunch of input items, with a model attached
 # to them. When the view is blurred, it will set the value of the single input
 # on the model's `value` attr
