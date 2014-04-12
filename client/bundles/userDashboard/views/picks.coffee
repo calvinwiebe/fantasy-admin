@@ -27,17 +27,23 @@ exports.PicksView = View
         @picks = {}
         $.get PendingPicksUrl, { pool: @model.id }, (data) =>
             @userPending = new PendingPickModel data
-            ModelStorage.getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
-                if @userPending.needsPick() && round = @userPending.get('round')
-                    ModelStorage.getResource "series-#{round}", 'round', round, SeriesCollection, (@series) =>
-                        @series.forEach (model) =>
-                            @picks[model.id] = new PicksCollection
+            if @userPending.needsPick()
+                ModelStorage.getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
+                    round = @rounds.get @userPending.get('round')
+                    if moment().isBefore round.get('date')
+                        ModelStorage.getResource "series-#{round}", 'round', round.id, SeriesCollection, (@series) =>
+                            @series.forEach (model) =>
+                                @picks[model.id] = new PicksCollection
+                                @needsData = false
+                                @render()
+                    else
+                        @state = 'timesup'
                         @needsData = false
                         @render()
-                else
-                    @state = 'none'
-                    @needsData = false
-                    @render()
+            else
+                @state = 'none'
+                @needsData = false
+                @render()
 
     # Send the picks to the server
     # Boil everything down to one flat picks collection and save it
@@ -55,7 +61,6 @@ exports.PicksView = View
                 @trigger 'nav', state: 'standings'
             error: -> alert 'error saving'
 
-
     seriesSelected: (model) ->
         @selectedSeries = model
         @state = 'input'
@@ -68,20 +73,23 @@ exports.PicksView = View
 
     renderContent: ->
         @stopListening()
-        if @state is 'list'
-            view = new SeriesList { collection: @series }
-            @listenTo view, 'selected', @seriesSelected
-            @listenTo view, 'submit', @submit
-        else if @state is 'input'
-            view = new PickInputView {
-                pool: @model,
-                series: @selectedSeries,
-                picks: @picks[@selectedSeries.id]
-                round: @userPending.get('round')
-            }
-            @listenTo view, 'done', @pickSelectionDone
-        else if @state is 'none'
-            view = NoPicksNeeded
+        switch @state
+            when 'list'
+                view = new SeriesList { collection: @series }
+                @listenTo view, 'selected', @seriesSelected
+                @listenTo view, 'submit', @submit
+            when 'input'
+                view = new PickInputView {
+                    pool: @model,
+                    series: @selectedSeries,
+                    picks: @picks[@selectedSeries.id]
+                    round: @userPending.get('round')
+                }
+                @listenTo view, 'done', @pickSelectionDone
+            when 'none'
+                view = NoPicksNeeded
+            when 'timesup'
+                view = TimesUp
         @$('.picks').append view.render().el
         this
 
@@ -98,6 +106,7 @@ serializePick = (model) ->
         value: model.get 'value'
 
 NoPicksNeeded = new GenericView template: templates.none
+TimesUp = new GenericView template: templates.timesup
 
 PickInputView = View
     template: templates.input

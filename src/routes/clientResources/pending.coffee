@@ -13,8 +13,10 @@ exports.index = (req, res, next) ->
 
     r.table('pendingPicks').filter(filter).run conn, (err, results) ->
         results.toArray (err, pendingPicks) ->
-            # this should only ever be one, if it isn't badness
+            # this should only ever be 1 if pool is defined, if it isn't... badness
             if pendingPicks.length > 1
+                if pool
+                    console.warn "pending picks for user #{user} has exceeded one!"
                 data = pendingPicks
             else if pendingPicks.length is 0
                 data = {}
