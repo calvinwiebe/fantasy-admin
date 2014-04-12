@@ -59,7 +59,8 @@ exports.PicksView = View
             success: =>
                 @userPending.destroy success: =>
                 @trigger 'nav', state: 'standings'
-            error: -> alert 'error saving'
+            error: (jqxhr) -> 
+                alert jqxhr.responseJSON?.error or 'error saving'
 
     seriesSelected: (model) ->
         @selectedSeries = model

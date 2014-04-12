@@ -1,5 +1,6 @@
 # Picks
 _ = require 'lodash'
+async = require 'async'
 
 # GET. can be filtered by user id
 exports.index = (req, res, next) ->
@@ -28,11 +29,30 @@ exports.create = (req, res, next)->
     return res.send 204 if !req.user? or _.isEmpty req.body
 
     data = req.body
+    rounds = []
     docs = if _.isArray data then data else [ data ]
-    docs.forEach (doc) -> doc.user = req.user.id
-
-    r.table('picks').insert(docs).run conn, (err, results) ->
-        res.send docs
+    docs.forEach (doc) ->
+        rounds.push doc.round
+        doc.user = req.user.id
+    
+    expired = false
+    #just to be safe... we are going to make sure that every pick a user sends is for a round that hasn't expired
+    async.each(
+        _.uniq rounds
+        (round, done) ->
+            r.table('rounds').get(round).run conn, (err, results) ->
+                date = results?.date
+                if date and new Date(date).getTime() < new Date().getTime()
+                    expired = true
+                done()
+        ->
+            if !expired
+                r.table('picks').insert(docs).run conn, (err, results) ->
+                    res.send docs
+            else
+                res.status 418
+                res.json error: 'Deadline PAST'
+    )
 
 exports.show = (req, res, next)->
     {conn, r} = req.rethink
