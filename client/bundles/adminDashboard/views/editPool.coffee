@@ -11,6 +11,14 @@ RoundsCollection, SeriesCollection,
 TeamsCollection} \
 = require 'models'
 View = Backbone.View.extend.bind Backbone.View
+
+roundMap =
+    'disabled': 0
+    'unconfigured': 1
+    'configured': 2
+    'started': 3
+    'finished': 4
+
 # Form for editing an existing pool
 #
 # Use a `Swapper` here so we can get `bubble` events and pass them to
@@ -451,7 +459,7 @@ SeriesListView = View
             .map((model) =>
                 view = new SeriesListItem { model }
                 @listenTo view, 'selected', =>
-                    if @context.round.get('state') is 1
+                    if @context.round.get('state') is roundMap['unconfigured']
                         @trigger 'action', {
                             state: 'singleSeries',
                             context:
@@ -473,12 +481,19 @@ SeriesListView = View
             ).value()
         this
 
+    afterRender: ->
+        if @context.round.get('state') is roundMap['configured']
+            @$('.series-list-item button').prop 'disabled', 'disabled'
+
+    # TODO: really spend some time on `Swapper`, I can't call after render here from it
+    # because this render gets fired async'ly
     render: ->
         return this if @needsData
         @undelegateEvents
         @$el.empty()
         @$el.append @template()
         @renderSeries()
+        @afterRender()
         @delegateEvents()
         this
 
