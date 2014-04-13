@@ -93,7 +93,7 @@ exports.Swapper = (proto) ->
         getCollections: ->
             _.chain(@views) \
                 .map((view) ->
-                    name: view.name
+                    name: view.__swapper_context__.name
                     collection: view.collection
                 ).reduce((result, obj) ->
                     result[obj.name] = obj.collection
@@ -105,7 +105,7 @@ exports.Swapper = (proto) ->
         # by its name
         #
         getView: (name) ->
-            _.find @views, { name }
+            _.find @views, (view) -> view.__swapper_context__.name is name
 
         # if the view is isStatic, and already exists, retain the view instance
         #
