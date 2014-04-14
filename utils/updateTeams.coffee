@@ -16,10 +16,18 @@ getTeams = (conn, done) ->
 
 updateTeams = (conn, done) ->
     getTeams conn, (existingTeams) ->
+        if existingTeams.length isnt teams.length
+            console.error "You have to enter the same number of teams that already exist"
+            process.exit -1
+
         _.each teams, (team) ->
             match = _.findWhere existingTeams, name: team.name
             
-            if match? then team.id = match.id
+            if match?
+                team.id = match.id
+            else
+                console.error "You cannot add new teams, only update existing ones"
+                process.exit -1
             console.log team.shortName, team.id
         
         r.table('teams').delete().run conn, (err, res) ->
