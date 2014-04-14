@@ -801,7 +801,7 @@ exports.teams = [
                 name: 'Conor Allen'
                 position: 'F'
                 gReg: 0
-                gwReg:0
+                gwReg: 0
         ]       
     ,
         name: 'Philadephia Flyers'
