@@ -6,7 +6,6 @@ r               = require 'rethinkdb'
 {db}            = require '../src/config'
 dbService       = require '../src/services/db'
 dbConfig        = db
-uuid            = require 'node-uuid'
 {poolTypes}     = require './data/poolTypes'
 {teams}         = require './data/teams'
 {categories}    = require './data/categories'

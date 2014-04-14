@@ -30,18 +30,21 @@ exports.createTable = createTable = (conn, table, cb) ->
             console.log "Created table #{table} in #{db}"
             cb()
 
+exports.connect = connect = (done) ->
+    r.connect host: dbConfig.address, port: dbConfig.port, (err, conn) ->
+        return throw err if err?
+        done err, conn
+
 # Create any necessary databases and tables
 # if they aren't yet created.
 #
 exports.initialize = (done) ->
     console.log "Initializing db and tables"
-    r.connect host: dbConfig.address, port: dbConfig.port,
-        (err, conn) ->
-            return throw err if err?
-            createDatabase conn, dbConfig.adminDb.name,
-                (err) ->
-                    conn.use dbConfig.adminDb.name
-                    async.each \
-                        dbConfig.adminDb.tables, createTable.bind(null, conn), (err) ->
-                            return throw err if err?
-                            done()
+    connect (err, conn) ->
+        createDatabase conn, dbConfig.adminDb.name,
+            (err) ->
+                conn.use dbConfig.adminDb.name
+                async.each \
+                    dbConfig.adminDb.tables, createTable.bind(null, conn), (err) ->
+                        return throw err if err?
+                        done()
