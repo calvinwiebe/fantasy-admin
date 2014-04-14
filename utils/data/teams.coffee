@@ -342,7 +342,7 @@ exports.teams = [
         ]       
     ,
         name: 'Tampa Bay Lightning'
-        shortName: 'TAM'
+        shortName: 'TBL'
         conference: 0 #east
         seed: 3
         players: [
@@ -498,7 +498,7 @@ exports.teams = [
         ]       
     ,
         name: 'Montreal Canadiens'
-        shortName: 'MON'
+        shortName: 'MTL'
         conference: 0 #east
         seed: 4
         players: [
@@ -936,7 +936,7 @@ exports.teams = [
         ]              
     ,
         name: 'Columbus Blue Jackets'
-        shortName: 'COB'
+        shortName: 'CBJ'
         conference: 0 #east
         seed: 7
         players: [
@@ -1686,7 +1686,7 @@ exports.teams = [
         ]
     ,
         name: 'San Jose Sharks'
-        shortName: 'SAN'
+        shortName: 'SJS'
         conference: 1 #west
         seed: 4
         players: [
@@ -1963,7 +1963,7 @@ exports.teams = [
         ]
     ,
         name: 'Los Angeles Kings'
-        shortName: 'LOS'
+        shortName: 'LAK'
         conference: 1 #west
         seed: 6
         players: [
