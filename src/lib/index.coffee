@@ -8,7 +8,7 @@ crypto  = require 'crypto'
 # Require all the files in a directory and add them to an
 # object. By default, it will skip anything named `index`.
 #
-exports.requireAll = (rootPath) ->
+exports.requireAll = requireAll = (rootPath) ->
     modules = {}
     _.chain(fs.readdirSync(rootPath))
         .map((file) -> file.slice(0, file.lastIndexOf '.'))
@@ -29,7 +29,11 @@ exports.makeResourceful = (app) ->
         app.put "/#{resource}/:id", protect(write), resourceModule.update
         app.del "/#{resource}/:id", protect(write), resourceModule.destroy
 
+# Common password hash function using `sha256`
+#
 exports.hashPassword = (password) ->
     crypto.createHash('sha256')
         .update(password)
         .digest('hex')
+
+_.extend exports, requireAll __dirname
