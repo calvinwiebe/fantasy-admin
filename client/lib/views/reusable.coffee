@@ -115,11 +115,11 @@ exports.CategoryInput = View
                         args.data = _.map [@populatedSeries.team1, @populatedSeries.team2], (team) ->
                              value: team.id, label: team.name
                     when 1
-                        args.data = _.map @populatedSeries.team1.players, (player) ->
-                            value: player.name, label: player.name  + ' (' + player.position + ')'
+                        args.data = _.map _.sortBy(@populatedSeries.team1.players, (player) -> -player.gReg), (player) ->
+                            value: player.name, label: '(' + player.position + ') ' + player.name  + ' - ' + player.gReg + ' goals'
                     when 2
-                        args.data = _.map @populatedSeries.team2.players, (player) ->
-                            value: player.name, label: player.name + ' (' + player.position + ')'
+                        args.data = _.map _.sortBy(@populatedSeries.team2.players, (player) -> -player.gReg), (player) ->
+                            value: player.name, label: '(' + player.position + ') ' + player.name  + ' - ' + player.gReg + ' goals'
 
         @$el.append @template args
         this
