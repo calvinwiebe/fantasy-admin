@@ -8,6 +8,7 @@ path        = require 'path'
 app         = express()
 sessions    = require 'client-sessions'
 dbService   = require './services/db'
+emailService= require './services/email'
 middleware  = require './middleware'
 {makeResourceful} = require './lib'
 makeResourceful app
@@ -94,6 +95,7 @@ START
 
 # Create our db and tables if they aren't created yet
 dbService.initialize ->
-    http.createServer(app).listen app.get('port'), ->
-      console.log 'Express server listening on port ' + app.get('port')
-      return
+    emailService.init (err) ->
+        console.error 'Failed to load email templates', err if err?
+        http.createServer(app).listen app.get('port'), ->
+            console.log 'Express server listening on port ' + app.get('port')

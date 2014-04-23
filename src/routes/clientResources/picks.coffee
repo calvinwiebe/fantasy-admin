@@ -1,6 +1,7 @@
 # Picks
-_ = require 'lodash'
-async = require 'async'
+_         = require 'lodash'
+async     = require 'async'
+{events}  = require '../../lib'
 
 # GET. can be filtered by user id
 exports.index = (req, res, next) ->
@@ -34,7 +35,13 @@ exports.create = (req, res, next)->
     docs.forEach (doc) ->
         rounds.push doc.round
         doc.user = req.user.id
-    
+
+    # notify the system of new picks
+    # events.getEventBus('email').emit 'email',
+    #     type: 'newPicks'
+    #     pool: data.pool
+    #     user: req.user.id
+
     expired = false
     #just to be safe... we are going to make sure that every pick a user sends is for a round that hasn't expired
     async.each(

@@ -10,8 +10,8 @@
 !/public/javascripts/bootstrap-datepicker.js
 /public/
 
-# Config file
-/src/config/custom.coffee
+# Local Config file
+/localConfigs/
 
 # rethink
 /rethinkdb_data/

@@ -22,7 +22,9 @@
     "moniker": "*",
     "backbone": "^1.1.2",
     "jquery": "^2.1.0",
-    "underscore": "*"
+    "underscore": "*",
+    "nodemailer": "0.6.2",
+    "email-templates": "0.1.8"
   },
   "devDependencies": {
     "nodemon": "*",

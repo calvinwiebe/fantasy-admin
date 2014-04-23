@@ -3,6 +3,7 @@
 _           = require 'lodash'
 moniker     = require 'moniker'
 poolUtils   = require '../../models/poolUtils'
+{events}    = require '../../lib'
 
 # GET
 # Can be accessed by both admin and users. When a user with `pools` permission
@@ -70,6 +71,13 @@ exports.update = (req, res, next) ->
                     res.status 418
                     res.json error: err
                 else
+                    # also emit an email event async'ly so we can
+                    # still send the res, even if the emailer dies
+                    process.nextTick ->
+                        events.getEventBus('email').emit 'email',
+                            type: 'poolStart'
+                            pool: req.body.id
+                            user: req.user.id
                     res.send pool
         when 2
             poolUtils.endPool conn, r, req.body, (err, pool) ->
