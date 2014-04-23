@@ -5,6 +5,7 @@ emailer                         = require 'nodemailer'
 {events, rethink, requireAll}   = require '../../lib'
 emailTemplates                  = require 'email-templates'
 path                            = require 'path'
+config                          = require '../../config'
 templateDir                     = path.resolve __dirname, '../../../templates'
 handlers                        = requireAll path.resolve __dirname, 'handlers'
 # Listen for app-wide for `email` events. These events should follow
@@ -20,13 +21,12 @@ handlers                        = requireAll path.resolve __dirname, 'handlers'
 bus = events.getEventBus 'email'
 templateFn = null
 
-# TODO - load this from a non-source controlled config file
-sender = 'calvin.wiebe@gmail.com'
-transport = emailer.createTransport 'SMTP',
-    service: 'Gmail'
+sender = config.email.sender
+transport = emailer.createTransport config.email.serviceTransport,
+    service: config.email.service
     auth:
         user: sender
-        pass: 'vvrjcizasuncwcys'
+        pass: config.email.serviceAuth
 
 # Read the template directory on init to save reading it for every email
 # and start listening for email events.

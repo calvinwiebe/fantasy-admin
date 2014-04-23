@@ -1,11 +1,10 @@
 # Coffee configuration object.
 #
 
+# register coffee-script so we can require non-built config files
+require 'coffee-script/register'
 _  = require 'lodash'
-try
-    {customDB} = require './custom'
-catch
-    customDB = {}
+
 defaults =
     db:
         address: 'localhost'
@@ -27,7 +26,14 @@ defaults =
         fantasyDb:
             name: 'fantasy'
 
-# not a deep clone soooo any objects in DB would be fully copied over without using any defaults
-defaults.db = _.defaults customDB, defaults.db
+# Environment specific configs
+switch process.env.NODE_ENV
+    when 'production'   then  srcOverrides = require './production'
+    when 'development'  then  srcOverrides = require './development'
+    when 'test'         then  srcOverrides = require './test'
+    else                      srcOverrides = {}
 
-module.exports = defaults
+# This is a per-machine config that isn't source controlled.
+localOverrides = require '../../localConfigs'
+
+module.exports = _.merge defaults, srcOverrides, localOverrides

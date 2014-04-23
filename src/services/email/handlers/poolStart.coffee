@@ -1,6 +1,7 @@
 # Compile the data for a `Pool Start` email
 #
 async           = require 'async'
+config          = require '../../../config'
 poolUtils       = require '../../../models/poolUtils'
 {rethink}       = require '../../../lib'
 
@@ -29,6 +30,5 @@ module.exports = (data, done) ->
             recipients: users
             locals:
                 pool: pool.name
-                # TODO - load this from a config
-                server: 'khello.ngrok.com'
+                server: config.email.server
             subject: "You have been added to the #{pool.name} pool!"
