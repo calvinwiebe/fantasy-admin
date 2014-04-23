@@ -1,12 +1,14 @@
-h1 Hello! #{name}
+h1 Hello!
 
 p
     | You have been added to the #{pool} pool. You're credentials are
     | below.
 
 p
-    | username: #{email}
-    | password: #{password}
+    h3
+        | username: #{recipient.email}
+    h3
+        | password: #{recipient.plainPassword}
 
 p
     | You can login to make your picks at #{server}

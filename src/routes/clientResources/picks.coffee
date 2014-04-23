@@ -37,10 +37,10 @@ exports.create = (req, res, next)->
         doc.user = req.user.id
 
     # notify the system of new picks
-    events.getEventBus('email').emit 'email',
-        type: 'newPicks'
-        pool: data.pool
-        user: req.user.id
+    # events.getEventBus('email').emit 'email',
+    #     type: 'newPicks'
+    #     pool: data.pool
+    #     user: req.user.id
 
     expired = false
     #just to be safe... we are going to make sure that every pick a user sends is for a round that hasn't expired

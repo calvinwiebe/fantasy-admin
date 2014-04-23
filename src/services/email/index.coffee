@@ -1,11 +1,12 @@
 # Emailing service module
-emailer             = require 'nodemailer'
-{events, rethink}   = require '../../lib'
-poolUtils           = require '../../models/poolUtils'
-emailTemplates      = require 'email-templates'
-path                = require 'path'
-templateDir         = path.resolve __dirname, '../../../templates'
-
+_                               = require 'lodash'
+async                           = require 'async'
+emailer                         = require 'nodemailer'
+{events, rethink, requireAll}   = require '../../lib'
+emailTemplates                  = require 'email-templates'
+path                            = require 'path'
+templateDir                     = path.resolve __dirname, '../../../templates'
+handlers                        = requireAll path.resolve __dirname, 'handlers'
 # Listen for app-wide for `email` events. These events should follow
 # this convention
 #
@@ -19,18 +20,12 @@ templateDir         = path.resolve __dirname, '../../../templates'
 bus = events.getEventBus 'email'
 templateFn = null
 
-eventsMap =
-    'poolStart':
-        domain: 'admin'
-        template: 'poolStart'
-    'newPicks':
-        domain: 'users'
-        template: 'newPicks'
-
+# TODO - load this from a non-source controlled config file
+sender = 'calvin.wiebe@gmail.com'
 transport = emailer.createTransport 'SMTP',
     service: 'Gmail'
     auth:
-        user: 'calvin.wiebe@gmail.com'
+        user: sender
         pass: 'vvrjcizasuncwcys'
 
 # Read the template directory on init to save reading it for every email
@@ -42,30 +37,30 @@ exports.init = (done) ->
         templateFn = template
         done err
 
-# Helper method to get a full pool object from the db
+# Handle the emitted event: Compile all the local vars needed
+# for the email template using its associated handler. Then send the
+# email.
 #
-getPool = (id, done) ->
-    rethink.getConnection (err, {conn, r}) ->
-        poolUtils.get conn, r, id, done
-
-getUsers = (filter, pool, done) ->
-
-handleEmailEvent = ({type, poolId}) ->
-
-    locals =
-        name: 'Calvin'
-        pool: 'Khello playoff pool'
-        server: 'khello.ngrok.com'
-        email: 'calvin.wiebe@gmail.com'
-        password: 'blarg'
-
-    templateFn 'poolStart', locals, (err, html, text) ->
-        transport.sendMail {
-            from: 'calvin.wiebe@gmail.com'
-            to: 'calvin.wiebe@gmail.com'
-            subject: "You have been added to #{locals.pool}"
-            html: html
-            text: text
-        }, (err, res) ->
-            console.error err if err
-            console.log res.message
+handleEmailEvent = (data) ->
+    {type} = data
+    try
+        handlers[type] data, (err, {recipients, locals, subject}) ->
+            return if err?
+            async.each recipients, (recipient, cb) ->
+                recipientLocals = _.extend {}, locals, { recipient }
+                templateFn type, recipientLocals, (err, html, text) ->
+                    return cb err if err?
+                    transport.sendMail {
+                        from: sender
+                        to: recipient.email
+                        subject: subject
+                        html: html
+                        text: text
+                    }, (err, res) ->
+                        return cb err if err
+                        console.log res.message
+                        cb null
+            , (err) ->
+                console.log "successfully sent all emails for #{type}"
+    catch err
+        console.error "Error processing email event #{type}", err

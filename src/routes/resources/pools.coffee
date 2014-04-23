@@ -75,7 +75,7 @@ exports.update = (req, res, next) ->
                     # still send the res, even if the emailer dies
                     process.nextTick ->
                         events.getEventBus('email').emit 'email',
-                            type: 'poolStarted'
+                            type: 'poolStart'
                             pool: req.body.id
                             user: req.user.id
                     res.send pool
