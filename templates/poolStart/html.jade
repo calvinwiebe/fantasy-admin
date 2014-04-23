@@ -1,14 +1,19 @@
 h1 Hello!
 
-p
-    | You have been added to the #{pool} pool. You're credentials are
-    | below.
+if recipient.plainPassword
+    p
+        | You have been added to the #{pool} pool. You're credentials are
+        | below.
 
-p
-    h3
-        | username: #{recipient.email}
-    h3
-        | password: #{recipient.plainPassword}
+    p
+        h3
+            | username: #{recipient.email}
+        h3
+            | password: #{recipient.plainPassword}
+else
+    p
+        | You have been added to the #{pool} pool. It looks like you are already
+        | registered. You can log in with your current email and password.
 
 p
     | You can login to make your picks at #{server}

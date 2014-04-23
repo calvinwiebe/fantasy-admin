@@ -1,9 +1,7 @@
 # These are API routes for fetching
 # resources
 uuid            = require 'node-uuid'
-moniker         = require 'moniker'
 _               = require 'lodash'
-{hashPassword}  = require '../../lib'
 
 # get users by email
 #
@@ -33,14 +31,12 @@ exports.create = (req, res, next) ->
             res.status 500
             res.send msg: 'Double email encountered.'
         else
-            plainPassword = moniker.choose()
             doc =
                 id: uuid.v4()
                 email: email
                 name: 'anon'
                 permission: 'pool'
-                password: hashPassword plainPassword
-                plainPassword: plainPassword
+                password: null
 
             r.table('users').insert(doc).run conn, (err, result) ->
                 r.table('users').get(doc.id).run conn, (err, user) ->
