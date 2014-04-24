@@ -110,9 +110,9 @@ exports.Swapper = (proto) ->
         # if the view is isStatic, and already exists, retain the view instance
         #
         leaveAlone: ({name, isStatic}) ->
-            if name and isStatic?
+            if name and isStatic
                 return current if current = _.find(@views,
-                    (view) -> view.__swapper_context__.name is name)
+                    (view) -> view.__swapper_context__.name is name and view.__swapper_context__.isStatic)
 
         # From the new config, as per the state, map the config options
         # into their corresponding view instances

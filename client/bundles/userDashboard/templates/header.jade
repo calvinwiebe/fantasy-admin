@@ -12,11 +12,15 @@
                 | #{state}
     .link-collect.collapse.navbar-collapse
         ul.nav.navbar-nav.navbar-right
-            li
-                a#home-nav(href='javascript:void(0)') Pools
-            li
-                a#picks-nav(href='javascript:void(0)') Make Picks
-            li
-                a#standings-nav(href='javascript:void(0)') Standings
-            li
-                a#logout-nav(href='/logout') Logout
+            if !onlyLogout
+                li
+                    a#home-nav(href='javascript:void(0)') Pools
+                li
+                    a#picks-nav(href='javascript:void(0)') Make Picks
+                li
+                    a#standings-nav(href='javascript:void(0)') Standings
+                li
+                    a#logout-nav(href='/logout') Logout
+            else
+                li
+                    a#logout-nav(href='/logout') Logout

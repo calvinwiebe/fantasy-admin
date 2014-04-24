@@ -22,6 +22,16 @@ View = Backbone.View.extend.bind Backbone.View
 # uses. Can do that after we hack this shit together though.
 messageBus = require('events').Bus
 
+LogoutView = View
+    tagName: 'nav'
+    className: 'navbar navbar-default navbar-static-top'
+    template: templates.header
+
+    serialize: ->
+        onlyLogout: true
+
+    render: genericRender
+
 HeaderView = View
     tagName: 'nav'
     className: 'navbar navbar-default navbar-static-top'
@@ -63,26 +73,26 @@ exports.DashboardContentView = Swapper
     initialize: ({resources}) ->
         _.bindAll this
         @collection  = resources.pools
-        header = {
+        header = (viewClass, isStatic=true) ->
             root: 'body'
-            view: HeaderView
+            view: viewClass
             method: 'prepend'
-            isStatic: true
+            isStatic: isStatic
             name: 'header'
-        }
         @configureSwap
             event: 'nav'
             default: 'home'
             map:
                 'standings': views: [
-                    header
+                    header(HeaderView)
                     StandingsView
                 ]
                 'picks': views: [
-                    header
+                    header(HeaderView)
                     PicksView
                 ]
                 'home': views: [
+                    header(LogoutView, false)
                     PoolListView
                 ]
 
@@ -97,6 +107,6 @@ exports.DashboardContentView = Swapper
     afterRender: ->
         switch @state
             when 'home'
-                @listenTo @views[0], 'poolSelected', @poolSelected
+                @listenTo @views[1], 'poolSelected', @poolSelected
             when 'standings'
                 $('#standings-nav').parent().addClass 'active'
