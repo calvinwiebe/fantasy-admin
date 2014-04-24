@@ -85,6 +85,12 @@ browserifyBundles = (watch=false, debug=false) ->
                 r.underscore
             ]
         ,
+            name: 'passwordReset'
+            transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
+            requires: [
+                r.underscore
+            ]
+        ,
             name: 'adminDashboard'
             transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [

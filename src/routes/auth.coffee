@@ -40,6 +40,28 @@ logout = (req, res, next) ->
     req.session.user = null
     next()
 
+# Reset a user's password
+#
+exports.passwordReset = (req, res, next) ->
+    {currentPassword, newPassword, confirmPassword} = req.body
+    {conn, r} = req.rethink
+
+    if newPassword isnt confirmPassword
+        res.status 400
+        return res.json code: -1, error: 'Passwords do not match.'
+    newHashed = hashPassword newPassword
+    r.table('users')
+    .get(req.user.id)
+    .update((user) ->
+        r.branch user('password').eq(hashPassword(currentPassword)), password: newHashed, {}
+    ).run conn, (err, results) ->
+        return next err if err?
+        if results.unchanged is 1
+            res.status 400
+            res.json code: -1, error: 'Current password is incorrect.'
+        else
+            res.json code: 0, msg: 'Successfully updated password.'
+
 # Depending on the user, send them to the appropriate
 # url
 #

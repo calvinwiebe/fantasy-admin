@@ -51,12 +51,16 @@ app.use middleware.populateUser
 ROUTES
 ###
 
-requireUser = middleware.requireUser { isDebug }
+requireUser = middleware.requireUser { isDebug: false }
 
 # Define our login routes
 app.get '/', routes.auth.forward, routes.index
 app.post '/login', routes.auth.login
 app.get '/logout', routes.auth.logout
+
+# password reset route
+app.get '/reset', requireUser('*', '/'), routes.passwordReset
+app.post '/passReset', requireUser('*', '/'), routes.auth.passwordReset
 
 # admin dashboard
 app.get '/admin/dashboard', requireUser('admin', '/'), routes.dashboard.admin
