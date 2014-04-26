@@ -16,6 +16,7 @@ exports.update = update = (conn, r, pool, cb) ->
 exports.filter = ({context, filter, cb}) ->
     {conn, r} = context
     r.table('pools').filter(filter).run conn, (err, results) ->
+        return cb err if err
         results.toArray (err, results) ->
             cb err, results
 

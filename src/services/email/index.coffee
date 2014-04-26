@@ -45,22 +45,33 @@ handleEmailEvent = (data) ->
     {type} = data
     try
         handlers[type] data, (err, {recipients, locals, subject}) ->
-            return if err?
+            if err?
+                return console.error "Error processing email event #{type}", err
             async.each recipients, (recipient, cb) ->
                 recipientLocals = _.extend {}, locals, { recipient }
                 templateFn type, recipientLocals, (err, html, text) ->
                     return cb err if err?
-                    transport.sendMail {
-                        from: sender
-                        to: recipient.email
-                        subject: subject
-                        html: html
-                        text: text
-                    }, (err, res) ->
-                        return cb err if err
-                        console.log res.message
-                        cb null
+                    # TODO - make the `transport` object handle the `testMode` stuff, so this
+                    # code doesn't have the conditional. i.e. instantiate either a testTransport or
+                    # a real one.
+                    if config.email.testMode
+                        console.log 'Email test mode output:'
+                        console.log html
+                    else
+                        transport.sendMail {
+                            from: sender
+                            to: recipient.email
+                            subject: subject
+                            html: html
+                            text: text
+                        }, (err, res) ->
+                            return cb err if err
+                            console.log res.message
+                            cb null
             , (err) ->
-                console.log "successfully sent all emails for #{type}"
+                if err?
+                    console.error "Error processing email event #{type}", err
+                else
+                    console.log "successfully sent all emails for #{type}"
     catch err
         console.error "Error processing email event #{type}", err

@@ -1,1 +1,23 @@
-h1 Someone made some picks!
+h1 New picks
+p
+    | #{user}
+
+h3 Round #{round}
+
+table.table
+    thead
+        tr
+            th
+                | Series
+            for category in categories
+                th
+                    | #{category.name}
+    tbody
+        each seriesPicks, seriesName in picks
+            tr
+                td
+                    | #{seriesName}
+                for seriesPick in seriesPicks
+                    td
+                        | #{seriesPick.value}
+

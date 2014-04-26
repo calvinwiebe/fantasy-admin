@@ -36,14 +36,8 @@ exports.create = (req, res, next)->
         rounds.push doc.round
         doc.user = req.user.id
 
-    # notify the system of new picks
-    # events.getEventBus('email').emit 'email',
-    #     type: 'newPicks'
-    #     pool: data.pool
-    #     user: req.user.id
-
     expired = false
-    #just to be safe... we are going to make sure that every pick a user sends is for a round that hasn't expired
+    # just to be safe... we are going to make sure that every pick a user sends is for a round that hasn't expired
     async.each(
         _.uniq rounds
         (round, done) ->
@@ -56,6 +50,12 @@ exports.create = (req, res, next)->
             if !expired
                 r.table('picks').insert(docs).run conn, (err, results) ->
                     res.send docs
+                process.nextTick ->
+                    # notify the system of new picks
+                    events.getEventBus('email').emit 'email',
+                        type: 'newPicks'
+                        user: req.user.id
+                        round: data[0].round
             else
                 res.status 418
                 res.json error: 'Deadline PAST'
