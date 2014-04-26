@@ -7,7 +7,7 @@ if type === 0
         else
             option(value='' disabled selected) Select one
         for datum in data
-            if value === datum.value
+            if value == datum.value
                 option(value='#{datum.value}' selected) #{datum.label}
             else
                 option(value='#{datum.value}') #{datum.label}

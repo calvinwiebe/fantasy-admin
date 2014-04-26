@@ -1,7 +1,8 @@
 exports.categories = [
         name: 'Number of Games in Series'
-        type: 1
-        domain: 1
+        type: 0
+        domain: 1,
+        data: [4,5,6,7]
     ,
         name: 'Series Winner'
         type: 0
