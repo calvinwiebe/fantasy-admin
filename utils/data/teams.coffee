@@ -2113,7 +2113,7 @@ exports.teams = [
                 gReg: 6
                 gwReg: 3
             ,
-                name: 'Mikael Grandlund'
+                name: 'Mikael Granlund'
                 position: 'F'
                 gReg: 8
                 gwReg: 2

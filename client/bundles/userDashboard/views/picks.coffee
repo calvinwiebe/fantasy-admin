@@ -7,7 +7,7 @@ templates = rfolder '../templates', extensions: [ '.jade' ]
 # views
 {GenericView, genericRender,
 Cleanup, ListItem, InputListItem,
-CategoryInput, IdicatingListItem} \
+CategoryInput, IdicatingListItem, TableView} \
 = require 'views'
 # utils
 utils = require 'utils'
@@ -33,11 +33,12 @@ exports.PicksView = View
                 ModelStorage.getResource "rounds-#{@model.id}", 'pool', @model.id, RoundsCollection, (@rounds) =>
                     round = @rounds.get @userPending.get('round')
                     if moment().isBefore round.get('date')
-                        ModelStorage.getResource "series-#{round}", 'round', round.id, SeriesCollection, (@series) =>
-                            @series.forEach (model) =>
-                                @picks[model.id] = new PicksCollection
-                            @needsData = false
-                            @render()
+                        ModelStorage.getResource "categories-#{@model.id}", 'pool', @model.id, CategoriesCollection, (@categories) =>
+                            ModelStorage.getResource "series-#{round}", 'round', round.id, SeriesCollection, (@series) =>
+                                @series.forEach (model) =>
+                                    @picks[model.id] = new PicksCollection
+                                @needsData = false
+                                @render()
                     else
                         @state = 'timesup'
                         @needsData = false
@@ -46,6 +47,11 @@ exports.PicksView = View
                 @state = 'none'
                 @needsData = false
                 @render()
+
+    confirm: ->
+        @selectedSeries = null
+        @state = 'confirm'
+        @render()
 
     # Send the picks to the server
     # Boil everything down to one flat picks collection and save it
@@ -80,7 +86,7 @@ exports.PicksView = View
             when 'list'
                 view = new SeriesList { collection: @series, pool: @model }
                 @listenTo view, 'selected', @seriesSelected
-                @listenTo view, 'submit', @submit
+                @listenTo view, 'confirm', @confirm
             when 'input'
                 view = new PickInputView {
                     pool: @model,
@@ -93,6 +99,14 @@ exports.PicksView = View
                 view = NoPicksNeeded
             when 'timesup'
                 view = TimesUp
+            when 'confirm'
+                view = new PickConfirmView {
+                    series: @series,
+                    picks: @picks
+                    categories: @categories
+                }
+                @listenTo view, 'done', @pickSelectionDone
+                @listenTo view, 'submit', @submit
         @$('.picks').append view.render().el
         this
 
@@ -111,6 +125,50 @@ serializePick = (model) ->
 NoPicksNeeded = new GenericView template: templates.none
 TimesUp = new GenericView template: templates.timesup
 
+PickConfirmView = View
+    template: templates.confirm
+
+    events:
+        'click .back': 'back'
+        'click .submit': 'submit'
+
+    initialize: ({@series, @picks, @categories}) ->
+        _.extend this, Cleanup.mixin
+        @childViews = []
+        @render()
+
+    submit: (e) ->
+        e.preventDefault()
+        @trigger 'submit'
+        false
+
+    back: (e) ->
+        e.preventDefault()
+        @trigger 'done'
+        false
+
+    render: ->
+        @undelegateEvents()
+        @$el.empty()
+        @cleanUp()
+
+        @$el.append @template
+
+        results = _.chain(@picks).values().map((collection) -> collection.models).flatten().map((pick) -> pick.toJSON()).value()
+        populatedResults = ModelStorage.populate results, @series
+        populatedResults = ModelStorage.populate populatedResults, @categories
+        populatedResults = ModelStorage.populate populatedResults, ModelStorage.get 'teams'
+        picksTable = new TableView
+            headings: @categories.toJSON()
+            results: populatedResults
+            resultHeadingKey: 'category'
+            groupBy: 'series'
+        @childViews.push picksTable
+        @$('.summary').append picksTable.render().el
+        @delegateEvents()
+        this
+
+
 PickInputView = View
     template: templates.input
 
@@ -118,11 +176,10 @@ PickInputView = View
         'click .back': 'back'
         'click .save': 'save'
 
-    initialize: ({@pool, @series, @round, @picks}) ->
+    initialize: ({@pool, @series, @round, @picks, @categories}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
         @needsData = false
-        @categories = ModelStorage.get "categories-#{@pool.id}"
         if !@categories
             @needsData = true
             @categories = new CategoriesCollection pool: @pool.id
@@ -185,12 +242,12 @@ SeriesList = View
     template: templates.seriesList
 
     events:
-        'click .submit': 'submit'
+        'click .submit': 'confirm'
 
-    submit: (e) ->
+    confirm: (e) ->
         e.preventDefault()
         if @arePicksComplete()
-            @trigger 'submit'
+            @trigger 'confirm'
         else
             alert 'Please fill in all your picks first.'
         false

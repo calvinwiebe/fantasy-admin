@@ -35,7 +35,7 @@ exports.UserCollection = Collection
 
 exports.CategoriesCollection = Collection
     url: '/categories'
-    comparator: 'domain'
+    comparator: (category) -> 9-category.get('domain') + category.get('name')
     initialize: ({@pool}={}) ->
     sync: syncWithId 'pool'
 

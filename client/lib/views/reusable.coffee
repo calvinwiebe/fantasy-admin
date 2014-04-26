@@ -131,7 +131,7 @@ exports.CategoryInput = View
 
 # A row in a table
 #
-ResultTableRow = View
+TableRow = View
     tagName: 'tr'
 
     initialize: ({@tagType, @value, @pluck}) ->
@@ -146,11 +146,19 @@ ResultTableRow = View
                 @deepFind val
         return null
 
+    getValue: (value) ->
+        if _.isArray value
+            value = _.reduce(value, (memo, v) =>
+                memo + '-' + @getValue(v)
+            )
+        else if @pluck and _.isObject value
+            value = @deepFind value, @pluck
+        value
+
     renderChildren: ->
         _.forEach @collection, (rowData) =>
             value = rowData[@value]
-            if @pluck and _.isObject value
-                value = @deepFind value, @pluck
+            value = @getValue value
             @$el.append @template { value }
 
     render: ->
@@ -161,22 +169,33 @@ ResultTableRow = View
 # A reusable TableView
 # This takes a collection of headings, and a collection of result collections.
 #
-exports.ResultTableView = View
+exports.TableView = View
     template: templates.table
 
-    initialize: ({@headings, @results, @resultHeadingKey, @groupBy, @populator}) ->
+    initialize: ({@headings, @results, @resultHeadingKey, @groupBy}) ->
         _.extend this, Cleanup.mixin
         @childViews = []
         @headings = _.sortBy @headings, 'id'
         @headings.unshift name: @groupBy.toUpperCase()
-        @results = _.groupBy @results, @groupBy
+        # if groupBy is on an expanded object, group by its id
+        @results = _.groupBy @results, (data) => 
+            if _.isObject(data) and data[@groupBy].id
+                data[@groupBy].name
+            else
+                data[@groupBy]
         rowKeys = _.keys @results
-        @results = _.map @results, (collection) => _.sortBy collection, "#{@resultHeadingKey}"
+        # if groupBy is on an expanded object, sort by its id
+        @results = _.map @results, (collection) => 
+            _.sortBy collection, (data) =>
+                if _.isObject(data) and data[@resultHeadingKey].id
+                    data[@resultHeadingKey].id
+                else
+                    data[@resultHeadingKey]
         @results.forEach (collection, i) ->
             collection.unshift value: rowKeys[i]
 
     renderRows: ->
-        heading = new ResultTableRow
+        heading = new TableRow
             collection: @headings
             tagType: 'th'
             value: 'name'
@@ -184,9 +203,8 @@ exports.ResultTableView = View
 
         rows = _.chain(@results)
             .map((collection) =>
-                populatedCollection = ModelStorage.populate collection, @populator
-                new ResultTableRow
-                    collection: populatedCollection
+                new TableRow
+                    collection: collection
                     tagType: 'tr'
                     value: 'value'
                     pluck: 'name'

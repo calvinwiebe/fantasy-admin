@@ -3,7 +3,7 @@ Backbone.$  = window.$
 _           = require 'lodash'
 asink       = require 'asink'
 templates   = rfolder '../templates', extensions: [ '.jade' ]
-{GenericView, genericRender, Cleanup, Swapper, InputListItem, ResultTableView, CategoryInput} = require 'views'
+{GenericView, genericRender, Cleanup, Swapper, InputListItem, TableView, CategoryInput} = require 'views'
 utils = require 'utils'
 {CategoriesCollection, ResultsCollection, ModelStorage} = require 'models'
 View = Backbone.View.extend.bind Backbone.View
@@ -193,7 +193,7 @@ PreviousResults = View
                 @render()
 
     renderPrevious: ->
-        gameResults = new ResultTableView
+        gameResults = new TableView
             headings: _.filter @categories.toJSON(), (model) -> model.domain is domainMap['game']
             results: _.filter @previous.toJSON(), (model) -> model.game?
             resultHeadingKey: 'category'
@@ -203,11 +203,13 @@ PreviousResults = View
 
         return unless @series.get 'state', seriesMap['completed']
 
-        seriesResults = new ResultTableView
+        seriesResults = _.filter @previous.toJSON(), (model) -> model.final?
+        populatedSeriesResults = ModelStorage.populate seriesResults, @teams
+
+        seriesResults = new TableView
             headings: _.filter @categories.toJSON(), (model) -> model.domain is domainMap['series']
-            results: _.filter @previous.toJSON(), (model) -> model.final?
+            results: _.filter populatedSeriesResults, (model) -> model.final?
             resultHeadingKey: 'category'
-            populator: @teams
             groupBy: 'final'
 
         @$el.append seriesResults.render().el

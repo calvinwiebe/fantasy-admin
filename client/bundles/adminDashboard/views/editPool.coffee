@@ -354,6 +354,7 @@ SeriesEditItem = View
         e.preventDefault()
         @model.set 'team1', @$('.team1').val()
         @model.set 'team2', @$('.team2').val()
+        @model.set 'name', @$('.team1 option:selected').text() + ' vs ' + @$('.team2 option:selected').text()
         @model.save {}, success: => @dismiss e
         false
 
