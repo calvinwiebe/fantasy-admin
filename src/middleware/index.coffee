@@ -2,7 +2,8 @@
 #
 rethinkLib = require '../lib/rethink'
 
-# Add the rethink connection objects to the request
+# Add the rethink connection objects to the request. Listen to
+# the response's `finish` event to then house keep the rethink connection.
 #
 exports.rethink = ->
     (req, res, next) ->
@@ -11,6 +12,7 @@ exports.rethink = ->
             req.rethink =
                 conn: conn
                 r: r
+            res.on 'finish', -> conn.close()
             next()
 
 # Add an existing user to a more convenient variable
