@@ -1,4 +1,5 @@
 {DashboardContentView} = require './content.coffee'
+{confirmThrowAwayData} = require 'views'
 {PoolCollection, TeamsCollection, UserCollection, ModelStorage} = require 'models'
 asink = require 'asink'
 
@@ -9,6 +10,7 @@ init = (resources) ->
     content = new DashboardContentView { resources }
     ModelStorage.store 'teams', resources.teams
     $('body').append content.render().el
+    confirmThrowAwayData 'If you leave this page, all data will be lost'
 
 $ ->
     # load up for resources at the start

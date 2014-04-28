@@ -9,6 +9,28 @@ templates       = rfolder './templates', extensions: [ '.jade' ]
 
 View = Backbone.View.extend.bind Backbone.View
 
+exports.confirmThrowAwayData = (confirmMsg) ->
+    # check for history API popstate support
+    hasPushState = window.history? and window.history.pushState?
+
+    if hasPushState
+        # push a two states onto the stack, so a back button will be caught
+        window.history.pushState {name: 'initial'}, 'dashboard', ''
+        window.history.pushState {name: 'pushedToDisableBack'}, 'dashboard', ''
+        window.onpopstate = (e) ->
+            if e.state?.name is 'initial'
+                leave = window.confirm confirmMsg
+                # leave the initial state
+                if leave
+                    window.history.go(-2)
+                # go back to the dashboard state
+                else
+                    window.history.pushState({name: 'pushedToDisableBack'},
+                        'dashboard', '')
+    else
+        window.onbeforeunload = (e) ->
+            confirmMsg
+
 exports.genericRender = genericRender = ->
     @undelegateEvents()
     @$el.empty()
@@ -182,14 +204,14 @@ exports.TableView = View
         @headings = _.sortBy @headings, 'id'
         @headings.unshift name: @groupBy.toUpperCase()
         # if groupBy is on an expanded object, group by its id
-        @results = _.groupBy @results, (data) => 
+        @results = _.groupBy @results, (data) =>
             if _.isObject(data) and data[@groupBy].id
                 data[@groupBy].name
             else
                 data[@groupBy]
         rowKeys = _.keys @results
         # if groupBy is on an expanded object, sort by its id
-        @results = _.map @results, (collection) => 
+        @results = _.map @results, (collection) =>
             _.sortBy collection, (data) =>
                 if _.isObject(data) and data[@resultHeadingKey].id
                     data[@resultHeadingKey].id
