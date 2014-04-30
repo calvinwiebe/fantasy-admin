@@ -25,6 +25,8 @@ defaults =
             ]
         fantasyDb:
             name: 'fantasy'
+        email:
+            manual: []
 
 # Environment specific configs
 switch process.env.NODE_ENV

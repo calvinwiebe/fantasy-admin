@@ -41,8 +41,10 @@ exports.init = (done) ->
 # for the email template using its associated handler. Then send the
 # email.
 #
-handleEmailEvent = (data) ->
+exports.handleEmailEvent = handleEmailEvent = (data, {force, done}={}) ->
+    force ?= false
     {type} = data
+    return if type in config.email.manual unless force
     try
         handlers[type] data, (err, {recipients, locals, subject}) ->
             if err?
@@ -73,5 +75,7 @@ handleEmailEvent = (data) ->
                     console.error "Error processing email event #{type}", err
                 else
                     console.log "successfully sent all emails for #{type}"
+                done?()
     catch err
         console.error "Error processing email event #{type}", err
+        done?(err)
