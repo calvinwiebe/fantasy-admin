@@ -22,11 +22,6 @@ bus = events.getEventBus 'email'
 templateFn = null
 
 sender = config.email.sender
-transport = emailer.createTransport config.email.serviceTransport,
-    service: config.email.service
-    auth:
-        user: sender
-        pass: config.email.serviceAuth
 
 # Read the template directory on init to save reading it for every email
 # and start listening for email events.
@@ -45,6 +40,11 @@ exports.handleEmailEvent = handleEmailEvent = (data, {force, done}={}) ->
     force ?= false
     {type} = data
     return if type in config.email.manual unless force
+    transport = emailer.createTransport config.email.serviceTransport,
+        service: config.email.service
+        auth:
+            user: sender
+            pass: config.email.serviceAuth
     try
         handlers[type] data, (err, {recipients, locals, subject}) ->
             if err?
@@ -75,7 +75,9 @@ exports.handleEmailEvent = handleEmailEvent = (data, {force, done}={}) ->
                     console.error "Error processing email event #{type}", err
                 else
                     console.log "successfully sent all emails for #{type}"
+                transport?.close()
                 done?()
     catch err
         console.error "Error processing email event #{type}", err
+        transport?.close()
         done?(err)
