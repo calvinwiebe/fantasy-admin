@@ -49,13 +49,13 @@ exports.create = (req, res, next)->
         ->
             if !expired
                 r.table('picks').insert(docs).run conn, (err, results) ->
+                    process.nextTick ->
+                        # notify the system of new picks
+                        events.getEventBus('email').emit 'email',
+                            type: 'newPicks'
+                            user: req.user.id
+                            round: data[0].round
                     res.send docs
-                process.nextTick ->
-                    # notify the system of new picks
-                    events.getEventBus('email').emit 'email',
-                        type: 'newPicks'
-                        user: req.user.id
-                        round: data[0].round
             else
                 res.status 418
                 res.json error: 'Deadline PAST'
