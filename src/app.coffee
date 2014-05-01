@@ -36,7 +36,7 @@ sessionDuration = \
     if isDebug
         60 * 1000 * 60 * 24 * 7 # a week for dev
     else
-        60 * 1000 * 20 # 20 minute sessions for prod
+        60 * 1000 * 240 # 4 hr minute sessions for prod
 
 app.use sessions
     cookieName: 'session'
