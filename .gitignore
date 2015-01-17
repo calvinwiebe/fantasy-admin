@@ -9,6 +9,7 @@
 !/public/javascripts/bootstrap.min.js
 !/public/javascripts/bootstrap-datepicker.js
 /public/
+/client/bundles/*cache.json
 
 # Local Config file
 /localConfigs/

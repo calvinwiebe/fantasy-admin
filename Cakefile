@@ -1,20 +1,21 @@
 # Simple cake build file.
 # Compiles coffee files in /src into /dist
 
-fs = require 'fs'
-path = require 'path'
-
-{print} = require 'sys'
-{spawn} = require 'child_process'
+fs          = require 'fs'
+path        = require 'path'
+{print}     = require 'sys'
+{spawn}     = require 'child_process'
+ld          = require 'lodash'
+browserify  = require 'browserify'
+watchify    = require 'uber-watchify'
 
 osify = (cmd) ->
     if process.platform is 'win32'
         cmd = cmd.replace /\//g, '\\'
     cmd
 coffeeCmd = osify './node_modules/.bin/coffee'
-ld = require 'lodash'
-browserify = require 'browserify'
-watchify = require 'watchify'
+
+bundlesRoot = path.resolve __dirname, 'client', 'bundles'
 
 # keep track of children and kill them if the parent
 # dies
@@ -49,10 +50,17 @@ writeBundleToDisk = (config, src) ->
     fs.writeFileSync path.join(__dirname, osify("public/javascripts/#{config.name}.js")), src
 
 browserifyBundle = (fullPath, config, watch, debug=false) ->
-    if watch
-        b = watchify fullPath
-    else
-        b = browserify fullPath
+    br = browserify({
+        cache: watchify.getCache config.cache
+        packageCache: {}
+        fullPaths: true
+        entries: [ fullPath ]
+        extensions: [ '.coffee', '.jade' ]
+    })
+    b = watchify br, {
+        watch: watch
+        cacheFile: config.cache
+    }
     b.require(r[0], expose: r[1]) for r in config.requires
     b.transform(t) for t in config.transforms
     bundle = b.bundle { debug }
@@ -64,11 +72,16 @@ browserifyBundle = (fullPath, config, watch, debug=false) ->
             process.exit -9
         bundle.on 'end', ->
             writeBundleToDisk config, src
+            b.write()
 
     if watch
         b.on 'update', (ids) ->
             console.log "BROWSERIFY: #{config.name}.coffee"
             doBundle b.bundle()
+
+    if !bundle
+        console.log "BROWSERIFY: #{config.name}.coffee NO CHANGE"
+        return
 
     doBundle bundle
 
@@ -84,28 +97,33 @@ browserifyBundles = (watch=false, debug=false) ->
             requires: [
                 r.underscore
             ]
+            cache: "#{bundlesRoot}/landing.cache.json"
         ,
             name: 'passwordReset'
             transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.underscore
             ]
+            cache: "#{bundlesRoot}/passwordReset.cache.json"
         ,
             name: 'adminDashboard'
             transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.underscore
             ]
+            cache: "#{bundlesRoot}/adminDashboard.cache.json"
         ,
             name: 'userDashboard'
             transforms: ['coffeeify', 'aliasify', 'browserify-jade', 'rfolderify']
             requires: [
                 r.underscore
             ]
+            cache: "#{bundlesRoot}/userDashboard.cache.json"
         ,
             name: 'jquery'
             transforms: ['coffeeify']
             requires: []
+            cache: "#{bundlesRoot}/jquery.cache.json"
     ]
 
     ld.forEach configs, (config) ->
